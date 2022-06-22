@@ -21,7 +21,7 @@
 # threshold for behaviour could depend on more things than stomach content 
 # Check the distributions of initial values. Some of them are not normal distributuions 
 # check how the bmr is applied, hardcoded number in there right now. 
-# work temp in (into mbr; see point above)
+# work temp in (into mbr; see point above) --> mass needs to be implemented here too 
 # solve the issue with the last timsteps (only in the graphs)
 
 
