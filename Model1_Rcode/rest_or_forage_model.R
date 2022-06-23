@@ -27,9 +27,11 @@
 
 ##    adressed in this version  ## 
 
-# changed the 'killing' of birds to the start of each timestep 
-# this way, dead birds will no longer do behaviours 
-# also fixed the issue with the last collumn, that would give high values in the last version 
+# In the previous version, birds kept doing behaviours whilst they should be dead 
+# so i rewrote the killing part of the loop 
+# also moved the transferring of variables to the next step to the individual loops. 
+# this means that birds that are dead do not get any transer of values 
+# also rectified the mistake in the transfer: mass was labeled as sc 
 
 
 ##############################
@@ -48,7 +50,7 @@ th_forage_sc<-0.2  # threshold: if SC below this you forage
 
 stom_to_fat<-0.132  # variable that determines gram of sc goes to fat
 fat_max<-4          # maximum fat reserve in gram 
-num_food<-1         # number of food items found (this should be a distribution)
+num_food<-2         # number of food items found (this should be a distribution)
 
 plot_interval<-5   # every x timestep a dot on the graph is added 
 
@@ -111,31 +113,38 @@ for (t in 1:T){
   for (i in (1:N)){
     
     # Check if individual is alive? 
+    # in step 1 all birds are alive 
+    if (t==1){
+      mat_alive[i,t]==1
+    }
+    # if not step 1, check if bird was previously dead
+    # if previously dead, it needs to be dead now 
+    else if (mat_alive[i,(t-1)]==0){
+        mat_alive[i,t]<-0
+    }
+    # if not step 1 and not previously dead 
+    # check if the bird should die now 
+    else if (mat_fr[i,t]==0){
+      mat_alive[i,t]<-0
+    }
+    # in all other cases the bird is alive 
+    else{
+      mat_alive[i,t]<-1
+    }
+    
     
     ################
     #  DEAD BIRDS  #
     ################
-    # Check if you are in timestep further than 1 
-    # and check if the bird was alive in the previous timestep
-    # if the bird was dead before, it will be dead now
-     if ((t>1 && (mat_alive[i,(t-1)]==0))){
-      # in this case, the bird has already died 
-      # it should be dead in this step also 
-      mat_alive[i,t]<-0
-      # then move on to check if the bird has enough fat reserves to live 
-     } else if (t>1 && mat_fr[i,t]==0){
-      mat_alive[i,t]<-0
-      # if not, the bird dies 
-      # if either the timestep is 1 or the bird has not died yet
-      # the else statement starts and all alive birds do behaviours 
-    } else{
+    if(mat_alive[i,t]==0){
+      # these are the dead birds 
+      print(paste0(' bird ', i, 'is dead'))
+    }else{
       
       #################
       #  ALIVE BIRDS  #
       #################
-      # in all the other cases, the bird is alive
-      # in t=1 all birds are alive 
-      mat_alive[i,t]<-1
+      
       # Check what behavior the bird should do 
       
       #################
@@ -227,13 +236,16 @@ for (t in 1:T){
       mat_mass[i,t]<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
       
       
-      # # KILL BIRDS  
-      # # birds need to be killed 
-      # if(mat_fr[i,(t)]==0){
-      #   mat_alive[i,(t)]<-0
-      # } else{
-      #   mat_alive[i,(t+1)]<-1
-      # }
+      # MOVE ALL VARAIBLES TO T+1 
+      # Note that this should only happen if youre not in the last timestep 
+      if(t<T){
+        # For the fr matrix 
+        mat_fr[,(t+1)]<-mat_fr[,t]
+        # For the mass matrix 
+        mat_mass[,(t+1)]<-mat_mass[,t]
+        # For the sc matrix 
+        mat_sc[,(t+1)]<-mat_sc[,t]
+      }
       
     } # end of loop for alive individuals 
     
@@ -278,16 +290,7 @@ for (t in 1:T){
     Sys.sleep(0)             # turns that back off 
    }# end if statement 
   
-  # MOVE ALL VARAIBLES TO T+1 
-  # Note that this should only happen if youre not in the last timestep 
-  if(t<T){
-    # For the fr matrix 
-    mat_fr[,(t+1)]<-mat_fr[,t]
-    # For the mass matrix 
-    mat_mass[,(t+1)]<-mat_fr[,t]
-    # For the sc matrix 
-    mat_sc[,(t+1)]<-mat_sc[,t]
-  }
+
   
   
 } # end of big timestep loop 
