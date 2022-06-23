@@ -13,19 +13,23 @@
 # resting as a lower energy expenditure 
 # For each timestep the behaviours, variables and number of birds alive is registered 
 
+
+
 ##    Steps for next model      ## 
 
 # Build in night and day, which includes sleeping behaviour 
 # Make sure that the initial mass in the first timestep includes fr and sc 
-# Should birds be killed at the start or at the end of each timestep? 
 # threshold for behaviour could depend on more things than stomach content 
 # Check the distributions of initial values. Some of them are not normal distributuions 
 # check how the bmr is applied, hardcoded number in there right now. 
 # work temp in (into mbr; see point above) --> mass needs to be implemented here too 
-# solve the issue with the last timsteps (only in the graphs)
 
 
-# SOMETHING WEIRD IS HAPPENING IN THE LAST TIMESTEP 
+##    adressed in this version  ## 
+
+# changed the 'killing' of birds to the start of each timestep 
+# this way, dead birds will no longer do behaviours 
+# also fixed the issue with the last collumn, that would give high values in the last version 
 
 
 ##############################
@@ -72,6 +76,7 @@ mat_mass[,1]<-mass_init
 sc_mean<-matrix(NA, 1, (T))
 fr_mean<-matrix(NA, 1, (T))
 mass_mean<-matrix(NA,1, (T))
+alive_mean<-matrix(NA,1, T)
 # count what the birds are up to 
 forage_count<-matrix(NA, N, (T))
 rest_count<-matrix(NA, N, (T))
@@ -106,19 +111,31 @@ for (t in 1:T){
   for (i in (1:N)){
     
     # Check if individual is alive? 
+    
     ################
     #  DEAD BIRDS  #
     ################
-    if ((mat_alive[i,t]==0) && (t<T)){
+    # Check if you are in timestep further than 1 
+    # and check if the bird was alive in the previous timestep
+    # if the bird was dead before, it will be dead now
+     if ((t>1 && (mat_alive[i,(t-1)]==0))){
       # in this case, the bird has already died 
-      # or the fat reserves have lowered to 0
-      if(t<T){mat_alive[i,(t+1)]<-0 }      # bird will be dead in the next step too
+      # it should be dead in this step also 
+      mat_alive[i,t]<-0
+      # then move on to check if the bird has enough fat reserves to live 
+     } else if (t>1 && mat_fr[i,t]==0){
+      mat_alive[i,t]<-0
+      # if not, the bird dies 
+      # if either the timestep is 1 or the bird has not died yet
+      # the else statement starts and all alive birds do behaviours 
     } else{
       
       #################
       #  ALIVE BIRDS  #
       #################
-      
+      # in all the other cases, the bird is alive
+      # in t=1 all birds are alive 
+      mat_alive[i,t]<-1
       # Check what behavior the bird should do 
       
       #################
@@ -204,17 +221,19 @@ for (t in 1:T){
       if((mat_sc[i,t]>stom_size)){
         mat_sc[i,t]<-stom_size
       }
-      # KILL BIRDS  
-      if(t<T){
-        if(mat_fr[i,(t)]==0){
-          mat_alive[i, (t+1)]<-0
-        } else{
-          mat_alive[i,(t+1)]<-1
-        }}
-      
+
       # SET MASS 
       # set the new mass for all individuals 
       mat_mass[i,t]<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
+      
+      
+      # # KILL BIRDS  
+      # # birds need to be killed 
+      # if(mat_fr[i,(t)]==0){
+      #   mat_alive[i,(t)]<-0
+      # } else{
+      #   mat_alive[i,(t+1)]<-1
+      # }
       
     } # end of loop for alive individuals 
     
@@ -235,11 +254,11 @@ for (t in 1:T){
   sc_mean[t]<-mean(mat_sc[,t], na.rm = TRUE)        # adds mean stomach content for this timestep to matrix
   fr_mean[t]<-mean(mat_fr[,t], na.rm = TRUE)        # adds mean fat reserve for this timestep to matrix 
   mass_mean[t]<-mean(mat_mass[,t], na.rm = TRUE)    # adds mean mass for this timestep to mean-matrix
-  
+  alive_mean[t]<-mean(mat_alive[,t], na.rm= TRUE)
   
   # PLOT 
   # Make sure to plot every so often 
-  if ((t/plot_interval)==floor(t/plot_interval)){
+   if ((t/plot_interval)==floor(t/plot_interval)){
     Sys.sleep(0.05)          # forces an update to the plotting window 
     par(mfrow=c(3,2))
     # 1
@@ -257,7 +276,7 @@ for (t in 1:T){
     # 6
     plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
     Sys.sleep(0)             # turns that back off 
-  }# end if statement 
+   }# end if statement 
   
   # MOVE ALL VARAIBLES TO T+1 
   # Note that this should only happen if youre not in the last timestep 
