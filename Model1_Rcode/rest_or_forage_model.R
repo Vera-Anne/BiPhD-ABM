@@ -27,8 +27,16 @@
 
 ##    addressed in this version  ## 
 
-# Put the set up of the environment into a function
+# worked on the initial value distributuions
+# created an option to graph these 
 
+##############################
+#      load packages         #
+##############################
+library(usethis)
+library(devtools)
+# install_github("olafmersmann/truncnorm")
+library(truncnorm)
 
 ##############################
 #       input parameters    # 
@@ -49,12 +57,17 @@ num_food<-1         # number of food items found (this should be a distribution)
 ##################################
 
 set_up_env<-function(T,N, temp){
-  # Set up some parameters (Global)
   
+  # Want to plot some initial value graphs? 
+  # 1 for yes, 0 for no 
+  plot_init_value<<-1 
+  
+  
+   # Set up some parameters (Global)
   food_item<<-0.064    # value of a food item 
   stom_size<<-0.4      # stomach size of the bird 
   stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
-  fat_max<<-4          # maximum fat reserve in gram 
+  fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
   plot_interval<<-5   # every x timestep a dot on the graph is added 
   
   
@@ -65,11 +78,11 @@ set_up_env<-function(T,N, temp){
   mat_mass<<-matrix(NA,N,(T))              # matrix to keep track of mass of birds 
   
   
-  # fill in some initial values for agent variables  (only mass-init is global)
-  mass_init<<-8+(rnorm(N, mean=0.2, sd=0.01))        # Gives initial mass from normal distribution
-  sc_init<-0+(runif(N, min=0, max=stom_size))       # gives initial stomach content from equal distribution
-  fr_init<-0+(runif(N, min=0, max=fat_max))         # gives initial fat reserves for random number between 0-4
-  alive_init<-rep(1, N )                            # all birds are alive at the start 
+  # fill in some initial values for agent variables  (global)
+  mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))       # Gives initial mass from normal distribution (Polo et al. 2007)
+  sc_init<<-0+(rtruncnorm(N, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))       # gives initial stomach content from equal distribution
+  fr_init<<-0+(rtruncnorm(N, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
+  alive_init<<-rep(1, N )                            # all birds are alive at the start 
   # Put these in first column of the matrices  
   mat_alive[,1]<<-alive_init
   mat_sc[,1]<<-sc_init
@@ -97,6 +110,7 @@ set_up_env<-function(T,N, temp){
   # Sort metabolic rates 
   mr<<-45.65-(1.33*temp)
   
+
 } # end set-up function 
 
 
@@ -320,6 +334,18 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
     
     
   } # end of big timestep loop 
+  
+  # Plot some initial distributions if wanted 
+  if(plot_init_value==1){
+    par(mfrow=c(2,3))
+    hist(mass_init)
+    hist(fr_init)
+    hist(sc_init)
+    hist(mat_mass[,T])
+    hist(mat_fr[,T])
+    hist(mat_sc[,T])
+  }
+  
 
 } # end the rest/forage function 
 
