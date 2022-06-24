@@ -27,31 +27,30 @@
 
 ##    adressed in this version  ## 
 
-# In the previous version, birds kept doing behaviours whilst they should be dead 
-# so i rewrote the killing part of the loop 
-# also moved the transferring of variables to the next step to the individual loops. 
-# this means that birds that are dead do not get any transer of values 
-# also rectified the mistake in the transfer: mass was labeled as sc 
+# Put everything in a function so it is easier to run 
 
+# NEXT STEP: PUT THE PLOTS IN THE OUTPUT 
 
 ##############################
-# initialize the population  #
+#       input parameters    # 
 ##############################
 
-# input parameters 
-# can be put into a function later 
-N<-100              # number of individuals 
-T<-100              # number of timesteps 
+T<-100              # number of timesteps
+N<-100              # number of individuals
 temp<-(-5)          # Temperature 
+th_forage_sc<-0.2   # threshold: if SC below this you forage 
+num_food<-2         # number of food items found (this should be a distribution)
+
+
+
+rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
+
+# Set up some parameters 
 
 food_item<-0.064    # value of a food item 
 stom_size<-0.4      # stomach size of the bird 
-th_forage_sc<-0.2  # threshold: if SC below this you forage 
-
-stom_to_fat<-0.132  # variable that determines gram of sc goes to fat
+stom_to_fat<-0.132  # variable that determines how many grams of sc go to fat
 fat_max<-4          # maximum fat reserve in gram 
-num_food<-2         # number of food items found (this should be a distribution)
-
 plot_interval<-5   # every x timestep a dot on the graph is added 
 
 
@@ -66,7 +65,7 @@ mat_mass<-matrix(NA,N,(T))              # matrix to keep track of mass of birds
 mass_init<-8+(rnorm(N, mean=0.2, sd=0.01))        # Gives initial mass from normal distribution
 sc_init<-0+(runif(N, min=0, max=stom_size))       # gives initial stomach content from equal distribution
 fr_init<-0+(runif(N, min=0, max=fat_max))         # gives initial fat reserves for random number between 0-4
-alive_init<-rep(1, 100)                           # all birds are alive at the start 
+alive_init<-rep(1, N )                            # all birds are alive at the start 
 # Put these in first column of the matrices  
 mat_alive[,1]<-alive_init
 mat_sc[,1]<-sc_init
@@ -104,7 +103,6 @@ mr<-45.65-(1.33*temp)
 for (t in 1:T){
   
   
-  
   ################################
   #      individual loops        # 
   ################################
@@ -113,6 +111,7 @@ for (t in 1:T){
   for (i in (1:N)){
     
     # Check if individual is alive? 
+    
     # in step 1 all birds are alive 
     if (t==1){
       mat_alive[i,t]==1
@@ -141,9 +140,9 @@ for (t in 1:T){
       print(paste0(' bird ', i, 'is dead'))
     }else{
       
-      #################
-      #  ALIVE BIRDS  #
-      #################
+    #################
+    #  ALIVE BIRDS  #
+    #################
       
       # Check what behavior the bird should do 
       
@@ -270,30 +269,33 @@ for (t in 1:T){
   
   # PLOT 
   # Make sure to plot every so often 
-   if ((t/plot_interval)==floor(t/plot_interval)){
+  
+  if ((t/plot_interval)==floor(t/plot_interval)){
     Sys.sleep(0.05)          # forces an update to the plotting window 
-    par(mfrow=c(3,2))
     # 1
-    plot(1:t, sc_mean[1,(1:t)], ylim=c(0,(stom_size+0.1)), ylab='Mean stomach content', xlab='timestep', main='Mean Sc', type='l')
+    plot1<-plot(1:t, sc_mean[1,(1:t)], ylim=c(0,(stom_size+0.1)), ylab='Mean stomach content', xlab='timestep', main='Mean Sc', type='l')
     abline(h=stom_size, col='red')
     # 2
-    plot(1:t, fr_mean[1,(1:t)], ylim=c(0,(fat_max+0.5)), ylab='Mean fat reserve', xlab='timestep', main='Mean Fr', type='l')
+    plot2<-plot(1:t, fr_mean[1,(1:t)], ylim=c(0,(fat_max+0.5)), ylab='Mean fat reserve', xlab='timestep', main='Mean Fr', type='l')
     abline(h=fat_max, col='red')
     # 3
-    plot(1:t, mass_mean[1,(1:t)], ylim=c(0,(20)), ylab='Mean mass', xlab='timestep', main='Mean mass', type='l')
+    plot3<-plot(1:t, mass_mean[1,(1:t)], ylim=c(0,(20)), ylab='Mean mass', xlab='timestep', main='Mean mass', type='l')
     # 4
-    plot(1:t, total_alive[1,(1:t)], ylim=c(0, N), ylab='Number of birds alive', xlab='Timestep', main='Number birds alive', type='l')
+    plot4<-plot(1:t, total_alive[1,(1:t)], ylim=c(0, N), ylab='Number of birds alive', xlab='Timestep', main='Number birds alive', type='l')
     # 5
-    plot(1:t, total_forage[1,(1:t)], ylim=c(0, N), ylab='Number of birds foraging', xlab='Timestep', main='Number birds foraging', type='l')
+    plot5<-plot(1:t, total_forage[1,(1:t)], ylim=c(0, N), ylab='Number of birds foraging', xlab='Timestep', main='Number birds foraging', type='l')
     # 6
-    plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
+    plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
     Sys.sleep(0)             # turns that back off 
    }# end if statement 
   
-
-  
   
 } # end of big timestep loop 
+
+  
+
+} # end the function 
+
 
 
 ### notes Tom 21/6/22
@@ -301,3 +303,4 @@ for (t in 1:T){
 # loop per individual 
 # loop 2: day part
 # loop 3: neight part 
+rest_or_forage(50, 50, -5, 0.1, 1)
