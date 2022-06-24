@@ -1,6 +1,6 @@
 #################################
 # Small bird in winter - ABM 
-# 20/06/2022
+# Start date: 20/06/2022
 # Vera Vinken 
 #################################
 
@@ -23,25 +23,28 @@
 # Check the distributions of initial values. Some of them are not normal distributuions 
 # check how the bmr is applied, hardcoded number in there right now. 
 # work temp in (into mbr; see point above) --> mass needs to be implemented here too 
+# the plot interval is not working properly 
 
 
-##    adressed in this version  ## 
+##    addressed in this version  ## 
 
-# Put everything in a function so it is easier to run 
 
-# NEXT STEP: PUT THE PLOTS IN THE OUTPUT 
 
 ##############################
 #       input parameters    # 
 ##############################
 
+# Use these if not running as function 
+
 T<-100              # number of timesteps
 N<-100              # number of individuals
 temp<-(-5)          # Temperature 
 th_forage_sc<-0.2   # threshold: if SC below this you forage 
-num_food<-2         # number of food items found (this should be a distribution)
+num_food<-1         # number of food items found (this should be a distribution)
 
-
+###############################
+#   Rest or Forage function   #
+###############################
 
 rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
 
@@ -137,7 +140,7 @@ for (t in 1:T){
     ################
     if(mat_alive[i,t]==0){
       # these are the dead birds 
-      print(paste0(' bird ', i, 'is dead'))
+      # print(paste0(' bird ', i, 'is dead'))
     }else{
       
     #################
@@ -267,10 +270,14 @@ for (t in 1:T){
   mass_mean[t]<-mean(mat_mass[,t], na.rm = TRUE)    # adds mean mass for this timestep to mean-matrix
   alive_mean[t]<-mean(mat_alive[,t], na.rm= TRUE)
   
-  # PLOT 
+  ####################
+  #      PLOT        #
+  ####################
+  
   # Make sure to plot every so often 
   
   if ((t/plot_interval)==floor(t/plot_interval)){
+    par(mfrow=c(3,2))
     Sys.sleep(0.05)          # forces an update to the plotting window 
     # 1
     plot1<-plot(1:t, sc_mean[1,(1:t)], ylim=c(0,(stom_size+0.1)), ylab='Mean stomach content', xlab='timestep', main='Mean Sc', type='l')
@@ -283,9 +290,16 @@ for (t in 1:T){
     # 4
     plot4<-plot(1:t, total_alive[1,(1:t)], ylim=c(0, N), ylab='Number of birds alive', xlab='Timestep', main='Number birds alive', type='l')
     # 5
-    plot5<-plot(1:t, total_forage[1,(1:t)], ylim=c(0, N), ylab='Number of birds foraging', xlab='Timestep', main='Number birds foraging', type='l')
+    plot5<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, N), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
+    
+    # Code to plot total number of birds foraging (omitted)
+    #plot5<-plot(1:t, (total_forage[1,(1:t)]), ylim=c(0, N), ylab='#', xlab='Timestep', main='Number of birds foraging', type='l')
+    
     # 6
-    plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
+    plot6<-plot(1:t, ((total_rest[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, N), ylab='%', xlab='Timestep', main='Percentage of alive birds resting', type='l')
+    
+    # Code to plot total number of birds resting (omitted)
+    # plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
     Sys.sleep(0)             # turns that back off 
    }# end if statement 
   
@@ -297,10 +311,20 @@ for (t in 1:T){
 } # end the function 
 
 
+##############################
+#    testing the function    # 
+#############################
+
+# Some testing values, varying the food items found 
+rest_or_forage(50, 50, -5, 0.1, 1)
+rest_or_forage(100,100,-5,0.2,2)
+rest_or_forage(100,100,-5,0.2,1)
+rest_or_forage(100,100,-5,0.2,1.5)
+
+
 
 ### notes Tom 21/6/22
 # loop 1: entire 24 hours
 # loop per individual 
 # loop 2: day part
 # loop 3: neight part 
-rest_or_forage(50, 50, -5, 0.1, 1)
