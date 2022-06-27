@@ -24,11 +24,13 @@
 # the plot interval is not working properly 
 # Sort whatever is not working in the final histograms when birds have died 
 # put predation in 
+# put night and day temperatures in 
+# add conversion factor from stomach to fat for 'everyone' part of alive birds durning the day
 
 
 ##    addressed in this version  ## 
 
-# Added fat reserves into the foraging rule (as they are in the NL model)
+# added 72 ticks per day with a 'forced' resting behaviour during the night
 
 
 ##############################
@@ -71,6 +73,8 @@ set_up_env<-function(T,N, temp){
   stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
   fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
   plot_interval<<-5   # every x timestep a dot on the graph is added 
+  start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
+  end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
   
   
   # create individual matrices (Global)
@@ -100,6 +104,7 @@ set_up_env<-function(T,N, temp){
   # count what the birds are up to (Global)
   forage_count<<-matrix(NA, N, (T))
   rest_count<<-matrix(NA, N, (T))
+  sleep_count<<-matrix(NA, N,T)
   # total number of birds doing behaviours (Global)
   total_forage<<-matrix(NA, 1, T)                  # total number of birds foraging each timestep
   total_rest<<-matrix(NA,1, T)                     # total number of birds resting each timestep 
@@ -132,6 +137,12 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
   # Start a for loop for each timestep 
   for (t in 1:T){
     
+    # Check if it is night or day 
+    if ((t%%72)>=9 && (t%%72<45)){
+      timeOfDay<<-1                       # this means it is day 
+    }else{
+      timeOfDay<<-0                       # this means it is night 
+    }
     
     ################################
     #      individual loops        # 
@@ -174,7 +185,32 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
       #  ALIVE BIRDS  #
       #################
         
-        # Check what behavior the bird should do 
+        # Check if the bird should be sleeping 
+        if(timeOfDay==0){
+          
+          ################
+          #   SLEEPING   # 
+          ################
+          
+          # set the sleeping matrix to 1 
+          sleep_count[i,t]<<-1
+          # set the forage to 0
+          forage_count[i, t]<<-0
+          # set the resting matrix to 0
+          rest_count[i,t]<<-0
+          
+          # set the BMR-multi
+          BMR_multi<<-1
+          
+          # Food will be moved from the stomach
+          # Into the fat reserves 
+          # and be burned depending on BMR-multi
+          # in the ' Everyone '  part of the code below
+        
+        
+          } else{
+        
+          # Check what behavior the bird should do 
         
         #################
         #     FORAGE    # 
@@ -208,8 +244,7 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
         ##################
         
         # CHECK IF RESTING 
-        # note that the threshold is coded in twice (both in forage and resting, could be an if-else)
-        if (((mat_sc[i,t])>=th_forage_sc) && (mat_fr[i,t]>=th_forage_fr)){
+        else{
           # SET COUNTING MATRICES 
           # in the other case the bird should rest 
           # set the forage matrix to 0
@@ -224,6 +259,8 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
           # the stomach content stays the same (initial value)
           
         } # end resting statement 
+        } # end of 'Time of day = day ' statement 
+        
         
         ###################
         #    EVERYONE     # 
@@ -360,14 +397,10 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
 
 # Some testing values, varying the food items found 
 rest_or_forage(50, 50, -5, 0.1, 1,1)
-rest_or_forage(100,100,-5,0.2,1,2)
+rest_or_forage(1000,100,-5,0.2,1,2)
 rest_or_forage(100,100,-5,0.2,1,1)
-rest_or_forage(100,100,-5,0.2,1,1.5)
+rest_or_forage(1000,100,-5,0.2,1,1.5)
 
 
 
-### notes Tom 21/6/22
-# loop 1: entire 24 hours
-# loop per individual 
-# loop 2: day part
-# loop 3: neight part 
+
