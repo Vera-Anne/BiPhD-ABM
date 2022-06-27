@@ -19,16 +19,17 @@
 
 # Build in night and day, which includes sleeping behaviour 
 # threshold for behaviour could depend on more things than stomach content 
-# Check the distributions of initial values. Some of them are not normal distributuions 
 # check how the bmr is applied, hardcoded number in there right now. 
 # work temp in (into mbr; see point above) --> mass needs to be implemented here too 
 # the plot interval is not working properly 
+# Sort whatever is not working in the final histograms when birds have died 
+# put predation in 
 
 
 ##    addressed in this version  ## 
 
-# worked on the initial value distributuions
-# created an option to graph these 
+# Added fat reserves into the foraging rule (as they are in the NL model)
+
 
 ##############################
 #      load packages         #
@@ -48,6 +49,7 @@ T<-100              # number of timesteps
 N<-100              # number of individuals
 temp<-(-5)          # Temperature 
 th_forage_sc<-0.2   # threshold: if SC below this you forage 
+th_forage_fr<-1     # threshold: if Fr below this you forage (AND above is true)
 num_food<-1         # number of food items found (this should be a distribution)
 
 
@@ -79,10 +81,10 @@ set_up_env<-function(T,N, temp){
   
   
   # fill in some initial values for agent variables  (global)
-  mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))       # Gives initial mass from normal distribution (Polo et al. 2007)
-  sc_init<<-0+(rtruncnorm(N, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))       # gives initial stomach content from equal distribution
+  mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
+  sc_init<<-0+(rtruncnorm(N, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
   fr_init<<-0+(rtruncnorm(N, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
-  alive_init<<-rep(1, N )                            # all birds are alive at the start 
+  alive_init<<-rep(1, N )                                                     # all birds are alive at the start 
   # Put these in first column of the matrices  
   mat_alive[,1]<<-alive_init
   mat_sc[,1]<<-sc_init
@@ -118,7 +120,7 @@ set_up_env<-function(T,N, temp){
 #   Rest or Forage function   #     # previously : Go function in Netlogo
 ###############################
 
-rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
+rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
 
   # Set up the environment: run environment function 
   set_up_env(T, N, temp)
@@ -179,7 +181,7 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
         #################
         
         # CHECK IF FORAGING 
-        if ((mat_sc[i,t]) < th_forage_sc){
+        if (((mat_sc[i,t]) < th_forage_sc) && (mat_fr[i,t]<th_forage_fr)){
           # SET COUNTING MATRICES 
           # In this case the bird should forage
           # set the forage to 1
@@ -197,7 +199,7 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
           }
           # Set the BMR to the right level: cost of foraging
           # BMR-multi is not a global variable: stays local with the agent
-          BMR_multi<-8
+          BMR_multi<<-8
         } # ends the foraging statement
         
         
@@ -207,7 +209,7 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
         
         # CHECK IF RESTING 
         # note that the threshold is coded in twice (both in forage and resting, could be an if-else)
-        if ((mat_sc[i,t])>=th_forage_sc){
+        if (((mat_sc[i,t])>=th_forage_sc) && (mat_fr[i,t]>=th_forage_fr)){
           # SET COUNTING MATRICES 
           # in the other case the bird should rest 
           # set the forage matrix to 0
@@ -218,7 +220,7 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
           # SET AGENT OWNED VARIABLES 
           # Set the BMR to the right level: cost of foraging
           # BMR multi is local and stays with the agent 
-          BMR_multi<-1.95
+          BMR_multi<<-1.95
           # the stomach content stays the same (initial value)
           
         } # end resting statement 
@@ -335,15 +337,17 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
     
   } # end of big timestep loop 
   
+  # create variable with the number of the last timesstep done 
+  last_T<<-T
   # Plot some initial distributions if wanted 
   if(plot_init_value==1){
     par(mfrow=c(2,3))
     hist(mass_init)
     hist(fr_init)
     hist(sc_init)
-    hist(mat_mass[,T])
-    hist(mat_fr[,T])
-    hist(mat_sc[,T])
+    hist(mat_mass[,last_T], main='mass at last T')
+    hist(mat_fr[,last_T], main='Fr at last T')
+    hist(mat_sc[,last_T], main='Sc at last T')
   }
   
 
@@ -355,10 +359,10 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, num_food){
 #############################
 
 # Some testing values, varying the food items found 
-rest_or_forage(50, 50, -5, 0.1, 1)
-rest_or_forage(100,100,-5,0.2,2)
-rest_or_forage(100,100,-5,0.2,1)
-rest_or_forage(100,100,-5,0.2,1.5)
+rest_or_forage(50, 50, -5, 0.1, 1,1)
+rest_or_forage(100,100,-5,0.2,1,2)
+rest_or_forage(100,100,-5,0.2,1,1)
+rest_or_forage(100,100,-5,0.2,1,1.5)
 
 
 
