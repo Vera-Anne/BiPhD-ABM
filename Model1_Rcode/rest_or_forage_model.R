@@ -17,8 +17,6 @@
 
 ##    Steps for next model      ## 
 
-# Build in night and day, which includes sleeping behaviour 
-# threshold for behaviour could depend on more things than stomach content 
 # check how the bmr is applied, hardcoded number in there right now. 
 # work temp in (into mbr; see point above) --> mass needs to be implemented here too 
 # the plot interval is not working properly 
@@ -72,7 +70,7 @@ set_up_env<-function(T,N, temp){
   stom_size<<-0.4      # stomach size of the bird 
   stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
   fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
-  plot_interval<<-5   # every x timestep a dot on the graph is added 
+  plot_interval<<-10   # every x timestep a dot on the graph is added 
   start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
   end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
   
@@ -114,8 +112,15 @@ set_up_env<-function(T,N, temp){
   # this doesnt work cause it gets negative values
   # food_distr<-rnorm(100, mean=0.192, sd=0.4)
   
-  # Sort metabolic rates 
-  mr<<-45.65-(1.33*temp)
+  # set metabolic rates (function )
+  
+  mr_function<<-function(temp){                       # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
+    mr_cur<<-45.65-(1.33*temp)
+  }
+  
+  bmr_function<<-function(mr_cur, mass_cur){          # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
+    bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)    # please note that the 0.00616 is for 20 min intervals 
+  }
   
 
 } # end set-up function 
@@ -184,6 +189,16 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
       #################
       #  ALIVE BIRDS  #
       #################
+        
+        # Set the current BMR 
+        # Note: I have made the decision to calculate this at the start of the tick. 
+        # So this is before any behaviour, or food is moved around 
+        # set the current mass 
+        mass_cur<<-mat_mass[i,t]
+        # calculate the current mr 
+        mr_function(temp)                                   # note that this will need to be changed if we're using different temperatures
+        # calculate the current 
+        bmr_function(mr_cur, mass_cur)
         
         # Check if the bird should be sleeping 
         if(timeOfDay==0){
@@ -280,8 +295,9 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
         
         # ENERGY EXPENDITURE 
         # Set the fat reserves down depending on bmr-multi
+        
         # first subtract the amount
-        mat_fr[i,(t)]<<-(mat_fr[i,t]-(0.0134*BMR_multi))
+        mat_fr[i,(t)]<<-(mat_fr[i,t]-(bmr_cur*BMR_multi))
         # then make sure if this doesnt go below 0 
         if((mat_fr[i,(t)]<0)){
           mat_fr[i,(t)]<<-0
@@ -396,11 +412,19 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
 #############################
 
 # Some testing values, varying the food items found 
+
+# vary with number of food found 
 rest_or_forage(50, 50, -5, 0.1, 1,1)
 rest_or_forage(1000,100,-5,0.2,1,2)
 rest_or_forage(100,100,-5,0.2,1,1)
 rest_or_forage(1000,100,-5,0.2,1,1.5)
 
+# vary temperature 
+rest_or_forage(1000,100,-50,0.2,1,2)
+rest_or_forage(1000,100,-15,0.2,1,2)
+rest_or_forage(1000,100,-10,0.2,1,2)
+rest_or_forage(1000,100,-5,0.2,1,2)
+rest_or_forage(1000,100,-7,0.2,1,2)
 
 
 
