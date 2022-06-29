@@ -17,8 +17,6 @@
 
 ##    Steps for next model      ## 
 
-# check how the bmr is applied, hardcoded number in there right now. 
-# work temp in (into mbr; see point above) --> mass needs to be implemented here too 
 # the plot interval is not working properly 
 # Sort whatever is not working in the final histograms when birds have died 
 # put predation in 
@@ -28,7 +26,7 @@
 
 ##    addressed in this version  ## 
 
-# added 72 ticks per day with a 'forced' resting behaviour during the night
+# put in night and day temperatures 
 
 
 ##############################
@@ -58,7 +56,7 @@ num_food<-1         # number of food items found (this should be a distribution)
 #  set-up environment function   #
 ##################################
 
-set_up_env<-function(T,N, temp){
+set_up_env<-function(T,N, temp_cur){
   
   # Want to plot some initial value graphs? 
   # 1 for yes, 0 for no 
@@ -114,8 +112,8 @@ set_up_env<-function(T,N, temp){
   
   # set metabolic rates (function )
   
-  mr_function<<-function(temp){                       # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
-    mr_cur<<-45.65-(1.33*temp)
+  mr_function<<-function(temp_cur){                       # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
+    mr_cur<<-45.65-(1.33*temp_cur)
   }
   
   bmr_function<<-function(mr_cur, mass_cur){          # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
@@ -130,10 +128,10 @@ set_up_env<-function(T,N, temp){
 #   Rest or Forage function   #     # previously : Go function in Netlogo
 ###############################
 
-rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
+rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food){
 
   # Set up the environment: run environment function 
-  set_up_env(T, N, temp)
+  set_up_env(T, N, temp_cur)              # could be a problem that temp-cur is not known atm. 
 
   ###################################
   #   start the for loop  timesteps # 
@@ -145,8 +143,10 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
     # Check if it is night or day 
     if ((t%%72)>=9 && (t%%72<45)){
       timeOfDay<<-1                       # this means it is day 
+      temp_cur<<-temp_day
     }else{
       timeOfDay<<-0                       # this means it is night 
+      temp_cur<<-temp_night
     }
     
     ################################
@@ -196,7 +196,7 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
         # set the current mass 
         mass_cur<<-mat_mass[i,t]
         # calculate the current mr 
-        mr_function(temp)                                   # note that this will need to be changed if we're using different temperatures
+        mr_function(temp_cur)                                   # note that this will need to be changed if we're using different temperatures
         # calculate the current 
         bmr_function(mr_cur, mass_cur)
         
@@ -413,18 +413,20 @@ rest_or_forage<-function(T, N, temp, th_forage_sc, th_forage_fr, num_food){
 
 # Some testing values, varying the food items found 
 
+# REST_OR_FORAGE (timesteps, individuals, daytemp, nighttemp, th_forage_sc, th_forage_fr, number food found)
+
 # vary with number of food found 
-rest_or_forage(50, 50, -5, 0.1, 1,1)
-rest_or_forage(1000,100,-5,0.2,1,2)
-rest_or_forage(100,100,-5,0.2,1,1)
-rest_or_forage(1000,100,-5,0.2,1,1.5)
+rest_or_forage(50, 50, -5,-5, 0.1, 1,1)
+rest_or_forage(1000,100,-5,-5, 0.2,1,2)
+rest_or_forage(100,100,-5, -5, 0.2,1,1)
+rest_or_forage(1000,100,-5, -5, 0.2,1,1.5)
 
 # vary temperature 
-rest_or_forage(1000,100,-50,0.2,1,2)
-rest_or_forage(1000,100,-15,0.2,1,2)
-rest_or_forage(1000,100,-10,0.2,1,2)
-rest_or_forage(1000,100,-5,0.2,1,2)
-rest_or_forage(1000,100,-7,0.2,1,2)
+rest_or_forage(1000,100,-5, -50,0.2,1,2)
+rest_or_forage(1000,100,-5, -15,0.2,1,2) # at -15 we see some birds start to die at night
+rest_or_forage(1000,100,-5, -10,0.2,1,2)
+rest_or_forage(1000,100,-5, -5,0.2,1,2)
+rest_or_forage(1000,100,-5, -7,0.2,1,2)
 
-
+rest_or_forage(1000,100,-15, -5,0.2,1,2)
 
