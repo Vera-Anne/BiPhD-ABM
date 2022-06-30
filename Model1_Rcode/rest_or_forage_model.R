@@ -20,14 +20,13 @@
 # the plot interval is not working properly 
 # Sort whatever is not working in the final histograms when birds have died 
 # put predation in 
-# put night and day temperatures in 
 # add conversion factor from stomach to fat for 'everyone' part of alive birds durning the day
 
 
 ##    addressed in this version  ## 
 
-# put in night and day temperatures 
-
+# Adding a food distribution, instead of a set number of items found 
+# fixed a bug in the % graphs 
 
 ##############################
 #      load packages         #
@@ -56,7 +55,7 @@ num_food<-1         # number of food items found (this should be a distribution)
 #  set-up environment function   #
 ##################################
 
-set_up_env<-function(T,N, temp_cur){
+set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   
   # Want to plot some initial value graphs? 
   # 1 for yes, 0 for no 
@@ -72,6 +71,9 @@ set_up_env<-function(T,N, temp_cur){
   start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
   end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
   
+  # Do some calculations for food distributions: 
+  gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
+  gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
   
   # create individual matrices (Global)
   mat_alive<<-matrix(NA, N, (T))           # matrix to keep track of who's alive 
@@ -128,10 +130,10 @@ set_up_env<-function(T,N, temp_cur){
 #   Rest or Forage function   #     # previously : Go function in Netlogo
 ###############################
 
-rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food){
+rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max){
 
   # Set up the environment: run environment function 
-  set_up_env(T, N, temp_cur)              # could be a problem that temp-cur is not known atm. 
+  set_up_env(T, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
 
   ###################################
   #   start the for loop  timesteps # 
@@ -241,8 +243,13 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
           rest_count[i,t]<<-0
           
           # UPDATE AGENT OWNED VARIABLES 
+          # First, calculate how much food the bird finds 
+          food_cur<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0.1)
+          # now round this up/down to the closest number of items (a bird cannot find half items)
+          # then move this back to grams 
+          food_cur<<-((round(food_cur/food_item))*food_item)
           # Now, increase the stomach content
-          mat_sc[i,(t)]<<-(mat_sc[i,t])+(num_food*food_item)
+          mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_cur)
           # now check if this doesnt exceed the stomach size 
           # if so, set the stomach content to stomach size 
           if (mat_sc[i,(t)]>stom_size){
@@ -374,13 +381,13 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
       # 4
       plot4<-plot(1:t, total_alive[1,(1:t)], ylim=c(0, N), ylab='Number of birds alive', xlab='Timestep', main='Number birds alive', type='l')
       # 5
-      plot5<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, N), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
+      plot5<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
       
       # Code to plot total number of birds foraging (omitted)
       #plot5<-plot(1:t, (total_forage[1,(1:t)]), ylim=c(0, N), ylab='#', xlab='Timestep', main='Number of birds foraging', type='l')
       
       # 6
-      plot6<-plot(1:t, ((total_rest[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, N), ylab='%', xlab='Timestep', main='Percentage of alive birds resting', type='l')
+      plot6<-plot(1:t, ((total_rest[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds resting', type='l')
       
       # Code to plot total number of birds resting (omitted)
       # plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
@@ -416,17 +423,17 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
 # REST_OR_FORAGE (timesteps, individuals, daytemp, nighttemp, th_forage_sc, th_forage_fr, number food found)
 
 # vary with number of food found 
-rest_or_forage(50, 50, -5,-5, 0.1, 1,1)
-rest_or_forage(1000,100,-5,-5, 0.2,1,2)
-rest_or_forage(100,100,-5, -5, 0.2,1,1)
-rest_or_forage(1000,100,-5, -5, 0.2,1,1.5)
+rest_or_forage(50, 50, -5,-5, 0.1, 1,3,6)
+rest_or_forage(1000,100,-5,-5, 0.2,1,2,4)
+rest_or_forage(1000,100,-5, -5, 0.2,1,3,6)
+rest_or_forage(1000,100,-5, -5, 0.2,1,1,2)
 
 # vary temperature 
-rest_or_forage(1000,100,-5, -50,0.2,1,2)
-rest_or_forage(1000,100,-5, -15,0.2,1,2) # at -15 we see some birds start to die at night
-rest_or_forage(1000,100,-5, -10,0.2,1,2)
-rest_or_forage(1000,100,-5, -5,0.2,1,2)
-rest_or_forage(1000,100,-5, -7,0.2,1,2)
+rest_or_forage(1000,100,-5, -50,0.2,1,3,6)
+rest_or_forage(1000,100,-5, -15,0.2,1,3,6) # at -15 we see some birds start to die at night
+rest_or_forage(1000,100,-5, -10,0.2,1,3,6)
+rest_or_forage(1000,100,-5, -5,0.2,1,3,6)
+rest_or_forage(1000,100,-5, -7,0.2,1,3,6)
 
-rest_or_forage(1000,100,-15, -5,0.2,1,2)
+rest_or_forage(1000,100,-15, -5,0.2,1,3,6)
 
