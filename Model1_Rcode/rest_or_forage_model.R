@@ -25,8 +25,7 @@
 
 ##    addressed in this version  ## 
 
-# Adding a food distribution, instead of a set number of items found 
-# fixed a bug in the % graphs 
+# Some changes in the final histograms 
 
 ##############################
 #      load packages         #
@@ -402,12 +401,12 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
   # Plot some initial distributions if wanted 
   if(plot_init_value==1){
     par(mfrow=c(2,3))
-    hist(mass_init)
-    hist(fr_init)
-    hist(sc_init)
-    hist(mat_mass[,last_T], main='mass at last T')
-    hist(mat_fr[,last_T], main='Fr at last T')
-    hist(mat_sc[,last_T], main='Sc at last T')
+    hist(mass_init, xlim=c(8,9),ylim=c(0,40), breaks=5)
+    hist(fr_init, xlim=c(0,4),ylim=c(0,40), breaks=5)
+    hist(sc_init, xlim=c(0,0.3),ylim=c(0,40), breaks=5)
+    hist(mat_mass[,last_T], main='mass at last T', xlim=c(8,9),ylim=c(0,40), breaks=5)
+    hist(mat_fr[,last_T], main='Fr at last T', xlim=c(0,4),ylim=c(0,40), breaks=5)
+    hist(mat_sc[,last_T], main='Sc at last T',xlim=c(0,0.3),ylim=c(0,40), breaks=5)
   }
   
 
@@ -436,4 +435,7 @@ rest_or_forage(1000,100,-5, -5,0.2,1,3,6)
 rest_or_forage(1000,100,-5, -7,0.2,1,3,6)
 
 rest_or_forage(1000,100,-15, -5,0.2,1,3,6)
+
+# run for 30 days 
+rest_or_forage(2160,100,-5,-5,0.2,1,3,6)
 
