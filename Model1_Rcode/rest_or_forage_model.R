@@ -17,7 +17,6 @@
 
 ##    Steps for next model      ## 
 
-# the plot interval is not working properly 
 # Sort whatever is not working in the final histograms when birds have died 
 # put predation in 
 # add conversion factor from stomach to fat for 'everyone' part of alive birds durning the day
@@ -25,7 +24,10 @@
 
 ##    addressed in this version  ## 
 
-# Some changes in the final histograms 
+# added 'noplot' 
+# optimize for survival
+# we will optimize the threshold stomach-sc. 
+
 
 ##############################
 #      load packages         #
@@ -34,6 +36,7 @@ library(usethis)
 library(devtools)
 # install_github("olafmersmann/truncnorm")
 library(truncnorm)
+library(pracma)
 
 ##############################
 #       input parameters    # 
@@ -44,9 +47,14 @@ library(truncnorm)
 T<-100              # number of timesteps
 N<-100              # number of individuals
 temp<-(-5)          # Temperature 
+temp_day<<--5
+temp_night<<--5
 th_forage_sc<-0.2   # threshold: if SC below this you forage 
 th_forage_fr<-1     # threshold: if Fr below this you forage (AND above is true)
 num_food<-1         # number of food items found (this should be a distribution)
+num_food_max<-6
+num_food_mean<-3
+noplot<-1 
 
 
 
@@ -58,7 +66,8 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   
   # Want to plot some initial value graphs? 
   # 1 for yes, 0 for no 
-  plot_init_value<<-1 
+  plot_init_value<<-0
+ 
   
   
    # Set up some parameters (Global)
@@ -66,7 +75,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   stom_size<<-0.4      # stomach size of the bird 
   stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
   fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
-  plot_interval<<-10   # every x timestep a dot on the graph is added 
+  plot_interval<<-50   # every x timestep a dot on the graph is added 
   start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
   end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
   
@@ -129,7 +138,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
 #   Rest or Forage function   #     # previously : Go function in Netlogo
 ###############################
 
-rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max){
+rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
 
   # Set up the environment: run environment function 
   set_up_env(T, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
@@ -366,7 +375,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     # Make sure to plot every so often 
     # plots are local for now, this can be changed later 
     
-    if ((t/plot_interval)==floor(t/plot_interval)){
+    if ((t/plot_interval)==floor(t/plot_interval) && noplot==0 ){
       par(mfrow=c(3,2))
       Sys.sleep(0.05)          # forces an update to the plotting window 
       # 1
@@ -409,6 +418,9 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     hist(mat_sc[,last_T], main='Sc at last T',xlim=c(0,0.3),ylim=c(0,40), breaks=5)
   }
   
+  birds_alive_at_end<<-alive_mean[last_T]
+  print(paste0('rest_forage function did run'))
+  
 
 } # end the rest/forage function 
 
@@ -419,23 +431,75 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
 
 # Some testing values, varying the food items found 
 
-# REST_OR_FORAGE (timesteps, individuals, daytemp, nighttemp, th_forage_sc, th_forage_fr, number food found)
+# REST_OR_FORAGE (timesteps, individuals, daytemp, nighttemp, th_forage_sc, th_forage_fr, mean-food, max-food)
 
 # vary with number of food found 
-rest_or_forage(50, 50, -5,-5, 0.1, 1,3,6)
-rest_or_forage(1000,100,-5,-5, 0.2,1,2,4)
-rest_or_forage(1000,100,-5, -5, 0.2,1,3,6)
-rest_or_forage(1000,100,-5, -5, 0.2,1,1,2)
+# rest_or_forage(50, 50, -5,-5, 0.1, 1,3,6)
+# rest_or_forage(1000,100,-5,-5, 0.2,1,2,4)
+# rest_or_forage(1000,100,-5, -5, 0.2,1,3,6)
+# rest_or_forage(1000,100,-5, -5, 0.2,1,1,2)
+# 
+# # vary temperature 
+# rest_or_forage(1000,100,-5, -5,0.2,1,3,6)
+# rest_or_forage(1000,100,-5, -15,0.2,1,3,6) # at -15 we see some birds start to die at night
+# rest_or_forage(1000,100,-5, -10,0.2,1,3,6)
+# rest_or_forage(1000,100,-5, -5,0.2,1,3,6)
+# rest_or_forage(1000,100,-5, -7,0.2,1,3,6)
+# 
+# rest_or_forage(1000,100,-15, -5,0.2,1,3,6)
+# 
+# # run for 30 days 
+# rest_or_forage(2160,100,-5,-5,0.2,1,3,6)
+# rest_or_forage(2160,100,-5,-5,0.2,1,2,4)
+# rest_or_forage(2160,100,-5,-5,0.2,1,2.5,6)
+# 
+# # vary the forage sc threshold 
+# rest_or_forage(2160,100,-5,-5,0.2,1,3,6, 0)
+# rest_or_forage(2160,100,-5,-5,0.4,1,3,6, 0)
+# rest_or_forage(2160,100,-5,-5,0.3,1,3,6, 0)
+# rest_or_forage(2160,100,-5,-5,0.1,1,3,6, 0)
 
-# vary temperature 
-rest_or_forage(1000,100,-5, -50,0.2,1,3,6)
-rest_or_forage(1000,100,-5, -15,0.2,1,3,6) # at -15 we see some birds start to die at night
-rest_or_forage(1000,100,-5, -10,0.2,1,3,6)
-rest_or_forage(1000,100,-5, -5,0.2,1,3,6)
-rest_or_forage(1000,100,-5, -7,0.2,1,3,6)
 
-rest_or_forage(1000,100,-15, -5,0.2,1,3,6)
 
-# run for 30 days 
-rest_or_forage(2160,100,-5,-5,0.2,1,3,6)
 
+#############################
+#  optimization function    # 
+#############################
+optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
+    # creates 100 values between 0 and 0.4, evenly spaced 
+    th_forage_sc<<-linspace(th_sc_min, th_sc_max, n=100)
+    
+    # now create a space to save the survival for each different value fo th_forage_sc 
+    survival_end<<-matrix(NA, 1, length(th_forage_sc))
+    
+  
+    for (th in 1:length(th_forage_sc)){
+      # Run the rest_forage function for each th_forage_sc that you have created. 
+      # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
+      # determine the current threshold for each loop 
+      current_th_sc<<-th_forage_sc[th]
+      # now run 
+        rest_or_forage(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
+      # add to the previously created matrix
+        
+        
+        
+      # PROBLEM IS LOCATED HERE 
+      survival_end[1,th]<-birds_alive_at_end
+    } # end of optimization for loop 
+    
+    # in the end, plot the whole thing 
+    par(mfrow=c(1,1))
+    plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ) )
+    
+    # for checking during coding 
+    print(paste0('optimization th_sc function did run'))
+  } # end of optimization function 
+
+
+############################
+#  testing optimization    # 
+############################
+
+# now run the optimization function 
+optimize_foraging(2160,100,-5,-5,1,3,6,1, 0, 0.4)
