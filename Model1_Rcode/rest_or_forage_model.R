@@ -419,7 +419,9 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
   }
   
   birds_alive_at_end<<-alive_mean[last_T]
-  print(paste0('rest_forage function did run'))
+  if (exists('current_th_sc')){
+  print(paste0('rest_forage function did run for:', current_th_sc))
+  }
   
 
 } # end the rest/forage function 
@@ -454,10 +456,10 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
 # rest_or_forage(2160,100,-5,-5,0.2,1,2.5,6)
 # 
 # # vary the forage sc threshold 
-# rest_or_forage(2160,100,-5,-5,0.2,1,3,6, 0)
+ rest_or_forage(2160,100,-5,-5,0.2,1,3,6, 0)
 # rest_or_forage(2160,100,-5,-5,0.4,1,3,6, 0)
 # rest_or_forage(2160,100,-5,-5,0.3,1,3,6, 0)
-# rest_or_forage(2160,100,-5,-5,0.1,1,3,6, 0)
+ rest_or_forage(2160,100,-5,-5,0.1,1,3,6, 0)
 
 
 
@@ -474,6 +476,8 @@ optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_m
     
   
     for (th in 1:length(th_forage_sc)){
+     
+      
       # Run the rest_forage function for each th_forage_sc that you have created. 
       # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
       # determine the current threshold for each loop 
@@ -490,16 +494,34 @@ optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_m
     
     # in the end, plot the whole thing 
     par(mfrow=c(1,1))
-    plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ) )
+    plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
     
     # for checking during coding 
-    print(paste0('optimization th_sc function did run'))
+    print(paste0('optimization th_sc function did run' ))
   } # end of optimization function 
 
 
-############################
-#  testing optimization    # 
-############################
+##################################
+#  testing optimization th-sc    # 
+##################################
 
 # now run the optimization function 
-optimize_foraging(2160,100,-5,-5,1,3,6,1, 0, 0.4)
+optimize_foraging(2160,100,-5,-5,1,3,6,1, 0, 0.4)         # full version 
+optimize_foraging(360,50,-5,-5,1,3,6,1, 0, 0.4)           # 5 day version with 50 birds (quicker to run)
+
+# What if there isnt as much food? 
+optimize_foraging(2160,100,-5,-5,1,2,4,1, 0, 0.4)         # everybody dies :'( 
+optimize_foraging(2160,100,-5,-5,1,2.5,5,1, 0, 0.4)       # in between result? 
+
+# what if we vary the temperatures 
+optimize_foraging(2160,100,-10,-10,1,3,6,1, 0, 0.4)       # colder
+optimize_foraging(2160,100,10,10,1,3,6,1, 0, 0.4)         # warmer 
+optimize_foraging(2160,100,-15,-15,1,3,6,1, 0, 0.4)       # very cold  
+
+
+# just testing some code 
+for (t in 1:10){
+  if (exists('t')){
+    print(paste0('hello'))
+  }
+}
