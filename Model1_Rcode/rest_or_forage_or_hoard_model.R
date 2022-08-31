@@ -518,7 +518,7 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
   for (t in 1:T){
     
     # Check if it is night or day 
-      if ((t%%72)>=27 && (t%%72<45)){
+      if ((t%%72)>=start_day && (t%%72<end_day)){
         dayOrNight<<-1                       # this means it is day 
         temp_cur<<-temp_day
       }else{
@@ -892,13 +892,17 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
       plot8<-plot(1:t, ((total_eat_hoard[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds eat-hoarding', type='l')
       
       Sys.sleep(0)             # turns that back off 
-    }# end if statement 
+    }# end if statement for plots
+    
+    
     
     
   } # end of big timestep loop 
   
+
   # create variable with the number of the last timesstep done 
   last_T<<-T
+  
   # Plot some initial distributions if wanted 
   if(plot_init_value==1){
     par(mfrow=c(2,3))
@@ -924,6 +928,12 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     }
   }
   
+  # SAVE LINE PLOTS 
+  # only needs to happen at the end of the timeloop
+  # Will also save all the parameter settings
+  
+  jpeg(file=paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.jpeg'))
+  
   
 } # end the rest/forage/hoard function 
 
@@ -934,6 +944,11 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
 
 rest_or_eat_or_eatHoard(2160, 100, -5, -5, 0.2, 1, 3, 6, 0)
 
+# 60 days instead 
+rest_or_eat_or_eatHoard(4320, 100, -5, -5, 0.2, 1, 3, 6, 0)
+
+# colder
+rest_or_eat_or_eatHoard(2160, 100, -10, -10, 0.2, 1, 3, 6, 0)
 
 
 ##############################
