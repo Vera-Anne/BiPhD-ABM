@@ -27,11 +27,13 @@
 # Check if the cost for retrieval needs to depend on number of caches retrieved
 # Why does stomach content not drop to 0? 
 # There is no predation in this model 
+# fix the bmr multi for retrieval 
+# check if all the bmr funxtions are correct 
 
 
 ##    addressed in this version  ## 
 
-# automatic saving 
+# automatic saving of 3D graph 
 
 
 
@@ -47,7 +49,8 @@ library(ggplot2)
 library(plotly) # for 3D surface plot 
 library(rgl)
 library(plot3D)
-
+library(htmlwidgets)
+library(webshot)
 
 ##############################
 #       input parameters    # 
@@ -68,9 +71,6 @@ num_food_mean<-3
 num_cache_min<-50
 num_cache_max<-100
 noplot<-1 
-
-
-
 
 ##################################
 #  set-up environment function   #
@@ -111,7 +111,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   fr_init<<-0+(rtruncnorm(N, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
   alive_init<<-rep(1, N )                                                     # all birds are alive at the start 
   caches_init<<-round(0+(rtruncnorm(N, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
-    
+  
   # Put these in first column of the matrices  
   mat_alive [,1]<<-alive_init
   mat_sc[,1]<<-sc_init
@@ -147,16 +147,16 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   # food_distr<-rnorm(100, mean=0.192, sd=0.4)
   
   # set metabolic rates (function )
-    mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
+  mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
     mr_cur<<-45.65-(1.33*temp_cur)
-    }
+  }
   
-    bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
+  bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
     bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
-    }
-    
+  }
+  
   # Do some calculations for the daylength etc. 
-    daylength<<-(end_day-start_day-1)
+  daylength<<-(end_day-start_day-1)
   
   
 } # end set-up function 
@@ -166,7 +166,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
 #   Rest or Forage function   #     # As in rest_or_forage (don't touch right now)
 ###############################
 
- rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
+rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
   
   # Set up the environment: run environment function 
   set_up_env(T, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
@@ -460,6 +460,22 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
     }
   }
   
+  if(!exists('opt_type')){
+    print(paste0('ready to save plots'))
+    # SAVE LINE PLOTS 
+    # only needs to happen at the end of the timeloop
+    # Will also save all the parameter settings
+    
+    # for uni desktop 
+    # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    # for uni laptop 
+    # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/','Plot_Rest_forage_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    
+    # local on VERA account - works on both laptop and desktop 
+    dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/', 'Plot_Rest_forage_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    
+  }
+  
   
 } # end the rest/forage function 
 
@@ -487,7 +503,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
 # rest_or_forage(1000,100,-15, -5,0.2,1,3,6)
 # 
 # # run for 30 days 
-# rest_or_forage(2160,100,-5,-5,0.2,1,3,6)
+rest_or_forage(2160,100,-5,-5,0.2,1,3,6, 0)
 # rest_or_forage(2160,100,-5,-5,0.2,1,2,4)
 # rest_or_forage(2160,100,-5,-5,0.2,1,2.5,6)
 # 
@@ -520,14 +536,14 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
   for (t in 1:T){
     
     # Check if it is night or day 
-      if ((t%%72)>=start_day && (t%%72<end_day)){
-        dayOrNight<<-1                       # this means it is day 
-        temp_cur<<-temp_day
-      }else{
-        dayOrNight<<-0                       # this means it is night 
-        temp_cur<<-temp_night
-      }
-      
+    if ((t%%72)>=start_day && (t%%72<end_day)){
+      dayOrNight<<-1                       # this means it is day 
+      temp_cur<<-temp_day
+    }else{
+      dayOrNight<<-0                       # this means it is night 
+      temp_cur<<-temp_night
+    }
+    
     ################################
     #      individual loops        # 
     ################################
@@ -555,7 +571,6 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
       else{
         mat_alive[i,t]<<-1
       }
-      
       
       ################
       #  DEAD BIRDS  #
@@ -607,7 +622,6 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
           # and be burned depending on BMR-multi
           # in the ' Everyone '  part of the code below
           
-          
         } else{
           
           # set the sleeping matrix to 0 
@@ -636,135 +650,128 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
             #       2. Find new item and eat it (done after this)
             #       3. Find new item and eat it till full, hoard after this 
             
-              ###################
-              #    RETRIEVE     # 
-              ###################
+            ###################
+            #    RETRIEVE     # 
+            ###################
+            
+            # DETERMINE CURRENT RETRIEVAL THRESHOLD 
+            # What is the time of day?
+            cur_timestep_in72<<-t%%72                                 # this gives the timestep within the 24 hour (72 timesteps)
+            cur_timestep_inDaylight<<-(cur_timestep_in72-start_day)   # gives the timestep within the time that there is daylight 
+            add_each_step<<-(0.63/(end_day-start_day))                # determines how much to add for each hour of daylight (0.63 is total adding for a day)
+            # The threshold is supposed to increase from 0.12 to 0.75
+            # 0.12 is the minimum needed to survive if foraging wouldnt be succesful 
+            # 0.75 is the minimum needed to survive the night 
+            # note that these are based on the netlogo values. Talk to tom to see if these need adapting 
+            cur_th_retrieval<<-(cur_timestep_inDaylight*add_each_step)+0.12
+            
+            # CHECK IF BIRD IS RETRIEVING 
+            if ((mat_fr[i,t]<cur_th_retrieval)&& (mat_caches[i,t]>retrieve_min)){
               
-              # DETERMINE CURRENT RETRIEVAL THRESHOLD 
-              # What is the time of day?
-              cur_timestep_in72<<-t%%72                                 # this gives the timestep within the 24 hour (72 timesteps)
-              cur_timestep_inDaylight<<-(cur_timestep_in72-start_day)   # gives the timestep within the time that there is daylight 
-              add_each_step<<-(0.63/(end_day-start_day))                # determines how much to add for each hour of daylight (0.63 is total adding for a day)
-              # The threshold is supposed to increase from 0.12 to 0.75
-              # 0.12 is the minimum needed to survive if foraging wouldnt be succesful 
-              # 0.75 is the minimum needed to survive the night 
-              # note that these are based on the netlogo values. Talk to tom to see if these need adapting 
-              cur_th_retrieval<<-(cur_timestep_inDaylight*add_each_step)+0.12
+              # The bird will retrieve: update global counters
+              retrieve_count[i, t]<<-1
+              eat_count[i,t]<<-0
+              eat_hoard_count[i,t]<<-0 
               
-               # CHECK IF BIRD IS RETRIEVING 
-              if ((mat_fr[i,t]<cur_th_retrieval)&& (mat_caches[i,t]>retrieve_min)){
+              # determine how many caches are retrieved
+              cur_stomach_space<<-(stom_size-mat_sc[i,t])                     # What is the space left in the stomach?
+              cur_caches_retrieved<<-((round(cur_stomach_space/food_item)))   # how many caches to fill this back up 
+              mat_caches[i,t]<<-(mat_caches[i, (t)]-cur_caches_retrieved)     # update the number of cahches that are left 
+              
+              # update the stomach content 
+              food_g_retrieved<<-cur_caches_retrieved*food_item               # retrieved food in grams 
+              mat_sc[i,t]<<-((mat_sc[i,t])+food_g_retrieved)                  # Add the food to the stomach content 
+              
+              
+              # set 'food_cur' to correct value in grams 
+              # set new BMR multi for retriaval behaviour 
+              # I need to check if this should be depending on the number of caches that are retrieved
+              BMR_multi<<-8
+              
+            }
+            
+            else{
+              # If the bird is foraging, but not retrieving, it will eat-hoard or eat the food 
+              # Either way, it will need to find food first 
+              
+              # update the global counting variable
+              retrieve_count[i,t]<<-0
+              
+              # FIND FOOD FROM NORMAL DISTRIBUTION AND DECIDE BEHAVIOUR 
+              # First, calculate how much food the bird finds 
+              food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0.1)
+              # now round this up/down to the closest number of items (a bird cannot find half items)
+              # then move this back to grams 
+              food_g_found<<-((round(food_g_found/food_item))*food_item)
+              # Food is found, we need to check how much it is and if the bird will hoard the surpluss 
+              
+              # First, increase the stomach content with whatever food is found
+              mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_g_found)
+              # now check if this exceeds the stomach size 
+              if (mat_sc[i,(t)]>stom_size){
+                # This means the bird found more than it can eat
+                # It will hoard the surpluss 
                 
-                # The bird will retrieve: update global counters
-                retrieve_count[i, t]<<-1
+                ######################
+                #    EAT-HOARD       # 
+                ######################
+                
+                # update the global counters 
+                eat_hoard_count[i,t]<<-1
                 eat_count[i,t]<<-0
-                eat_hoard_count[i,t]<<-0 
                 
-                # determine how many caches are retrieved
-                cur_stomach_space<<-(stom_size-mat_sc[i,t])                     # What is the space left in the stomach?
-                cur_caches_retrieved<<-((round(cur_stomach_space/food_item)))   # how many caches to fill this back up 
-                mat_caches[i,t]<<-(mat_caches[i, (t)]-cur_caches_retrieved)     # update the number of cahches that are left 
+                # update agent-owned variables
+                hoard_surplus<<-floor((mat_sc[i,(t)]-stom_size)/food_item)  # Determine The surplus available in whole food items       
+                mat_sc[i,(t)]<<-stom_size                                   # The stomach is set to the stomach size (full)
+                mat_caches[i,t]<<-(mat_caches[i,t])+hoard_surplus
                 
-                # update the stomach content 
-                food_g_retrieved<<-cur_caches_retrieved*food_item               # retrieved food in grams 
-                mat_sc[i,t]<<-((mat_sc[i,t])+food_g_retrieved)                  # Add the food to the stomach content 
-                
-                    
-                # set 'food_cur' to correct value in grams 
-                # set new BMR multi for retriaval behaviour 
-                # I need to check if this should be depending on the number of caches that are retrieved
+                # update BMR multi
                 BMR_multi<<-8
                 
-              }
+              } # end of eat-hoard if-statement 
               
               else{
-                # If the bird is foraging, but not retrieving, it will eat-hoard or eat the food 
-                # Either way, it will need to find food first 
+                # This means the food eaten does not exceed teh stomach size 
+                # no hoarding required, the bird will just eat 
                 
-                # update the global counting variable
-                retrieve_count[i,t]<<-0
+                #############
+                #   EAT     # 
+                #############
                 
+                # update the global counters 
+                eat_hoard_count[i,t]<<-0
+                eat_count[i,t]<<-1
+                
+                # Stomach content is already updated 
+                
+                # Update BMR multi
+                BMR_multi<<-8
+                
+              } # end of the eat statement
               
-                # FIND FOOD FROM NORMAL DISTRIBUTION AND DECIDE BEHAVIOUR 
-                  # First, calculate how much food the bird finds 
-                  food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0.1)
-                  # now round this up/down to the closest number of items (a bird cannot find half items)
-                  # then move this back to grams 
-                  food_g_found<<-((round(food_g_found/food_item))*food_item)
-                  # Food is found, we need to check how much it is and if the bird will hoard the surpluss 
-                  
-                  # First, increase the stomach content with whatever food is found
-                  mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_g_found)
-                  # now check if this exceeds the stomach size 
-                  if (mat_sc[i,(t)]>stom_size){
-                      # This means the bird found more than it can eat
-                      # It will hoard the surpluss 
-                    
-                      ######################
-                      #    EAT-HOARD       # 
-                      ######################
-                      
-                      # update the global counters 
-                      eat_hoard_count[i,t]<<-1
-                      eat_count[i,t]<<-0
-                      
-                      # update agent-owned variables
-                      hoard_surplus<<-floor((mat_sc[i,(t)]-stom_size)/food_item)  # Determine The surplus available in whole food items       
-                      mat_sc[i,(t)]<<-stom_size                                   # The stomach is set to the stomach size (full)
-                      mat_caches[i,t]<<-(mat_caches[i,t])+hoard_surplus
-                      
-                      # update BMR multi
-                      BMR_multi<<-8
-                      
-                  } # end of eat-hoard if-statement 
-                  
-                  else{
-                      # This means the food eaten does not exceed teh stomach size 
-                      # no hoarding required, the bird will just eat 
-                      
-                      #############
-                      #   EAT     # 
-                      #############
-                      
-                      # update the global counters 
-                      eat_hoard_count[i,t]<<-0
-                      eat_count[i,t]<<-1
-                      
-                      # Stomach content is already updated 
-                      
-                      # Update BMR multi
-                      BMR_multi<<-8
-                      
-        
-                  } # end of the eat statement
-  
-                  
-              
-              } # end of forage but not retrieving statement 
+            } # end of forage but not retrieving statement 
             
-
           } # ends the foraging statement
           
-
-          
-      # CHECK IF RESTING 
+          # CHECK IF RESTING 
           else{
             ##################
             #    RESTING     # 
             ##################
             
             # SET COUNTING MATRICES 
-              # set the unused behaviour matrices to 0
-              forage_count[i,t]<<-0
-              retrieve_count[i,t]<<-0
-              eat_hoard_count[i,t]<<-0
-              eat_count[i,t]<<-0
-              # set the rest matrix to 1
-              rest_count[i,t]<<-1
-              
+            # set the unused behaviour matrices to 0
+            forage_count[i,t]<<-0
+            retrieve_count[i,t]<<-0
+            eat_hoard_count[i,t]<<-0
+            eat_count[i,t]<<-0
+            # set the rest matrix to 1
+            rest_count[i,t]<<-1
+            
             # SET AGENT OWNED VARIABLES 
-              BMR_multi<<-1.95                    # resting BMR 
-              # the stomach content stays the same (initial value)
-              # or at least for now 
+            BMR_multi<<-1.95                    # resting BMR 
+            # the stomach content stays the same (initial value)
+            # or at least for now 
             
           } # end resting statement 
         } # end of 'Time of day = day ' statement 
@@ -776,63 +783,60 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
         # No matter what behaviour you've done, these need updating 
         
         # UPDATE THE FAT RESERVES AND STOMACH CONTENT
-            # SC down and FR up 
-            # first check if stomach has enough to actually move
-            # move food out of stomach into fat 
-            if (mat_sc[i,(t)]>= stom_to_fat){
-              # new sc from resting/foraging can be used
-              mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
-              # the new fat reserve has not been determined yet
-              mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
-            }
-            else{
-              mat_fr[i,t]<<-(mat_fr[i,t]+mat_sc[i,t])    # move whatever is left in the stomach to fat 
-              mat_sc[i,t]<<-0                           # set the stomach content to 0 
-            }
+        # SC down and FR up 
+        # first check if stomach has enough to actually move
+        # move food out of stomach into fat 
+        if (mat_sc[i,(t)]>= stom_to_fat){
+          # new sc from resting/foraging can be used
+          mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
+          # the new fat reserve has not been determined yet
+          mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
+        }
+        else{
+          mat_fr[i,t]<<-(mat_fr[i,t]+mat_sc[i,t])    # move whatever is left in the stomach to fat 
+          mat_sc[i,t]<<-0                           # set the stomach content to 0 
+        }
         
-
-        
-          
         # ENERGY EXPENDITURE 
-            # Set the fat reserves down depending on bmr-multi
-            
-            # first subtract the amount
-            mat_fr[i,(t)]<<-(mat_fr[i,t]-(bmr_cur*BMR_multi))
-            # then make sure if this doesnt go below 0 
-            if((mat_fr[i,(t)]<0)){
-              mat_fr[i,(t)]<<-0
-            }
-            # or above the maximum for fat-reserves 
-            if((mat_fr[i,(t)]>fat_max)){
-              mat_fr[i,(t)]<<-fat_max
-            }
-            # check if the stomach content is above 0 
-            if((mat_sc[i, (t)]<0)){
-              mat_sc[i, (t)]<<-0
-            }
-            # check if it is not above the stomach size either
-            if((mat_sc[i,t]>stom_size)){
-              mat_sc[i,t]<<-stom_size
-            }
+        # Set the fat reserves down depending on bmr-multi
+        
+        # first subtract the amount
+        mat_fr[i,(t)]<<-(mat_fr[i,t]-(bmr_cur*BMR_multi))
+        # then make sure if this doesnt go below 0 
+        if((mat_fr[i,(t)]<0)){
+          mat_fr[i,(t)]<<-0
+        }
+        # or above the maximum for fat-reserves 
+        if((mat_fr[i,(t)]>fat_max)){
+          mat_fr[i,(t)]<<-fat_max
+        }
+        # check if the stomach content is above 0 
+        if((mat_sc[i, (t)]<0)){
+          mat_sc[i, (t)]<<-0
+        }
+        # check if it is not above the stomach size either
+        if((mat_sc[i,t]>stom_size)){
+          mat_sc[i,t]<<-stom_size
+        }
         
         # SET MASS 
-            # set the new mass for all individuals 
-            mat_mass[i,t]<<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
+        # set the new mass for all individuals 
+        mat_mass[i,t]<<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
         
         
         # MOVE ALL VARAIBLES TO T+1 
-            # Note that this should only happen if youre not in the last timestep 
-            if(t<T){
-              # For the fr matrix 
-              mat_fr[,(t+1)]<<-mat_fr[,t]
-              # For the mass matrix 
-              mat_mass[,(t+1)]<<-mat_mass[,t]
-              # For the sc matrix 
-              mat_sc[,(t+1)]<<-mat_sc[,t]
-              # for the caches matrix 
-              mat_caches[,(t+1)]<<-mat_caches[,t]
-            }
-            
+        # Note that this should only happen if youre not in the last timestep 
+        if(t<T){
+          # For the fr matrix 
+          mat_fr[,(t+1)]<<-mat_fr[,t]
+          # For the mass matrix 
+          mat_mass[,(t+1)]<<-mat_mass[,t]
+          # For the sc matrix 
+          mat_sc[,(t+1)]<<-mat_sc[,t]
+          # for the caches matrix 
+          mat_caches[,(t+1)]<<-mat_caches[,t]
+        }
+        
       } # end of loop for alive individuals 
       
     } # end of loop for each individual 
@@ -840,7 +844,6 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     ##########################
     #    wrap up timestep    # 
     ##########################
-    
     
     # COUNT WHAT HAPPENED 
     # For each timestep, count what the birds are doing 
@@ -905,13 +908,8 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
       Sys.sleep(0)             # turns that back off 
     }# end if statement for plots
     
-    
-    
-    
   } # end of big timestep loop 
-
   
-
   # create variable with the number of the last timesstep done 
   last_T<<-T
   
@@ -940,14 +938,21 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     }
   }
   
-  
   if(!exists('opt_type')){
-  # SAVE LINE PLOTS 
+    # SAVE LINE PLOTS 
     # only needs to happen at the end of the timeloop
     # Will also save all the parameter settings
     
-    dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    # for uni desktop 
+    # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    # for uni laptop 
+    # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    # local on VERA account 
+    dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/', 'Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   }
+  
+  # workign directory for uni laptop: 
+  # '//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/'
 } # end the rest/forage/hoard function 
 
 
@@ -959,6 +964,10 @@ rest_or_eat_or_eatHoard(2160, 100, -5, -5, 0.2, 1, 3, 6, 0)
 
 # 60 days instead 
 rest_or_eat_or_eatHoard(4320, 100, -5, -5, 0.2, 1, 3, 6, 0)
+# colder
+rest_or_eat_or_eatHoard(2160, 100, -5, -10, 0.2, 1, 3, 6, 0)
+# colder
+rest_or_eat_or_eatHoard(2160, 100, -10, -5, 0.2, 1, 3, 6, 0)
 
 # colder
 rest_or_eat_or_eatHoard(2160, 100, -10, -10, 0.2, 1, 3, 6, 0)
@@ -967,6 +976,7 @@ rest_or_eat_or_eatHoard(2160, 100, -10, -10, 0.2, 1, 3, 6, 0)
 rest_or_eat_or_eatHoard(102, 10, -5, -5, 0.2, 1, 3, 6, 0)
 
 ##############################
+
 
 
 ###########################################
@@ -1018,8 +1028,16 @@ opt_foraging_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
   # dev.off()
   # for checking during coding 
   print(paste0('optimization th_sc function did run' ))
+  
+  # save the figure 
+  # for uni desktop 
+  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # for uni laptop 
+  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/','Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # local on VERA account 
+  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/', 'Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  
 } # end of optimization function 
-
 
 ##################################
 #  testing optimization th-sc    # 
@@ -1045,9 +1063,6 @@ opt_foraging_th_sc(2160,100,-12,-12,1,3,6,1, 0, 0.4)
 # so plot with a smaller threshold range to see
 opt_foraging_th_sc(2160,100,-10,-10,1,3,6,1, 0.1, 0.3) 
 opt_foraging_th_sc(2160,100,-12,-12,1,3,6,1, 0.13, 0.27) 
-
-
-
 
 
 ###########################################
@@ -1087,6 +1102,15 @@ opt_foraging_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
   
   # for checking during coding 
   print(paste0('optimization th_fr function finished' ))
+  
+  # save the figure 
+  # for uni desktop 
+  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # for uni laptop 
+  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # local on VERA account 
+  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  
 } # end of optimization function 
 
 ##################################
@@ -1102,7 +1126,6 @@ opt_foraging_th_fr(2160,100,-12,-12,0.2,3,6,1, 0, 4)
 opt_foraging_th_fr(2160,100,-15,-15,0.2,3,6,1, 0, 4) 
 # again, it looks like the colder temperatures mostly prevent from foraging too much 
 
-
 # how about food 
 opt_foraging_th_fr(2160,100,-5,-5,0.2,2, 4,1, 0, 4) 
 opt_foraging_th_fr(2160,100,-5,-5,0.2,2.5, 5,1, 0, 4) 
@@ -1111,7 +1134,7 @@ opt_foraging_th_fr(2160,100,-5,-5,0.2,2.5, 5,1, 0, 4)
 
 
 ########################################
-#   2D visual optimization fr & sc     # 
+#   3D visual optimization fr & sc     # 
 ########################################
 
 opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max, th_fr_min, th_fr_max){
@@ -1147,10 +1170,6 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
   # The matrix should be completely filled in now and ready to do 
   
   
-  # in the end, plot the whole thing 
-  #par(mfrow=c(1,1))
-  #plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
-  
   # for checking during coding 
   print(paste0('optimization th_sc_and_fr function did run' ))
   
@@ -1158,9 +1177,34 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
   persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr')
   
   # i want a better graphic 
-  fig<-plot_ly() %>% add_surface(x=~th_forage_sc, y=th_forage_fr, z=survival_end, xlab='th_sc', ylab='th_fr', zlab='proportion survival')
+  #as.numeric(survival_end)
+  fig<<-plot_ly(
+    x=as.numeric(th_forage_sc), 
+    y=as.numeric(th_forage_fr), 
+    z=survival_end
+  ) %>% 
+    add_surface() %>%
+    layout(
+      title=list(text=paste0('Optimised th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+      scene=list(
+        xaxis=list(title= 'Threshold Sc  (gram)'),
+        yaxis=list(title= 'Threshold Fr (gram)'),
+        zaxis=list(title= 'Survival prob')
+      )
+    )
   fig
   
+  # solve this later: 
+  saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
+  #  saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
+  
+  #saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=TEST', '.html')))
+  
+  
+  
+  
+  
+  #saveWidget(fig, 'temp.html')
   
   
 } # end of optimization function 
@@ -1169,8 +1213,10 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
 # testing optimization th-sc-fr  # 
 ##################################
 opt_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
-opt_th_sc_and_fr(360,10,-5,-5,3,6,1, 0, 0.4, 0, 4)         # fast version 
+opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)           # fast version 
 opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # fast version 
+opt_th_sc_and_fr(50,10,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
+
 
 
 
