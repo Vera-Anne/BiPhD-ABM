@@ -1,14 +1,14 @@
 #################################
 # Small bird in winter - ABM 
-# Start date: 30/08/2022
+# Start date: 07/09/2022
 # Vera Vinken 
 
 #################################
 
 ##    Description     ##
 
-# copied from 'rest_or_forage' on 30/08/2022 
-# Time to put in hoarding 
+# copied from 'rest_or_forage_or_hoard' on 7/09/2022 
+# Optimise the sc and fr threshold in the hoarding model
 
 # Days: This model has a 24 hour structure. Every hour is devided in 3 20min blocks
 #       This gives a total of 72 timesteps per 'day'. 
@@ -29,6 +29,9 @@
 # There is no predation in this model 
 # fix the bmr multi for retrieval 
 # check if all the bmr funxtions are correct 
+# have some sort of automated/easier directory settings. Currently very messy. 
+# do we need it to run for 30 days before doing anything? 
+# change name of the model (forage or hoard is confusing )
 
 
 ##    addressed in this version  ## 
@@ -161,6 +164,9 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   
 } # end set-up function 
 
+################################################################################
+##################     NON-HOARDING BIRD MODEL STARTS HERE    ##################
+################################################################################
 
 ###############################
 #   Rest or Forage function   #     # As in rest_or_forage (don't touch right now)
@@ -447,6 +453,8 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
   }
   
   birds_alive_at_end<<-alive_mean[last_T]
+  
+  # Print some text to keep track of the simulations 
   if (exists('opt_type')){
     if(opt_type=='th_sc'){
       print(paste0('rest_forage function did run for sc:', current_th_sc ))
@@ -749,37 +757,12 @@ opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)           # fast version
 opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # fast version 
 opt_th_sc_and_fr(50,10,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
 
-
-
-
 # what if it is a bit colder
 opt_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
 opt_th_sc_and_fr(2160,100,-15,-15,3,6,1, 0, 0.4, 0, 4)         # full version 
 
 # what if we have fewer food? 
 opt_th_sc_and_fr(2160,100,-5,-5,2,4,1, 0, 0.4, 0, 4)         # full version 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1192,15 +1175,19 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     hist(mat_sc[,last_T], main='Sc at last T',xlim=c(0,0.3),ylim=c(0,40), breaks=5)
   }
   
+  # This variable is needed for optimisations 
+  # Calculates the mean probability of being alive in the last timestep for the current conditions 
   birds_alive_at_end<<-alive_mean[last_T]
-  if (exists('opt_type')){
-    if(opt_type=='th_sc'){
+  
+  # Print some text to keep track of the simulation 
+  if (exists('opt_type')){                                                      # Check if you are optimising or just running 
+    if(opt_type=='th_sc'){                                                      # If so, are you optimising th_sc? 
       print(paste0('rest_forage function did run for sc:', current_th_sc ))
     }
-    if(opt_type=='th_fr'){
+    if(opt_type=='th_fr'){                                                      # Or are you optimising th_fr? 
       print(paste0('rest_forage function did run for fr:', current_th_fr ))
     }
-    if(opt_type=='th_sc_and_fr'){
+    if(opt_type=='th_sc_and_fr'){                                               # or both? 
       print(paste0('rest_forage function did run for sc:', current_th_sc ))
       print(paste0('rest_forage function did run for fr:', current_th_fr ))
     }
@@ -1210,7 +1197,6 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     # SAVE LINE PLOTS 
     # only needs to happen at the end of the timeloop
     # Will also save all the parameter settings
-    
     # for uni desktop 
     # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     # for uni laptop 
@@ -1222,7 +1208,6 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
   # workign directory for uni laptop: 
   # '//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/'
 } # end the rest/forage/hoard function 
-
 
 #######################################
 #   Test rest/forage/hoard function   # 
@@ -1245,6 +1230,208 @@ rest_or_eat_or_eatHoard(102, 10, -5, -5, 0.2, 1, 3, 6, 0)
 
 
 
-##############################
+
+
+######################################################
+#  optimization th-sc function  visually - hoarding  # 
+######################################################
+opt_hoarding_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
+  # show that optimizatio started 
+  print(paste0('opt hoarding th_sc start' ))
+  
+  # select optimization type 
+  opt_type<<-c('th_sc')
+  # creates 100 values between 0 and 0.4, evenly spaced between minimum and maximum inputs 
+  th_forage_sc<<-linspace(th_sc_min, th_sc_max, n=100)
+  
+  # now create a space to save the survival for each different value of th_forage_sc 
+  survival_end<<-matrix(NA, 1, length(th_forage_sc))
+  
+  for (th in 1:length(th_forage_sc)){
+      # Run the rest_forage function for each th_forage_sc that you have created. 
+      # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distribution the same
+      # determine the current threshold for each loop 
+      current_th_sc<<-th_forage_sc[th]
+      current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing (works for both sc and fr optimisations)
+      # now run 
+      rest_or_forage_or_hoard(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
+      # add to the previously created matrix
+      survival_end[1,th]<<-birds_alive_at_end
+  } # end of optimization for loop 
+  
+  # in the end, plot the whole thing 
+  par(mfrow=c(1,1))
+  #jpeg('plot_opt_forage_th_sc.jpg')
+  fig_opt_hoard_th_sc<<-plot(th_forage_sc, survival_end, main = paste0('Opt hoarding th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  fig_opt_hoard_th_sc
+  #dev.off()
+  
+  # for checking during coding 
+  print(paste0('opt hoard th_sc function did run' ))
+  
+  # save the figure 
+      # for uni desktop 
+      # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      # for uni laptop 
+      # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/','Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      # local on VERA account - works for both laptop and uni desktop
+      dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc/', 'Plot_hoard_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      
+} # end of optimization function 
+
+############################################
+#  testing optimization th-sc - hoarding   # 
+############################################
+
+# now run the optimization function 
+opt_hoarding_th_sc(2160,100,-5,-5,1,3,6,1, 0, 0.4)         # full version 
+opt_hoarding_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4)           # 5 day version with 50 birds (quicker to run)
+
+# What if there isnt as much food? 
+opt_hoarding_th_sc(2160,100,-5,-5,1,2,4,1, 0, 0.4)         # mean of 2, maximum of 4
+opt_hoarding_th_sc(2160,100,-5,-5,1,2.5,5,1, 0, 0.4)       # mean of 2.5, maximum of 5  
+
+# what if we vary the temperatures 
+opt_hoarding_th_sc(2160,100,-10,-10,1,3,6,1, 0, 0.4)       # colder
+opt_hoarding_th_sc(2160,100,10,10,1,3,6,1, 0, 0.4)         # warmer 
+opt_hoarding_th_sc(2160,100,-15,-15,1,3,6,1, 0, 0.4)       # very cold  
+opt_hoarding_th_sc(2160,100,-12,-12,1,3,6,1, 0, 0.4)        
+# notice that when temperatures get colder, the higher thresholds (just always forage)
+# dont work as well anymore 
+
+
+##################################################
+#      optimize visually for th-fr - hoarding    # 
+##################################################
+
+opt_hoarding_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max){
+  # show start of optimization 
+  print(paste0('opt hoarding th_fr start' ))
+  # set the optimization 
+  opt_type<<-'th_fr'
+  # creates 100 values between 0 and 0.4, evenly spaced 
+  th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+  # now create a space to save the survival for each different value fo th_forage_sc 
+  survival_end<<-matrix(NA, 1, length(th_forage_fr))
+  
+  for (th in 1:length(th_forage_fr)){
+        # Run the rest_forage function for each th_forage_sc that you have created. 
+        # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
+        # determine the current threshold for each loop 
+        current_th_fr<<-th_forage_fr[th]
+        # now run 
+        rest_or_forage_or_hoard(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+        # add to the previously created matrix
+        survival_end[1,th]<<-birds_alive_at_end
+  } # end of optimization for loop 
+  
+  # in the end, plot the whole thing 
+  par(mfrow=c(1,1))
+  plot(th_forage_fr, survival_end, main = paste0('Opt hoarding th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  
+  # for checking during coding 
+  print(paste0('opt hoarding th_fr function finished' ))
+  
+  # save the figure 
+  # for uni desktop 
+  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # for uni laptop 
+  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # local on VERA account 
+  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  
+} # end of optimisation th_fr for hoarding model 
+
+###########################################
+#  testing optimization th-fr - hoarding  # 
+###########################################
+opt_hoarding_th_fr(2160,100,-5,-5,0.2,3,6,1, 0, 4)          # full version 
+opt_hoarding_th_fr(360,10,-5,-5,0.2,3,6,1, 0, 4)            # fast version 
+
+# play with temperatures a bit
+opt_hoarding_th_fr(2160,100,-10,-10,0.2,3,6,1, 0, 4)  
+opt_hoarding_th_fr(2160,100,-12,-12,0.2,3,6,1, 0, 4)  
+opt_hoarding_th_fr(2160,100,-15,-15,0.2,3,6,1, 0, 4) 
+# again, it looks like the colder temperatures mostly prevent from foraging too much 
+
+# how about food 
+opt_hoarding_th_fr(2160,100,-5,-5,0.2,2, 4,1, 0, 4) 
+opt_hoarding_th_fr(2160,100,-5,-5,0.2,2.5, 5,1, 0, 4) 
+
+##################################################
+#   3D visual optimization fr & sc - hoarding    # 
+##################################################
+opt_hoarding_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max, th_fr_min, th_fr_max){
+  # show that optimizatio started 
+  print(paste0('opt hoarding th_sc AND th_fr start' ))
+  # specify optimization type 
+  opt_type<<-'th_sc_and_fr'
+  # creates 100 values between min and max, evenly spaced 
+  th_forage_sc<<-linspace(th_sc_min, th_sc_max, n=100)
+  th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+    # now create a space to save the survival for each different value fo th_forage_sc and th_forage_fr 
+  survival_end<<-matrix(NA, length(th_forage_sc), length(th_forage_fr))
+  
+  
+  for (th_sc in 1:length(th_forage_sc)){          # Outside for loop that goes through all values of forage_sc 
+        # determine the current threshold for each loop 
+        current_th_sc<<-th_forage_sc[th_sc]
+        # now run through all the possible fr values for this specific sc
+        for (th_fr in 1:length(th_forage_fr)){
+              # set the current fat reserve threshold 
+              current_th_fr<<-th_forage_fr[th_fr]
+              # run the forage or rest function: 
+              rest_or_forage_or_hoard(T, N, temp_day, temp_night, current_th_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+              # add to the previously created matrix 
+              survival_end[th_sc,th_fr]<<-birds_alive_at_end
+        } # end of loop for fat reserve thresholds 
+    } # end of loop for sc thesholds 
+  
+  # The matrix should be completely filled in now and ready to do 
+    # for checking during coding 
+  print(paste0('opt hoarding th_sc_and_fr function did run' ))
+  # plot it so you can visualise
+  persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr: hoarding bird')
+    # I want a better graphic 
+  #as.numeric(survival_end)
+      fig<<-plot_ly(
+        x=as.numeric(th_forage_sc), 
+        y=as.numeric(th_forage_fr), 
+        z=survival_end
+      ) %>% 
+        add_surface() %>%
+        layout(
+          title=list(text=paste0('Opt hoarding th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+          scene=list(
+            xaxis=list(title= 'Threshold Sc  (gram)'),
+            yaxis=list(title= 'Threshold Fr (gram)'),
+            zaxis=list(title= 'Survival prob')
+          )
+        )
+      fig
+      
+    # Save the image 
+    # Directory for 'vera' not the smulderslab folder 
+    # This one works on both laptop and desktop 
+    saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
+  
+} # end of optimization function for hoarding bird th-sc and th-fr
+
+#############################################
+# testing optimization th-sc-fr - hoarding  # 
+#############################################
+opt_hoarding_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
+opt_hoarding_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # fast version 
+opt_hoarding_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # faster version 
+
+# what if it is a bit colder
+opt_hoarding_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
+opt_hoarding_th_sc_and_fr(2160,100,-15,-15,3,6,1, 0, 0.4, 0, 4)         # more colder 
+
+# what if we have fewer food? 
+opt_hoarding_th_sc_and_fr(2160,100,-5,-5,2,4,1, 0, 0.4, 0, 4)         # mean 2 max 4 food items 
+
+
+
 
 
