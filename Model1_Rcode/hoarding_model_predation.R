@@ -32,6 +32,8 @@
 # have some sort of automated/easier directory settings. Currently very messy. 
 # do we need it to run for 30 days before doing anything? 
 # change name of the model (forage or hoard is confusing )
+# what about pilferage ? 
+# should teh individual and timestep loop be the other way around? 
 
 
 ##    addressed in this version  ## 
@@ -101,11 +103,13 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
   
   # create individual matrices (Global)
-  mat_alive<<-matrix(NA, N, (T))           # matrix to keep track of who's alive 
-  mat_sc<<-matrix(NA, N, (T))              # matrix to keep track of stomach contents
-  mat_fr<<-matrix(NA, N, (T))              # matrix to keep track of fat reserves 
-  mat_mass<<-matrix(NA,N,(T))              # matrix to keep track of mass of birds 
+  mat_alive<<-matrix(NA, N, (T))            # matrix to keep track of who's alive 
+  mat_sc<<-matrix(NA, N, (T))               # matrix to keep track of stomach contents
+  mat_fr<<-matrix(NA, N, (T))               # matrix to keep track of fat reserves 
+  mat_mass<<-matrix(NA,N,(T))               # matrix to keep track of mass of birds 
   mat_caches<<-matrix(NA,N,(T))             # matrix to keep track of the number of caches each bird has at each timestep
+  mat_Pkill<<-matrix(NA,N,(T))              # matrix to keep track of what Pkill every bird had at each timestep
+  
   
   # fill in some initial values for agent variables  (global)
   mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
@@ -135,6 +139,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   retrieve_count<<-matrix(NA, N, T)
   eat_hoard_count<<-matrix(NA, N, T)
   eat_count<<-matrix(NA, N, T)
+  predation_count<<-matrix(NA,N,(T))                               # Keep track of how many birds have actually been killed by predation
   
   # total number of birds doing behaviours (Global)
   total_forage<<-matrix(NA, 1, T)                  # total number of birds foraging each timestep
@@ -160,6 +165,15 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   # Do some calculations for the daylength etc. 
   daylength<<-(end_day-start_day-1)
   
+  # PREDATION  
+    # Pattack: 
+    # In the current version Pattack for rest and sleep is 0 
+    # Pattack for any foraging behavior (retrieve, eat-hoard, eat) 
+    # This is as it is set in Pravosudov and Lucas 2001, citing Lima 1986
+    Patt_for<<-0.000667
+    Patt_sleep<<-0
+    Patt_rest<<-0
+
   
 } # end set-up function 
 
@@ -259,12 +273,13 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
           
           # set the BMR-multi
           BMR_multi<<-1
+          #set the predation risk 
+          Patt_cur<<-Patt_sleep
           
           # Food will be moved from the stomach
           # Into the fat reserves 
           # and be burned depending on BMR-multi
           # in the ' Everyone '  part of the code below
-          
           
         } else{
           
@@ -299,8 +314,9 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
             # Set the BMR to the right level: cost of foraging
             # BMR-multi is not a global variable: stays local with the agent
             BMR_multi<<-8
+            #set the predation risk 
+            Patt_cur<<-Patt_for
           } # ends the foraging statement
-          
           
           ##################
           #    RESTING     # 
@@ -319,67 +335,79 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
             # Set the BMR to the right level: cost of foraging
             # BMR multi is local and stays with the agent 
             BMR_multi<<-1.95
+            #set the predation risk 
+            Patt_cur<<-Patt_rest
             # the stomach content stays the same (initial value)
             
           } # end resting statement 
         } # end of 'Time of day = day ' statement 
         
-        
         ###################
         #    EVERYONE     # 
         ###################
-        # No matter what behaviour you've done, these need updating 
+        # No matter what behaviour you've done, these need updating for all alive birds
         
-        # UPDATE THE FAT RESERVES 
-        # SC down and FR up 
-        # first check if stomach has enough to actually move
-        # move food out of stomach into fat 
-        if (mat_sc[i,(t)]>= stom_to_fat){
-          # new sc from resting/foraging can be used
-          mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
-          # the new fat reserve has not been determined yet
-          mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
-        }
-        
-        # ENERGY EXPENDITURE 
-        # Set the fat reserves down depending on bmr-multi
-        
-        # first subtract the amount
-        mat_fr[i,(t)]<<-(mat_fr[i,t]-(bmr_cur*BMR_multi))
-        # then make sure if this doesnt go below 0 
-        if((mat_fr[i,(t)]<0)){
-          mat_fr[i,(t)]<<-0
-        }
-        # or above the maximum for fat-reserves 
-        if((mat_fr[i,(t)]>fat_max)){
-          mat_fr[i,(t)]<<-fat_max
-        }
-        # check if the stomach content is above 0 
-        if((mat_sc[i, (t)]<0)){
-          mat_sc[i, (t)]<<-0
-        }
-        # check if it is not above the stomach size either
-        if((mat_sc[i,t]>stom_size)){
-          mat_sc[i,t]<<-stom_size
-        }
-        
-        # SET MASS 
-        # set the new mass for all individuals 
-        mat_mass[i,t]<<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
-        
-        
-        # MOVE ALL VARAIBLES TO T+1 
-        # Note that this should only happen if youre not in the last timestep 
-        if(t<T){
-          # For the fr matrix 
-          mat_fr[,(t+1)]<<-mat_fr[,t]
-          # For the mass matrix 
-          mat_mass[,(t+1)]<<-mat_mass[,t]
-          # For the sc matrix 
-          mat_sc[,(t+1)]<<-mat_sc[,t]
-        }
-        
-      } # end of loop for alive individuals 
+        # PREDATION 
+            # first check if the bird actually survived the behaviour it did 
+            mass_cur<<-mat_mass[i,t]                                            # find out the current mass of the bird 
+            Pcap_cur<<-(0.78+(0.5*10^(-8*exp(1.4*cur_mass))))                   # calculate the current Pcapture 
+            Pkill_cur<<-Pcap_cur*Patt_cur                                       # calculate the current Pkill 
+            mat_Pkill[i,t]<<-Pkill_cur                                          # put in the matrix 
+            # now check if the bird dies or not 
+            Psurv_cur<-runif(1)                                                 # Random number between 0 and 1 for survival chance 
+            if(Psurv_cur<Pkill_cur){                                            # if the prob for survival < prob to die 
+              mat_alive[i,t]<<-0                                                # Set the matrix to 'dead' 
+              predation_count[i,t]<<-1
+            }
+            else{
+            # Surviving birds should update their values: 
+                predation_count[i,t]<<-0
+            # UPDATE THE FAT RESERVES 
+                # SC down and FR up 
+                # first check if stomach has enough to actually move
+                # move food out of stomach into fat 
+                if (mat_sc[i,(t)]>= stom_to_fat){
+                  # new sc from resting/foraging can be used
+                  mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
+                  # the new fat reserve has not been determined yet
+                  mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
+                }
+            # ENERGY EXPENDITURE 
+                # Set the fat reserves down depending on bmr-multi
+                # first subtract the amount
+                mat_fr[i,(t)]<<-(mat_fr[i,t]-(bmr_cur*BMR_multi))
+                # then make sure if this doesnt go below 0 
+                if((mat_fr[i,(t)]<0)){
+                  mat_fr[i,(t)]<<-0
+                }
+                # or above the maximum for fat-reserves 
+                if((mat_fr[i,(t)]>fat_max)){
+                  mat_fr[i,(t)]<<-fat_max
+                }
+                # check if the stomach content is above 0 
+                if((mat_sc[i, (t)]<0)){
+                  mat_sc[i, (t)]<<-0
+                }
+                # check if it is not above the stomach size either
+                if((mat_sc[i,t]>stom_size)){
+                  mat_sc[i,t]<<-stom_size
+                }
+            # SET MASS 
+                # set the new mass for all individuals 
+                mat_mass[i,t]<<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
+            # MOVE ALL VARAIBLES TO T+1 
+                # Note that this should only happen if you're not in the last timestep 
+                if(t<T){
+                  # For the fr matrix 
+                  mat_fr[,(t+1)]<<-mat_fr[,t]
+                  # For the mass matrix 
+                  mat_mass[,(t+1)]<<-mat_mass[,t]
+                  # For the sc matrix 
+                  mat_sc[,(t+1)]<<-mat_sc[,t]
+                }
+        } # end of else-stat for birds surviving predation
+          
+      } # end of loop for (originally) alive individuals 
       
     } # end of loop for each individual 
     
@@ -394,6 +422,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     total_forage[1,t]<<-sum(forage_count[,t], na.rm=TRUE)  # counts how many birds foraged this timestep
     total_rest[1,t]<<-sum(rest_count[,t], na.rm=TRUE)      # counts how many birds rested this timestep 
     total_alive[1,t]<<-sum(mat_alive[,t], na.rm=TRUE)      # counts how many birds are alive this timestep
+    total_predated[1,]<<-sum(predation_count[,t], na.rm=TRUE) # how many birds were killed by predation in this timestep 
     
     # CALCULATE MEANS 
     sc_mean[t]<<-mean(mat_sc[,t], na.rm = TRUE)        # adds mean stomach content for this timestep to matrix
@@ -409,7 +438,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     # plots are local for now, this can be changed later 
     
     if ((t/plot_interval)==floor(t/plot_interval) && noplot==0 ){
-      par(mfrow=c(3,2))
+      par(mfrow=c(4,2))
       Sys.sleep(0.05)          # forces an update to the plotting window 
       # 1
       plot1<-plot(1:t, sc_mean[1,(1:t)], ylim=c(0,(stom_size+0.1)), ylab='Mean stomach content', xlab='timestep', main='Mean Sc', type='l')
@@ -432,6 +461,10 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
       
       # Code to plot total number of birds resting (omitted)
       # plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
+      
+      # 7: To show predation
+      plot7<-plot(1:t, (total_predated[1,(1:t)]), ylim=c(0, 100), ylab='# killed by predation', xlab='Timestep', main='Number of birds killed by predation', type='l')
+      
       Sys.sleep(0)             # turns that back off 
     }# end if statement 
     
