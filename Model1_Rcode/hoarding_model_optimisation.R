@@ -1204,7 +1204,7 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     # only needs to happen at the end of the timeloop
     # Will also save all the parameter settings
     # for uni desktop in smulders folder
-    dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/hoarding_model_optimisation/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     # for uni laptop 
     # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     # local on VERA account 
@@ -1421,7 +1421,7 @@ opt_hoarding_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, n
 
    
     saveWidget(widget = fig, file =(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE)
-    saveWidget(widget = fig, file =(paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken//1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/','Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE) 
+    saveWidget(widget = fig, file =(paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/','Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE) 
    # saveWidget(widget = fig, file =(paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/test.html')), selfcontained=TRUE)
     
 
