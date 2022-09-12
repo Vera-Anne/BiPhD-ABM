@@ -32,11 +32,13 @@
 # have some sort of automated/easier directory settings. Currently very messy. 
 # do we need it to run for 30 days before doing anything? 
 # change name of the model (forage or hoard is confusing )
+# make directory a variable 
 
 
 ##    addressed in this version  ## 
 
-# optimization of the hoarding model 
+# optimization of the hoarding model
+# fixed (?) automatic saving of 3D graphs 
 
 
 
@@ -53,7 +55,9 @@ library(plotly) # for 3D surface plot
 library(rgl)
 library(plot3D)
 library(htmlwidgets)
-library(webshot)
+
+install_phantomjs()
+library(phantomjs)
 
 ##############################
 #       input parameters    # 
@@ -475,12 +479,12 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     # Will also save all the parameter settings
     
     # for uni desktop 
-    # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     # for uni laptop 
     # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/','Plot_Rest_forage_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     
     # local on VERA account - works on both laptop and desktop 
-    dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/', 'Plot_Rest_forage_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/', 'Plot_Rest_forage_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     
   }
   
@@ -525,6 +529,8 @@ rest_or_forage(2160,100,-15,-15,0.2,3,3,6, 0)
 rest_or_forage(2160,100,-15,-15,0.2,2,3,6, 0)
 rest_or_forage(2160,100,-15,-15,0.2,1,3,6, 0)
 
+# for high sc th 
+rest_or_forage(2160,100,-5,-5,0.3,1,3,6, 0)
 
 ###########################################
 #  optimization th-sc function  visually  # 
@@ -578,11 +584,11 @@ opt_foraging_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
   
   # save the figure 
   # for uni desktop 
-  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # for uni laptop 
   # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/','Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # local on VERA account 
-  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/', 'Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/', 'Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimization function 
 
@@ -650,7 +656,7 @@ opt_foraging_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
   print(paste0('optimization th_fr function finished' ))
   
   # save the figure 
-  # for uni desktop 
+  # for uni desktop for smulders lab
   # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # for uni laptop 
   # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
@@ -1197,12 +1203,12 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
     # SAVE LINE PLOTS 
     # only needs to happen at the end of the timeloop
     # Will also save all the parameter settings
-    # for uni desktop 
-    # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    # for uni desktop in smulders folder
+    dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     # for uni laptop 
     # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     # local on VERA account 
-    dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/', 'Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/', 'Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   }
   
   # workign directory for uni laptop: 
@@ -1228,7 +1234,8 @@ rest_or_eat_or_eatHoard(2160, 100, -10, -10, 0.2, 1, 3, 6, 0)
 # short version 
 rest_or_eat_or_eatHoard(102, 10, -5, -5, 0.2, 1, 3, 6, 0)
 
-
+# test the model with very high th-sc (which means that you almost always forage)
+rest_or_eat_or_eatHoard(2160, 100, -5, -5, 0.3, 1, 3, 6, 0)
 
 
 
@@ -1254,7 +1261,7 @@ opt_hoarding_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
       current_th_sc<<-th_forage_sc[th]
       current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing (works for both sc and fr optimisations)
       # now run 
-      rest_or_forage_or_hoard(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
+      rest_or_eat_or_eatHoard(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
       # add to the previously created matrix
       survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
@@ -1270,12 +1277,12 @@ opt_hoarding_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
   print(paste0('opt hoard th_sc function did run' ))
   
   # save the figure 
-      # for uni desktop 
-      # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      # for uni desktop in smulders folder 
+      dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc/','Plot_hoard_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
       # for uni laptop 
       # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/','Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
       # local on VERA account - works for both laptop and uni desktop
-      dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc/', 'Plot_hoard_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc/', 'Plot_hoard_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
       
 } # end of optimization function 
 
@@ -1320,7 +1327,7 @@ opt_hoarding_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
         # determine the current threshold for each loop 
         current_th_fr<<-th_forage_fr[th]
         # now run 
-        rest_or_forage_or_hoard(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+        rest_or_eat_or_eatHoard(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
         # add to the previously created matrix
         survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
@@ -1333,12 +1340,12 @@ opt_hoarding_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
   print(paste0('opt hoarding th_fr function finished' ))
   
   # save the figure 
-  # for uni desktop 
-  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # for uni desktop in smulders folder 
+   dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # for uni laptop 
   # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # local on VERA account 
-  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimisation th_fr for hoarding model 
 
@@ -1381,7 +1388,7 @@ opt_hoarding_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, n
               # set the current fat reserve threshold 
               current_th_fr<<-th_forage_fr[th_fr]
               # run the forage or rest function: 
-              rest_or_forage_or_hoard(T, N, temp_day, temp_night, current_th_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+              rest_or_eat_or_eatHoard(T, N, temp_day, temp_night, current_th_sc, current_th_fr, num_food_mean, num_food_max, noplot)
               # add to the previously created matrix 
               survival_end[th_sc,th_fr]<<-birds_alive_at_end
         } # end of loop for fat reserve thresholds 
@@ -1392,37 +1399,42 @@ opt_hoarding_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, n
   print(paste0('opt hoarding th_sc_and_fr function did run' ))
   # plot it so you can visualise
   persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr: hoarding bird')
-    # I want a better graphic 
-  #as.numeric(survival_end)
-      fig<<-plot_ly(
-        x=as.numeric(th_forage_sc), 
-        y=as.numeric(th_forage_fr), 
-        z=survival_end
-      ) %>% 
-        add_surface() %>%
-        layout(
-          title=list(text=paste0('Opt hoarding th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
-          scene=list(
-            xaxis=list(title= 'Threshold Sc  (gram)'),
-            yaxis=list(title= 'Threshold Fr (gram)'),
-            zaxis=list(title= 'Survival prob')
-          )
+    
+ 
+    
+    #as.numeric(survival_end)
+    fig<<-plot_ly(
+      x=as.numeric(th_forage_sc),
+      y=as.numeric(th_forage_fr),
+      z=survival_end
+    ) %>%
+      add_surface() %>%
+      layout(
+        title=list(text=paste0('Optimised th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+        scene=list(
+          xaxis=list(title= 'Threshold Sc  (gram)'),
+          yaxis=list(title= 'Threshold Fr (gram)'),
+          zaxis=list(title= 'Survival prob')
         )
-      fig
-      
-    # Save the image 
-    # Directory for 'vera' not the smulderslab folder 
-    # This one works on both laptop and desktop 
-    saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
-  
-} # end of optimization function for hoarding bird th-sc and th-fr
+      )
+    fig
+
+   
+    saveWidget(widget = fig, file =(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE)
+    saveWidget(widget = fig, file =(paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken//1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_optimisation/opt_th_sc_and_fr/','Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE) 
+   # saveWidget(widget = fig, file =(paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/test.html')), selfcontained=TRUE)
+    
+
+    
+    
+    } # end of optimization function for hoarding bird th-sc and th-fr
 
 #############################################
 # testing optimization th-sc-fr - hoarding  # 
 #############################################
 opt_hoarding_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
 opt_hoarding_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # fast version 
-opt_hoarding_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # faster version 
+opt_hoarding_th_sc_and_fr(10,5,-10,-10,3,6,1, 0, 0.4, 0, 4)         # faster version 
 
 # what if it is a bit colder
 opt_hoarding_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
