@@ -2,7 +2,8 @@
 # Small bird in winter - ABM 
 # Start date: 07/09/2022
 # Vera Vinken 
-
+# cjecl is pushing from laptop works 
+# check again
 #################################
 
 ##    Description     ##
@@ -39,7 +40,8 @@
 ##    addressed in this version  ## 
 
 # Adding predation as it was described in the original netlogo model 
-
+# trying to push from laptop: 
+# rypw type type tyep 
 
 ##############################
 #      load packages         #
