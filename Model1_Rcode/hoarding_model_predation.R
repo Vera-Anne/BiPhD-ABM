@@ -39,6 +39,7 @@
 ##    addressed in this version  ## 
 
 # Adding predation as it was described in the original netlogo model 
+# Now works for the rest-forage model 
 
 
 ##############################
@@ -139,7 +140,7 @@ set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
   retrieve_count<<-matrix(NA, N, T)
   eat_hoard_count<<-matrix(NA, N, T)
   eat_count<<-matrix(NA, N, T)
-  predation_count<<-matrix(NA,N,(T))                               # Keep track of how many birds have actually been killed by predation
+  predation_count<<-matrix(NA, N,(T))                               # Keep track of how many birds have actually been killed by predation
   
   # total number of birds doing behaviours (Global)
   total_forage<<-matrix(NA, 1, T)                  # total number of birds foraging each timestep
@@ -351,14 +352,15 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
         # PREDATION 
             # first check if the bird actually survived the behaviour it did 
             mass_cur<<-mat_mass[i,t]                                            # find out the current mass of the bird 
-            Pcap_cur<<-(0.78+(0.5*10^(-8*exp(1.4*mass_cur))))                   # calculate the current Pcapture 
+            Pcap_cur<<-(0.78+(0.5*(10^-8)*exp(1.4*mass_cur)))                  # calculate the current Pcapture 
             Pkill_cur<<-Pcap_cur*Patt_cur                                       # calculate the current Pkill 
-            mat_Pkill[i,t]<<-Pkill_cur                                          # put in the matrix 
+            mat_Pkill[i,t]<<-Pkill_cur                                         # put in the matrix 
             # now check if the bird dies or not 
             Psurv_cur<-runif(1)                                                 # Random number between 0 and 1 for survival chance 
-            if(Psurv_cur<Pkill_cur){                                            # if the prob for survival < prob to die 
+            if(Psurv_cur<(mat_Pkill[i,t])){                                            # if the prob for survival < prob to die 
               mat_alive[i,t]<<-0                                                # Set the matrix to 'dead' 
               predation_count[i,t]<<-1
+              print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
             }
             else{
             # Surviving birds should update their values: 
@@ -423,7 +425,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     total_forage[1,t]<<-sum(forage_count[,t], na.rm=TRUE)  # counts how many birds foraged this timestep
     total_rest[1,t]<<-sum(rest_count[,t], na.rm=TRUE)      # counts how many birds rested this timestep 
     total_alive[1,t]<<-sum(mat_alive[,t], na.rm=TRUE)      # counts how many birds are alive this timestep
-    total_predated[1,]<<-sum(predation_count[,t], na.rm=TRUE) # how many birds were killed by predation in this timestep 
+    total_predated[1,t]<<-sum(predation_count[,t], na.rm=TRUE) # how many birds were killed by predation in this timestep 
     
     # CALCULATE MEANS 
     sc_mean[t]<<-mean(mat_sc[,t], na.rm = TRUE)        # adds mean stomach content for this timestep to matrix
@@ -464,8 +466,10 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
       # plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
       
       # 7: To show predation
-      plot7<-plot(1:t, (total_predated[1,(1:t)]), ylim=c(0, 100), ylab='# killed by predation', xlab='Timestep', main='Number of birds killed by predation', type='l')
+      plot7<-plot(1:t, (total_predated[1,(1:t)]), ylim=c(0, 5), ylab='# killed by predation', xlab='Timestep', main='Number of birds killed by predation', type='l')
       
+      # code for title 
+      mtext((paste('T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max)), side=3, cex=0.8,line=-2, outer=TRUE)
       Sys.sleep(0)             # turns that back off 
     }# end if statement 
     
