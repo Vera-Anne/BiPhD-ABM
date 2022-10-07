@@ -360,7 +360,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
             if(Psurv_cur<(mat_Pkill[i,t])){                                            # if the prob for survival < prob to die 
               mat_alive[i,t]<<-0                                                # Set the matrix to 'dead' 
               predation_count[i,t]<<-1
-              print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
+              #print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
             }
             else{
             # Surviving birds should update their values: 
@@ -555,6 +555,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
 rest_or_forage(2160,100,-5,-5,0.2,1,3,6, 0)
 # rest_or_forage(2160,100,-5,-5,0.2,1,2,4)
 # rest_or_forage(2160,100,-5,-5,0.2,1,2.5,6)
+rest_or_forage(2160,100,-10,-5,0.2,1,3,6, 0)
 # 
 # # vary the forage sc threshold 
 rest_or_forage(2160,100,-5,-5,0.2,1,3,6, 0)
@@ -566,6 +567,57 @@ rest_or_forage(2160,100,-15,-15,0.2,3,3,6, 0)
 rest_or_forage(2160,100,-15,-15,0.2,2,3,6, 0)
 rest_or_forage(2160,100,-15,-15,0.2,1,3,6, 0)
 
+# Testing on 07/10/2022
+
+# To test the 3D optimisation I will run a couple of specific simulations to check them 
+# The cut off for dying when you are just optimising for SC-TH is 0.13 gram (FR-Th is set at 1)
+# This means that this threshold needs to be at least 0.13 (below this birds will forage) for survival
+# In the combination plots this is 0.05 
+# So a lower threshold is needed for survival when teh two are combined 
+
+
+# The threshold for FR-TH is 0.7 gram when just optimising for FR (and SC is set at 0.2)
+# The threshold for FR-TH is 0.3 when we optimise for both at the same time 
+# This a higher threshold is needed for survival (birds don't need to forage as much)
+
+# Scenario 1: A SC-TH below the new threshold (0.05) and a FR-TH below the old trheshold (0.7)
+# IN this scenario no survival would be possible in any case 
+rest_or_forage(2160, 100, -5, -5, 0.02, 0.3, 3, 6, 0)
+# Result: all birds die (as expected)
+
+# Scenario 2: A SC-TH below the new threshold and a FR-TH between the two 
+# In this scenario I would expect everybody to still die 
+rest_or_forage(2160, 100, -5, -5, 0.02, 0.9, 3, 6, 0)
+# Result: all birds die (as expected)
+
+# Scenario 3: A SC-TH below the new threshold and a FR th above the new threshold (1.3)
+# In this scenario I would expect everybody to still die 
+rest_or_forage(2160, 100, -5, -5, 0.02, 1.5, 3, 6, 0)
+# Result: all birds die (as expected)
+
+# Scenario 4: A SC-TH between the thresholds and a FR below the old threshold (0.7)
+# In this scenario I would expect everybody to still die 
+rest_or_forage(2160, 100, -5, -5, 0.09, 0.3, 3, 6, 0)
+# Result: all birds die (as expected)
+
+# Scenario 5: A SC-TH between the thresholds and a FR between the thresholds
+# In this scenario I would expect everybody to still die 
+rest_or_forage(2160, 100, -5, -5, 0.09, 0.9, 3, 6, 0)
+# Result: all birds die (as expected)
+
+# Scenario 6: A SC-TH between the thresholds and a above the new trheshold
+# In this scenario I would expect everybody to still die 
+rest_or_forage(2160, 100, -5, -5, 0.09, 1.5, 3, 6, 0)
+# Result: all birds die 
+# THIS DOES NOT ALIGN WITH THE 3D GRAPH 
+
+
+
+# 
+rest_or_forage(2160, 100, -5, -5, 0.1, 1, 3, 6, 0)
+rest_or_forage(2160, 100, -5, -5, 0.3, 1, 3, 6, 0)
+rest_or_forage(2160, 100, -5, -5, 0.03, 3, 3, 6, 0)
+rest_or_forage(2160, 100, -5, -5, 0.2, 3, 3, 6, 0)
 
 ###########################################
 #  optimization th-sc function  visually  # 
@@ -623,10 +675,10 @@ opt_foraging_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
   # for uni laptop 
   # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/','Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # local on VERA account 
-  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc/', 'Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc/', 'Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
   # Save in smulders folder 
-  dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc/', 'Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc/', 'NonH-Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
   
   
@@ -639,7 +691,7 @@ opt_foraging_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
 # now run the optimization function 
 opt_foraging_th_sc(2160,100,-5,-5,1,3,6,1, 0, 0.4)         # full version 
 opt_foraging_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4)           # 5 day version with 50 birds (quicker to run)
-
+opt_foraging_th_sc(2160,100,-5,-5,1.5,3,6,1, 0, 0.4)
 # What if there isnt as much food? 
 opt_foraging_th_sc(2160,100,-5,-5,1,2,4,1, 0, 0.4)         # everybody dies :'( 
 opt_foraging_th_sc(2160,100,-5,-5,1,2.5,5,1, 0, 0.4)       # in between result? 
@@ -656,6 +708,11 @@ opt_foraging_th_sc(2160,100,-12,-12,1,3,6,1, 0, 0.4)
 # so plot with a smaller threshold range to see
 opt_foraging_th_sc(2160,100,-10,-10,1,3,6,1, 0.1, 0.3) 
 opt_foraging_th_sc(2160,100,-12,-12,1,3,6,1, 0.13, 0.27) 
+
+# Change the TH-fr around 
+opt_foraging_th_sc(2160,100,-5,-5,1,3,6,1, 0, 0.4)         # full version
+opt_foraging_th_sc(2160,100,-5,-5,0.5,3,6,1, 0, 0.4)         # full version
+opt_foraging_th_sc(2160,100,-5,-5,0.75,3,6,1, 0, 0.4)         # full version
 
 
 ###########################################
@@ -701,9 +758,9 @@ opt_foraging_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
   # for uni laptop 
   # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # local on VERA account 
-  dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # Save in smulders folder 
-  dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'NonH_Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimization function 
 
@@ -724,7 +781,8 @@ opt_foraging_th_fr(2160,100,-15,-15,0.2,3,6,1, 0, 4)
 opt_foraging_th_fr(2160,100,-5,-5,0.2,2, 4,1, 0, 4) 
 opt_foraging_th_fr(2160,100,-5,-5,0.2,2.5, 5,1, 0, 4) 
 
-
+# play with the sc 
+opt_foraging_th_fr(2160,100,-5,-5,0.09,3,6,1, 0, 4)         # full version 
 
 
 ########################################
@@ -788,7 +846,7 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
   fig
   
   # solve this later: 
-  saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
+  saveWidget(fig, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
   #  saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
   
   
@@ -915,6 +973,8 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
           
           # set the BMR-multi
           BMR_multi<<-1
+          #set the predation risk 
+          Patt_cur<<-Patt_sleep
           
           # Food will be moved from the stomach
           # Into the fat reserves 
@@ -942,6 +1002,10 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
             forage_count[i, t]<<-1
             # set the resting matrix to 0
             rest_count[i,t]<<-0
+            
+            #set the predation risk 
+            # Note: this is currently the same for all types of foraging
+            Patt_cur<<-Patt_for
             
             # WHAT KIND OF FORAGING IS HAPPENING? 
             # 3 kinds of foraging are possible: 
@@ -998,7 +1062,7 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
               
               # FIND FOOD FROM NORMAL DISTRIBUTION AND DECIDE BEHAVIOUR 
               # First, calculate how much food the bird finds 
-              food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0.1)
+              food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0)
               # now round this up/down to the closest number of items (a bird cannot find half items)
               # then move this back to grams 
               food_g_found<<-((round(food_g_found/food_item))*food_item)
@@ -1071,6 +1135,9 @@ rest_or_eat_or_eatHoard<-function(T, N, temp_day, temp_night, th_forage_sc, th_f
             BMR_multi<<-1.95                    # resting BMR 
             # the stomach content stays the same (initial value)
             # or at least for now 
+            
+            #set the predation risk 
+            Patt_cur<<-Patt_rest
             
           } # end resting statement 
         } # end of 'Time of day = day ' statement 
@@ -1407,6 +1474,9 @@ opt_hoarding_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
 ###########################################
 opt_hoarding_th_fr(2160,100,-5,-5,0.2,3,6,1, 0, 4)          # full version 
 opt_hoarding_th_fr(360,10,-5,-5,0.2,3,6,1, 0, 4)            # fast version 
+
+# play with sc-th
+opt_hoarding_th_fr(2160,100,-5,-5,0.09,3,6,1, 0, 4)          # full version 
 
 # play with temperatures a bit
 opt_hoarding_th_fr(2160,100,-10,-10,0.2,3,6,1, 0, 4)  
