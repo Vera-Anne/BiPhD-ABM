@@ -434,6 +434,7 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
     alive_mean[t]<<-mean(mat_alive[,t], na.rm= TRUE)
     
     ####################
+    
     #      PLOT        #
     ####################
     
@@ -642,14 +643,10 @@ opt_foraging_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_
     # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
     # determine the current threshold for each loop 
     current_th_sc<<-th_forage_sc[th]
-    current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing
+    # current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing
     # now run 
     rest_or_forage(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
     # add to the previously created matrix
-    
-    
-    
-    # PROBLEM IS LOCATED HERE 
     survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
   
@@ -731,17 +728,13 @@ opt_foraging_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_
   
   
   for (th in 1:length(th_forage_fr)){
-    
-    
     # Run the rest_forage function for each th_forage_sc that you have created. 
     # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
     # determine the current threshold for each loop 
     current_th_fr<<-th_forage_fr[th]
-    
     # now run 
     rest_or_forage(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
     # add to the previously created matrix
-    
     survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
   
@@ -826,32 +819,33 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
   
   # plot it so you can visualise
   persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr')
-  
-  # i want a better graphic 
-  #as.numeric(survival_end)
-  fig<<-plot_ly(
-    x=as.numeric(th_forage_sc), 
-    y=as.numeric(th_forage_fr), 
-    z=survival_end
-  ) %>% 
-    add_surface() %>%
-    layout(
-      title=list(text=paste0('Optimised th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
-      scene=list(
-        xaxis=list(title= 'Threshold Sc  (gram)'),
-        yaxis=list(title= 'Threshold Fr (gram)'),
-        zaxis=list(title= 'Survival prob')
-      )
-    )
-  fig
-  
-  # solve this later: 
-  saveWidget(fig, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
-  #  saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
-  
-  
+
   #saveWidget(fig, 'temp.html')
   
+  # testing if there is something wrong in my plotting 
+  fig2<-plot_ly(
+    x=as.numeric(th_forage_fr), 
+    y=as.numeric(th_forage_sc), 
+    z=survival_end
+  )
+  fig2<-fig2 %>% add_surface()
+  fig2<-fig2 %>% layout(
+    title=list(text=paste0('NOnH Optimised th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+    scene=list(
+      xaxis=list(title= 'Threshold Fr  (gram)'),
+      yaxis=list(title= 'Threshold Sc (gram)'),
+      zaxis=list(title= 'Survival prob'
+  )))
+  fig2
+  
+  # save it 
+  # set path 
+  path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
+  # save the thing
+  saveWidget(fig2, file.path(normalizePath(dirname(path)), basename(path)))
+  
+  # saveWidget(fig2, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE, libdir=NULL, background='white', title='class(fig2)[[1]]', knitrOptions=list())
+  #  saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
   
 } # end of optimization function 
 
@@ -1523,34 +1517,61 @@ opt_hoarding_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, n
   # plot it so you can visualise
   persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr: hoarding bird')
   # I want a better graphic 
-  #as.numeric(survival_end)
-  fig<<-plot_ly(
-    x=as.numeric(th_forage_sc), 
-    y=as.numeric(th_forage_fr), 
-    z=survival_end
-  ) %>% 
-    add_surface() %>%
-    layout(
-      title=list(text=paste0('Opt hoarding th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
-      scene=list(
-        xaxis=list(title= 'Threshold Sc  (gram)'),
-        yaxis=list(title= 'Threshold Fr (gram)'),
-        zaxis=list(title= 'Survival prob')
-      )
-    )
-  fig
-  
-  # Save the image 
-  # Directory for 'vera' not the smulderslab folder 
-  # This one works on both laptop and desktop 
-  saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
-  # to the smulderslab folder 
-  saveWidget(fig, file=(paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
+  # #as.numeric(survival_end)
+  # fig<<-plot_ly(
+  #   x=as.numeric(th_forage_sc), 
+  #   y=as.numeric(th_forage_fr), 
+  #   z=survival_end
+  # ) %>% 
+  #   add_surface() %>%
+  #   layout(
+  #     title=list(text=paste0('Opt hoarding th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+  #     scene=list(
+  #       xaxis=list(title= 'Threshold Sc  (gram)'),
+  #       yaxis=list(title= 'Threshold Fr (gram)'),
+  #       zaxis=list(title= 'Survival prob')
+  #     )
+  #   )
+  # fig
+  # 
+  # # Save the image 
+  # # Directory for 'vera' not the smulderslab folder 
+  # # This one works on both laptop and desktop 
+  # # saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
+  # # to the smulderslab folder 
+  # saveWidget(fig, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE, libdir=NULL, background='white')
 
   
+  # testing if there is something wrong in my plotting 
+  fig3<-plot_ly(
+    x=as.numeric(th_forage_fr), 
+    y=as.numeric(th_forage_sc), 
+    z=survival_end
+  )
+  fig3<-fig3 %>% add_surface()
+  fig3<-fig3 %>% layout(
+    title=list(text=paste0('H opt th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+    scene=list(
+      xaxis=list(title= 'Threshold Fr (gram)'),
+      yaxis=list(title= 'Threshold Sc (gram)'),
+      zaxis=list(title= 'Survival prob'
+      )))
+  fig3
   
+  # save it 
+  # set path 
+  path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'H_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
+  # save the thing
+  saveWidget(fig3, file.path(normalizePath(dirname(path)), basename(path)))
+  
+ 
   
 } # end of optimization function for hoarding bird th-sc and th-fr
+
+
+
+
+
 
 #############################################
 # testing optimization th-sc-fr - hoarding  # 
