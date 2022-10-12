@@ -20,13 +20,12 @@
 # Sort whatever is not working in the final histograms when birds have died 
 # put predation in 
 # add conversion factor from stomach to fat for 'everyone' part of alive birds durning the day
+# automatically save plots 
 
 
 ##    addressed in this version  ## 
 
-# added 'noplot' 
-# optimize for survival
-# we will optimize the threshold stomach-sc. 
+# Added optimization (visual) for both thresholds 
 
 
 ##############################
@@ -37,6 +36,11 @@ library(devtools)
 # install_github("olafmersmann/truncnorm")
 library(truncnorm)
 library(pracma)
+library(ggplot2)
+library(plotly) # for 3D surface plot 
+library(rgl)
+library(plot3D)
+
 
 ##############################
 #       input parameters    # 
@@ -55,6 +59,7 @@ num_food<-1         # number of food items found (this should be a distribution)
 num_food_max<-6
 num_food_mean<-3
 noplot<-1 
+
 
 
 
@@ -419,8 +424,17 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
   }
   
   birds_alive_at_end<<-alive_mean[last_T]
-  if (exists('current_th_sc')){
-  print(paste0('rest_forage function did run for:', current_th_sc))
+  if (exists('opt_type')){
+    if(opt_type=='th_sc'){
+  print(paste0('rest_forage function did run for sc:', current_th_sc ))
+    }
+    if(opt_type=='th_fr'){
+      print(paste0('rest_forage function did run for fr:', current_th_fr ))
+    }
+    if(opt_type=='th_sc_and_fr'){
+      print(paste0('rest_forage function did run for sc:', current_th_sc ))
+      print(paste0('rest_forage function did run for fr:', current_th_fr ))
+    }
   }
   
 
@@ -461,13 +475,20 @@ rest_or_forage<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr,
 # rest_or_forage(2160,100,-5,-5,0.3,1,3,6, 0)
  rest_or_forage(2160,100,-5,-5,0.1,1,3,6, 0)
 
-
-
-
-#############################
-#  optimization function    # 
-#############################
-optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
+ rest_or_forage(2160,100,-15,-15,0.2,3,3,6, 0)
+ rest_or_forage(2160,100,-15,-15,0.2,2,3,6, 0)
+ rest_or_forage(2160,100,-15,-15,0.2,1,3,6, 0)
+ 
+ 
+###########################################
+#  optimization th-sc function  visually  # 
+###########################################
+ opt_foraging_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
+    # show that optimizatio started 
+    print(paste0('optimization th_sc start' ))
+    
+    # select optimization type 
+    opt_type<<-c('th_sc')
     # creates 100 values between 0 and 0.4, evenly spaced 
     th_forage_sc<<-linspace(th_sc_min, th_sc_max, n=100)
     
@@ -482,6 +503,7 @@ optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_m
       # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
       # determine the current threshold for each loop 
       current_th_sc<<-th_forage_sc[th]
+      current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing
       # now run 
         rest_or_forage(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
       # add to the previously created matrix
@@ -489,13 +511,22 @@ optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_m
         
         
       # PROBLEM IS LOCATED HERE 
-      survival_end[1,th]<-birds_alive_at_end
+      survival_end[1,th]<<-birds_alive_at_end
     } # end of optimization for loop 
     
     # in the end, plot the whole thing 
     par(mfrow=c(1,1))
-    plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+    #jpeg('plot_opt_forage_th_sc.jpg')
+    fig_opt_forage_th_sc<<-plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+    fig_opt_forage_th_sc
+    #dev.off()
     
+    # If I want to save the figures, run: 
+    # path to save figures 
+    # save_path<-file.path('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage', paste(fig_opt_forage_th_sc, '.jpg', sep=''))
+    # jpeg(file=save_path)
+    # fig_opt_forage_th_sc
+    # dev.off()
     # for checking during coding 
     print(paste0('optimization th_sc function did run' ))
   } # end of optimization function 
@@ -505,21 +536,193 @@ optimize_foraging<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_m
 #  testing optimization th-sc    # 
 ##################################
 
-# now run the optimization function 
-optimize_foraging(2160,100,-5,-5,1,3,6,1, 0, 0.4)         # full version 
-optimize_foraging(360,50,-5,-5,1,3,6,1, 0, 0.4)           # 5 day version with 50 birds (quicker to run)
+      # now run the optimization function 
+      opt_foraging_th_sc(2160,100,-5,-5,1,3,6,1, 0, 0.4)         # full version 
+      opt_foraging_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4)           # 5 day version with 50 birds (quicker to run)
+      
+      # What if there isnt as much food? 
+      opt_foraging_th_sc(2160,100,-5,-5,1,2,4,1, 0, 0.4)         # everybody dies :'( 
+      opt_foraging_th_sc(2160,100,-5,-5,1,2.5,5,1, 0, 0.4)       # in between result? 
+      
+      # what if we vary the temperatures 
+      opt_foraging_th_sc(2160,100,-10,-10,1,3,6,1, 0, 0.4)       # colder
+      opt_foraging_th_sc(2160,100,10,10,1,3,6,1, 0, 0.4)         # warmer 
+      opt_foraging_th_sc(2160,100,-15,-15,1,3,6,1, 0, 0.4)       # very cold  
+      opt_foraging_th_sc(2160,100,-12,-12,1,3,6,1, 0, 0.4)        
+      # notice that when temperatures get colder, the higher thresholds (just always forage)
+      # dont work as well anymore 
+      
+      # just out of interest: at -10 there might be something happening 
+      # so plot with a smaller threshold range to see
+      opt_foraging_th_sc(2160,100,-10,-10,1,3,6,1, 0.1, 0.3) 
+      opt_foraging_th_sc(2160,100,-12,-12,1,3,6,1, 0.13, 0.27) 
 
-# What if there isnt as much food? 
-optimize_foraging(2160,100,-5,-5,1,2,4,1, 0, 0.4)         # everybody dies :'( 
-optimize_foraging(2160,100,-5,-5,1,2.5,5,1, 0, 0.4)       # in between result? 
+  
+      
+      
+      
+###########################################
+#      optimize visually for th-fr        # 
+###########################################
 
-# what if we vary the temperatures 
-optimize_foraging(2160,100,-10,-10,1,3,6,1, 0, 0.4)       # colder
-optimize_foraging(2160,100,10,10,1,3,6,1, 0, 0.4)         # warmer 
-optimize_foraging(2160,100,-15,-15,1,3,6,1, 0, 0.4)       # very cold  
+opt_foraging_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max){
+  # show start of optimization 
+  print(paste0('optimization th_fr start' ))
+  # set the optimization 
+  opt_type<<-'th_fr'
+  # creates 100 values between 0 and 0.4, evenly spaced 
+  th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+  
+  # now create a space to save the survival for each different value fo th_forage_sc 
+  survival_end<<-matrix(NA, 1, length(th_forage_fr))
+  
+  
+  for (th in 1:length(th_forage_fr)){
+    
+    
+    # Run the rest_forage function for each th_forage_sc that you have created. 
+    # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
+    # determine the current threshold for each loop 
+    current_th_fr<<-th_forage_fr[th]
+
+    # now run 
+    rest_or_forage(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+    # add to the previously created matrix
+
+    survival_end[1,th]<<-birds_alive_at_end
+  } # end of optimization for loop 
+  
+  # in the end, plot the whole thing 
+  par(mfrow=c(1,1))
+  plot(th_forage_fr, survival_end, main = paste0('Opt th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  
+  # for checking during coding 
+  print(paste0('optimization th_fr function finished' ))
+} # end of optimization function 
+
+##################################
+#  testing optimization th-fr    # 
+##################################
+      opt_foraging_th_fr(2160,100,-5,-5,0.2,3,6,1, 0, 4)         # full version 
+      opt_foraging_th_fr(360,10,-5,-5,0.2,3,6,1, 0, 4)         # fast version 
+      opt_foraging_th_fr(2160,100,-5,-5,0.2,3,6,1, 0, 2)         # smaller range 
+      
+      # play with temperatures a bit
+      opt_foraging_th_fr(2160,100,-10,-10,0.2,3,6,1, 0, 4)  
+      opt_foraging_th_fr(2160,100,-12,-12,0.2,3,6,1, 0, 4)  
+      opt_foraging_th_fr(2160,100,-15,-15,0.2,3,6,1, 0, 4) 
+      # again, it looks like the colder temperatures mostly prevent from foraging too much 
+      
+      
+      # how about food 
+      opt_foraging_th_fr(2160,100,-5,-5,0.2,2, 4,1, 0, 4) 
+      opt_foraging_th_fr(2160,100,-5,-5,0.2,2.5, 5,1, 0, 4) 
 
 
-# just testing some code 
+      
+      
+########################################
+#   2D visual optimization fr & sc     # 
+########################################
+
+opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max, th_fr_min, th_fr_max){
+        # show that optimizatio started 
+        print(paste0('optimization th_sc AND th_fr start' ))
+        
+        # specify optimization type 
+        opt_type<<-'th_sc_and_fr'
+        # creates 100 values between min and max, evenly spaced 
+        th_forage_sc<<-linspace(th_sc_min, th_sc_max, n=100)
+        th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+        
+        # now create a space to save the survival for each different value fo th_forage_sc and th_forage_fr 
+        survival_end<<-matrix(NA, length(th_forage_sc), length(th_forage_fr))
+        
+        # Outside for loop that goes through all values of forage_sc 
+        for (th_sc in 1:length(th_forage_sc)){
+          
+          # determine the current threshold for each loop 
+          current_th_sc<<-th_forage_sc[th_sc]
+          
+          # now run through all the possible fr values for this specific sc
+          for (th_fr in 1:length(th_forage_fr)){
+            # set the current fat reserve threshold 
+            current_th_fr<<-th_forage_fr[th_fr]
+            # run the forage or rest function: 
+            rest_or_forage(T, N, temp_day, temp_night, current_th_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+            # add to the previously created matrix 
+            survival_end[th_sc,th_fr]<<-birds_alive_at_end
+          } # end of loop for fat reserve thresholds 
+        } # end of loop for stomach content thesholds 
+        
+          # The matrix should be completely filled in now and ready to do 
+        
+        
+        # in the end, plot the whole thing 
+        #par(mfrow=c(1,1))
+        #plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+        
+        # for checking during coding 
+        print(paste0('optimization th_sc_and_fr function did run' ))
+     
+        # plot it so you can visualise
+        persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr')
+        
+        # i want a better graphic 
+        fig<-plot_ly() %>% add_surface(x=~th_forage_sc, y=th_forage_fr, z=survival_end, xlab='th_sc', ylab='th_fr', zlab='proportion survival')
+        fig
+        
+        
+        
+         } # end of optimization function 
+      
+##################################
+# testing optimization th-sc-fr  # 
+##################################
+      opt_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
+      opt_th_sc_and_fr(360,10,-5,-5,3,6,1, 0, 0.4, 0, 4)         # fast version 
+      opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # fast version 
+
+
+      
+      # what if it is a bit colder
+      opt_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
+      opt_th_sc_and_fr(2160,100,-15,-15,3,6,1, 0, 0.4, 0, 4)         # full version 
+      
+      # what if we have fewer food? 
+      opt_th_sc_and_fr(2160,100,-5,-5,2,4,1, 0, 0.4, 0, 4)         # full version 
+    
+ 
+#################################
+#  add numerical optimisation   # 
+#################################
+      
+    # simple one dim example: 
+      my_function <- function(x) {             # Create function
+        x^3 + 2 * x^2 - 10 * x
+      }
+      
+      # now optimise it 
+      optimize(my_function,                    # Apply optimize
+               interval = c(- 1, 1))
+      
+  
+      
+      # TO DO 
+          # Check how to do multiple dimensions?
+          # maybe do a 1 dim first
+          # So say, optimise for th-sc between 0 and 0.4
+          # can that be done if it is an S-curve ? 
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      # just testing some code 
 for (t in 1:10){
   if (exists('t')){
     print(paste0('hello'))
