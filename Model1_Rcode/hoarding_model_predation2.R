@@ -818,44 +818,112 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
   print(paste0('optimization th_sc_and_fr function did run' ))
   
   # plot it so you can visualise
-  persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr')
+  fig3<-persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr')
 
   #saveWidget(fig, 'temp.html')
   
   # testing if there is something wrong in my plotting 
-  fig2<-plot_ly(
+  fig2<<-plot_ly(
     x=as.numeric(th_forage_fr), 
     y=as.numeric(th_forage_sc), 
     z=survival_end
   )
-  fig2<-fig2 %>% add_surface()
-  fig2<-fig2 %>% layout(
+  fig2<<-fig2 %>% add_surface()
+  fig2<<-fig2 %>% layout(
     title=list(text=paste0('NOnH Optimised th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
     scene=list(
       xaxis=list(title= 'Threshold Fr  (gram)'),
       yaxis=list(title= 'Threshold Sc (gram)'),
       zaxis=list(title= 'Survival prob'
-  )))
-  fig2
+  ))
+  )
   
+  ggplotly(fig2)
+
   # save it 
   # set path 
-  path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
+  path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'Test',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
+  print(path)
   # save the thing
-  saveWidget(fig2, file.path(normalizePath(dirname(path)), basename(path)))
   
+  saveWidget(widget=(ggplotly(fig2)),
+             file=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'Test',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html'), 
+             title='titlehere')
+             
+  # 
+  # saveWidget(fig2, file=path, selfcontained = TRUE, libdir=NULL, title = 'title')
+  # 
+  # 
+  # saveWidget(widget=(ggplotly(fig2)), file=path, title='testTitle')
+  # 
+  # saveWidget(ggplotly(fig2), file.path(normalizePath(dirname(path)), basename(path)), title = 'title')
+  # 
   # saveWidget(fig2, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE, libdir=NULL, background='white', title='class(fig2)[[1]]', knitrOptions=list())
-  #  saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
-  
+  # 
+  # saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
+  # 
+  # 
+  # ### Try differen tthings 14/10/2022
+  # saveWidget(ggplotly(fig2), file.path(normalizePath(dirname(path)), basename(path)), title = 'title')
+  # 
+  # 
+  # # THIS ONE HAS WORKED AT SOME PIONT 
+  # saveWidget(ggplotly(fig2), file=path)
+  # 
+  # htmlwidgets::saveWidget(as_widget(fig2), path)
+  # # # 
+  # ggplotly(fig2)
+  # # # 
+  # saveWidget(ggplotly(fig2), path, basename(path), title = 'title')
+  # # # 
+  # saveWidget(ggplotly(fig2), path, title = 'title')
+  # # # 
+  # saveWidget(ggplotly(fig2), file.path(normalizePath(dirname(path)), basename(path)), title = 'title')
+  # # # 
+  # # # 
+  # saveWidget(widget=fig2, file='test.html')
+  # # # 
+  # # # 
+  # # # 
+  # # # 
+  # saveWidget(ggplotly(fig2), file=path)
+  # # # 
+  # # # 
+  # # # 
+  # # #plotly::export(p=fig2, file = 'test5')
+  # # # 
+  # # # 
+  # # # 
+  # # # 
+  # # 
+  # # path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', '3testffffthestu.html')
+  # # # save the thing
+  # # saveWidget(fig2, file.path(normalizePath(dirname(path)), basename(path)), title = 'title', selfcontained=TRUE)
+  # # 
+  # # read_html(file=path, skip = 0, remove.empty = TRUE, trim = TRUE)
+  # # 
+  # # tempdir<-'Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//'
+  # # 
+  # # 
+  # # 
+  # # saveWidget(fig2, 'Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//test2.html', selfcontained=F, libdir='lib')
+  # # 
+  # # withr::with_dir(tempdir, htmlwidgets::saveWidget(fig2, 'theo123'))
+  # # 
+  # # webpath<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'theo-party.webp')
+  # #   
+  # # orca::export(p = fig2, #the graph to export
+  # #                file = "webpath") #the name and type of file (can be .png, .jpeg, etc.)
+  # # 
 } # end of optimization function 
 
 ##################################
 # testing optimization th-sc-fr  # 
 ##################################
 opt_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
-opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)           # fast version 
+opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)        # fast version 
 opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # fast version 
-opt_th_sc_and_fr(50,10,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
+opt_th_sc_and_fr(50,3,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
 
 # what if it is a bit colder
 opt_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
