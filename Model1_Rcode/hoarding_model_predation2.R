@@ -56,6 +56,15 @@ library(rgl)
 library(plot3D)
 library(htmlwidgets)
 library(webshot)
+library(withr)
+
+
+############################# 
+#   set up directories      # 
+#############################
+
+# Set up the directory for where you want the figures saved 
+setwd('C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/hoarding_model_predation')
 
 ##############################
 #       input parameters    # 
@@ -838,32 +847,152 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
   ))
   )
   
+  fig2
   ggplotly(fig2)
 
-  # save it 
-  # set path 
-  path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'Test',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
-  print(path)
-  # save the thing
+  # # save it 
+  # # set path 
+  # path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'Test',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
+  # print(path)
+  # # save the thing
+  # Sys.setenv(PATH = paste(c(Sys.getenv("PATH"), "C:\\Program Files\\RStudio\\bin\\pandoc;"), collapse = ""))
+  # saveWidget(widget=(ggplotly(fig2)),
+  #            file=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'Test',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html'), 
+  #            title='titlehere', 
+  #            selfcontained = T)
+  #            
   
-  saveWidget(widget=(ggplotly(fig2)),
-             file=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'Test',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html'), 
-             title='titlehere')
-             
-  # 
-  # saveWidget(fig2, file=path, selfcontained = TRUE, libdir=NULL, title = 'title')
-  # 
-  # 
-  # saveWidget(widget=(ggplotly(fig2)), file=path, title='testTitle')
-  # 
-  # saveWidget(ggplotly(fig2), file.path(normalizePath(dirname(path)), basename(path)), title = 'title')
-  # 
-  # saveWidget(fig2, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE, libdir=NULL, background='white', title='class(fig2)[[1]]', knitrOptions=list())
-  # 
-  # saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
-  # 
-  # 
-  # ### Try differen tthings 14/10/2022
+  
+  ### 14/10  THE FOLLOWING CODE FUCKING WORKS WHOOOOOOOOO - GOD KNOWS WHY WHOOOO IT WEEKEND NOW 
+  # nee hoor het werkt helemaal niet
+  # het lijkt er op dat savewidget het niet leuk vind als je nieuwe filenames geeft. daarom wil ie die timestamps niet 
+  
+
+     # setwd('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/')
+     # getwd()
+     # saveWidget(widget=fig2,
+     #         file=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'NonH-opt-th-fr-and-th-sc', '.html'), 
+     #         title='titlehere', 
+     #         selfcontained = T)
+  
+ 
+ # getwd()
+ # saveWidget(widget=as_widget(fig2),
+ #             file='NonH-opt-th-fr-and-th-sc2.html',
+ #             libdir=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', format(Sys.time(), "%Y-%m-%d_%H_%M_%S")),
+ #             selfcontained = T)
+
+#   #setwd('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//')
+#   htmlwidgets::saveWidget(widget = as_widget(fig2), 
+#                           file = "test7.html", 
+#                           selfcontained = TRUE, 
+#                           libdir = NULL)
+#   file.rename("test7.html", (paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), 'target.html')))
+# #   
+#   
+#   
+#   
+#   
+#   
+#   
+#   f<-"Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//31.html"
+#   saveWidget(fig2,file.path(normalizePath(dirname(f)),basename(f)))
+#   
+#   
+  
+  # The saveWidget function has trouble saving in new directories and sometimes doesnt delete the temporary files
+  # I found this code that should get rid of it (works so far )
+  # Function that warns you when you are overwriting 
+  save_widget_wrapper <- function(plot, file, overwrite = FALSE){
+    # save the file if it doesn't already exist or if overwrite == TRUE
+    if( !file.exists(file) | overwrite ){
+      withr::with_dir(new = dirname(file), 
+                      code = htmlwidgets::saveWidget(plot, 
+                                                     file = basename(file)))
+    } else {
+      print("File already exists and 'overwrite' == FALSE. Nothing saved to file.")
+    }
+  }
+  # Set to the correct working directory 
+  setwd('C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-hoarding_model_predation/opt_th_sc_and_fr')
+  Filename<- filename<-paste0('H_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max,'.html')
+  save_widget_wrapper(fig2, Filename)
+
+
+  
+  
+  
+#   #htmlwidgets::saveWidget(widget = as_widget(p), file = "tmp.html", selfcontained = TRUE) file.rename("tmp.html", "target_dir/target.html"))
+#   
+#   # TRY AND GET THE TIMESTAMP I 
+#   timestamp<-paste0(format(Sys.time(), "%Y_%m_%d__%H_%M_%S"))
+#   path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', timestamp,'Test', '.html')
+#   
+#   saveWidget(widget=fig2,
+#              file=path, 
+#              title='titlehere', 
+#              selfcontained = T)
+#   
+#   
+#   xxxxx<-3
+#   saveWidget(widget=fig2,
+#              file=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//Test',x,'.html'), 
+#              title='titlehere', 
+#              selfcontained = T)
+#   
+#   words<-'lalalala'
+#   saveWidget(widget=fig2,
+#              file=paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//Test',words,'.html'), 
+#              title='titlehere', 
+#              selfcontained = T)
+#   
+#   date<-as.character(Sys.Date(  ))
+ #filename<-paste0('H_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max,'.html')
+#   path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', filename)
+#  
+#   
+#   
+#   
+#    saveWidget(widget=fig2,
+#               file.path(normalizePath(dirname(path)), basename(path)),
+#              title='titlehere', 
+#              selfcontained = T)
+#   
+#   
+#   withr::with_dir('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', saveWidget(widget=fig2, file='Test.html'))
+#   
+#   
+#   saveWidgetFix <- function (widget,file) {
+#     ## A wrapper to saveWidget which compensates for arguable BUG in
+#     ## saveWidget which requires `file` to be in current working
+#     ## directory.
+#     wd<-getwd()
+#     on.exit(setwd(wd))
+#     outDir<-dirname(file)
+#     file<-basename(file)
+#     setwd(outDir);
+#     saveWidget(widget,file=file)
+#   }
+#   
+#   saveWidgetFix(fig2, 'Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//testthenieuwfunction.html')
+#   
+#   
+# # save the thing
+# saveWidget(fig3, file.path(normalizePath(dirname(path)), basename(path)))
+#   # 
+#   # saveWidget(fig2, file=path, selfcontained = TRUE, libdir=NULL, title = 'title')
+#   # 
+#   # 
+#   # saveWidget(widget=(ggplotly(fig2)), file=path, title='testTitle')
+#   # 
+#   # saveWidget(ggplotly(fig2), file.path(normalizePath(dirname(path)), basename(path)), title = 'title')
+#   # 
+#   # saveWidget(fig2, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'NonH_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE, libdir=NULL, background='white', title='class(fig2)[[1]]', knitrOptions=list())
+#   # 
+#   # saveWidget(fig, file='//campus\home\home2019\c0070955\Vera\NCLU\1-PHD_PROJECT\Modelling\R\Figures\rest_or_forage\opt_th_sc_and_fr\test.html')
+#   # 
+#   # 
+#   # ### Try differen tthings 14/10/2022
   # saveWidget(ggplotly(fig2), file.path(normalizePath(dirname(path)), basename(path)), title = 'title')
   # 
   # 
@@ -923,7 +1052,7 @@ opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_m
 opt_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
 opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)        # fast version 
 opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # fast version 
-opt_th_sc_and_fr(50,3,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
+opt_th_sc_and_fr(100,50,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
 
 # what if it is a bit colder
 opt_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
