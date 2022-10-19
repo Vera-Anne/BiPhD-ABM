@@ -26,20 +26,19 @@
 # Check if the retrieval_min makes sense --> this should be based on how much the cost is of retrieving? 
 # Check if the cost for retrieval needs to depend on number of caches retrieved
 # Why does stomach content not drop to 0? 
-# There is no predation in this model 
 # fix the bmr multi for retrieval 
 # check if all the bmr funxtions are correct 
-# have some sort of automated/easier directory settings. Currently very messy. 
 # do we need it to run for 30 days before doing anything? 
-# change name of the model (forage or hoard is confusing )
 # what about pilferage ? 
 # should teh individual and timestep loop be the other way around? 
+# fix the 'opt-type' bug --> make it so you can run function sin wrong order 
+# merge hoarding and non hoarding models 
 
 
 
 ##    addressed in this version  ## 
 
-# Automated directories 
+# renamed the 'T' variable to 'TS' 
 
 
 
@@ -66,9 +65,11 @@ library(withr)
 
 # Set up the main directory for where you want the figures saved 
 # This can be replaced by any folder you have on your computer (just make sure you have continuous connection if its a webfolder)
-
 mainDir<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/hoarding_model_predation'
 setwd(mainDir)
+
+#################
+# Run the following if doing this for the first time on devide: 
 # create list of folders that we want present 
 folders<-c('NonH_opt_th_fr', 'H_opt_th_fr', 'NonH_opt_th_sc', 'H_opt_th_sc', 'NonH_opt_th_sc_and_fr', 'H_opt_th_sc_and_fr','NonH_sim', 'H_sim')
 # Check if they exist and if not, create them 
@@ -77,11 +78,9 @@ for (folder in folders){
   dir.create(file.path(mainDir, folder ), showWarnings = TRUE)
 }
 
-
 ##############################
 #       input parameters    # 
 ##############################
-
 # Use these if not running as function / debugging
 # It fills in some variables if you are testing code without running full functions 
 fill_vars<-function(){
@@ -103,105 +102,8 @@ fill_vars<-function(){
 ##################################
 #  set-up environment function   #
 ##################################
-set_up_env<-function(T,N, temp_cur, num_food_mean, num_food_max){
-  
-  # Want to plot some initial value graphs? 
-  # 1 for yes, 0 for no 
-  plot_init_value<<-0
-  
-  # Set up some parameters (Global)
-  food_item<<-0.064    # value of a food item 
-  stom_size<<-0.4      # stomach size of the bird 
-  stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
-  fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
-  plot_interval<<-50   # every x timestep a dot on the graph is added 
-  start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
-  end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
-  num_cache_min<<-50  # minimum number of caches that each bird has initially 
-  num_cache_max<<-100 # maximum number of caches each bird has initially 
-  retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
-  
-  # Do some calculations for food distributions: 
-  gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
-  gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
-  
-  # create individual matrices (Global)
-  mat_alive<<-matrix(NA, N, (T))            # matrix to keep track of who's alive 
-  mat_sc<<-matrix(NA, N, (T))               # matrix to keep track of stomach contents
-  mat_fr<<-matrix(NA, N, (T))               # matrix to keep track of fat reserves 
-  mat_mass<<-matrix(NA,N,(T))               # matrix to keep track of mass of birds 
-  mat_caches<<-matrix(NA,N,(T))             # matrix to keep track of the number of caches each bird has at each timestep
-  mat_Pkill<<-matrix(NA,N,(T))              # matrix to keep track of what Pkill every bird had at each timestep
-  
-  
-  # fill in some initial values for agent variables  (global)
-  mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
-  sc_init<<-0+(rtruncnorm(N, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
-  fr_init<<-0+(rtruncnorm(N, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
-  alive_init<<-rep(1, N )                                                     # all birds are alive at the start 
-  caches_init<<-round(0+(rtruncnorm(N, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
-  
-  # Put these in first column of the matrices  
-  mat_alive [,1]<<-alive_init
-  mat_sc[,1]<<-sc_init
-  mat_fr[,1]<<-fr_init
-  mat_mass[,1]<<-mass_init
-  mat_caches[,1]<<-caches_init
-  
-  # Create empty matrices to keep track of numbers (Global)
-  # keep track of means 
-  sc_mean<<-matrix(NA, 1, (T))
-  fr_mean<<-matrix(NA, 1, (T))
-  mass_mean<<-matrix(NA,1, (T))
-  alive_mean<<-matrix(NA,1, T)
-  caches_mean<<-matrix(NA,1,(T))
-  # count what the birds are up to (Global)
-  forage_count<<-matrix(NA, N, (T))
-  rest_count<<-matrix(NA, N, (T))
-  sleep_count<<-matrix(NA, N,T)
-  retrieve_count<<-matrix(NA, N, T)
-  eat_hoard_count<<-matrix(NA, N, T)
-  eat_count<<-matrix(NA, N, T)
-  predation_count<<-matrix(NA, N,(T))                               # Keep track of how many birds have actually been killed by predation
-  
-  # total number of birds doing behaviours (Global)
-  total_forage<<-matrix(NA, 1, T)                  # total number of birds foraging each timestep
-  total_rest<<-matrix(NA,1, T)                     # total number of birds resting each timestep 
-  total_alive<<-matrix(NA,1,T)                     # total number of birds alive each timestep 
-  total_retrieve<<-matrix(NA, 1, T)                # total number of birds retrieving each timestep
-  total_eat_hoard<<-matrix(NA, 1, T)              # total number of birds eat-hoarding in each timestep
-  total_eat<<-matrix(NA, 1, T)                    # total number of birds eating in each timestep 
-  total_predated<<-matrix(NA, 1, T)
-  
-  # Set up the food distribution 
-  # this doesnt work cause it gets negative values
-  # food_distr<-rnorm(100, mean=0.192, sd=0.4)
-  
-  # set metabolic rates (function )
-  mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
-    mr_cur<<-45.65-(1.33*temp_cur)
-  }
-  
-  bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
-    bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
-  }
-  
-  # Do some calculations for the daylength etc. 
-  daylength<<-(end_day-start_day-1)
-  
-  # PREDATION  
-  # Pattack: 
-  # In the current version Pattack for rest and sleep is 0 
-  # Pattack for any foraging behavior (retrieve, eat-hoard, eat) 
-  # This is as it is set in Pravosudov and Lucas 2001, citing Lima 1986
-  Patt_for<<-0.000667
-  Patt_sleep<<-0
-  Patt_rest<<-0
-  
-  
-} # end set-up function 
 
-set_up_env_copy<-function(TS,N, temp_cur, num_food_mean, num_food_max){
+set_up_env<-function(TS,N, temp_cur, num_food_mean, num_food_max){
   
   # Want to plot some initial value graphs? 
   # 1 for yes, 0 for no 
@@ -230,7 +132,6 @@ set_up_env_copy<-function(TS,N, temp_cur, num_food_mean, num_food_max){
   mat_mass<<-matrix(NA,N,TS)               # matrix to keep track of mass of birds 
   mat_caches<<-matrix(NA,N,TS)             # matrix to keep track of the number of caches each bird has at each timestep
   mat_Pkill<<-matrix(NA,N,TS)              # matrix to keep track of what Pkill every bird had at each timestep
-  
   
   # fill in some initial values for agent variables  (global)
   mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
@@ -288,119 +189,16 @@ set_up_env_copy<-function(TS,N, temp_cur, num_food_mean, num_food_max){
   daylength<<-(end_day-start_day-1)
   
   # PREDATION  
-  # Pattack: 
-  # In the current version Pattack for rest and sleep is 0 
-  # Pattack for any foraging behavior (retrieve, eat-hoard, eat) 
-  # This is as it is set in Pravosudov and Lucas 2001, citing Lima 1986
-  Patt_for<<-0.000667
-  Patt_sleep<<-0
-  Patt_rest<<-0
-  
-  
-} # end set-up function 
+    # Pattack: 
+    # In the current version Pattack for rest and sleep is 0 
+    # Pattack for any foraging behavior (retrieve, eat-hoard, eat) 
+    # This is as it is set in Pravosudov and Lucas 2001, citing Lima 1986
+    Patt_for<<-0.000667
+    Patt_sleep<<-0
+    Patt_rest<<-0
+    
+  } # end set-up function 
 
-#set_up_env<-function(TS,N, temp_cur, num_food_mean, num_food_max){
-
-# Want to plot some initial value graphs? 
-# 1 for yes, 0 for no 
-plot_init_value<<-0
-
-# Set up some parameters (Global)
-food_item<<-0.064    # value of a food item 
-stom_size<<-0.4      # stomach size of the bird 
-stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
-fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
-plot_interval<<-50   # every x timestep a dot on the graph is added 
-start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
-end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
-num_cache_min<<-50  # minimum number of caches that each bird has initially 
-num_cache_max<<-100 # maximum number of caches each bird has initially 
-retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
-
-# Do some calculations for food distributions: 
-gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
-gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
-
-# create individual matrices (Global)
-mat_alive<<-matrix(NA, N , (TS)    )        # matrix to keep track of who's alive 
-mat_sc<<-matrix(NA, N, TS)               # matrix to keep track of stomach contents
-mat_fr<<-matrix(NA, N, TS)               # matrix to keep track of fat reserves 
-mat_mass<<-matrix(NA,N,TS)               # matrix to keep track of mass of birds 
-mat_caches<<-matrix(NA,N,TS)             # matrix to keep track of the number of caches each bird has at each timestep
-mat_Pkill<<-matrix(NA,N,TS)              # matrix to keep track of what Pkill every bird had at each timestep
-
-
-# fill in some initial values for agent variables  (global)
-mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
-sc_init<<-0+(rtruncnorm(N, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
-fr_init<<-0+(rtruncnorm(N, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
-alive_init<<-rep(1, N )                                                     # all birds are alive at the start 
-caches_init<<-round(0+(rtruncnorm(N, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
-
-# Put these in first column of the matrices  
-mat_alive [,1]<<-alive_init
-mat_sc[,1]<<-sc_init
-mat_fr[,1]<<-fr_init
-mat_mass[,1]<<-mass_init
-mat_caches[,1]<<-caches_init
-
-# Create empty matrices to keep track of numbers (Global)
-# keep track of means 
-sc_mean<<-matrix(NA, 1, (TS))
-fr_mean<<-matrix(NA, 1, (TS))
-mass_mean<<-matrix(NA,1, (TS))
-alive_mean<<-matrix(NA,1, TS)
-caches_mean<<-matrix(NA,1,(TS))
-# count what the birds are up to (Global)
-forage_count<<-matrix(NA, N, (TS))
-rest_count<<-matrix(NA, N, (TS))
-sleep_count<<-matrix(NA, N,(TS))
-retrieve_count<<-matrix(NA, N, TS)
-eat_hoard_count<<-matrix(NA, N, TS)
-eat_count<<-matrix(NA, N, TS)
-predation_count<<-matrix(NA, N,(TS))                               # Keep track of how many birds have actually been killed by predation
-
-# total number of birds doing behaviours (Global)
-total_forage<<-matrix(NA, 1, TS)                  # total number of birds foraging each timestep
-total_rest<<-matrix(NA,1, TS)                     # total number of birds resting each timestep 
-total_alive<<-matrix(NA,1,TS)                     # total number of birds alive each timestep 
-total_retrieve<<-matrix(NA, 1, TS)                # total number of birds retrieving each timestep
-total_eat_hoard<<-matrix(NA, 1, TS)              # total number of birds eat-hoarding in each timestep
-total_eat<<-matrix(NA, 1, TS)                    # total number of birds eating in each timestep 
-total_predated<<-matrix(NA, 1, TS)
-
-# Set up the food distribution 
-# this doesnt work cause it gets negative values
-# food_distr<-rnorm(100, mean=0.192, sd=0.4)
-
-# set metabolic rates (function )
-mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
-  mr_cur<<-45.65-(1.33*temp_cur)
-}
-
-bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
-  bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
-}
-
-# Do some calculations for the daylength etc. 
-daylength<<-(end_day-start_day-1)
-
-# PREDATION  
-# Pattack: 
-# In the current version Pattack for rest and sleep is 0 
-# Pattack for any foraging behavior (retrieve, eat-hoard, eat) 
-# This is as it is set in Pravosudov and Lucas 2001, citing Lima 1986
-Patt_for<<-0.000667
-Patt_sleep<<-0
-Patt_rest<<-0
-
-
-} # end set-up function 
-
-# DO SOME TESTING 
-set_up_env_copy(3, 10, 5, 3, 6)
-
-set_up_env(TS, N, 5, 3, 6)
 
 ################################################################################
 ##################     NON-HOARDING BIRD MODEL STARTS HERE    ##################
@@ -410,7 +208,7 @@ set_up_env(TS, N, 5, 3, 6)
 ###############################
 #   Rest or Forage function   #     # As in rest_or_forage (don't touch right now)
 ###############################
-NonHoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
+#NonHoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
   
   # Set up the environment: run environment function 
   set_up_env(T, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
@@ -743,10 +541,10 @@ NonHoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_fora
 
 ###############################
 
-NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
+NonHoarding_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
   
   # Set up the environment: run environment function 
-  set_up_env_copy(TS, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
+  set_up_env(TS, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
   
   ###################################
   #   start the for loop  timesteps # 
@@ -791,7 +589,6 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
       else{
         mat_alive[i,t]<<-1
       }
-      
       
       ################
       #  DEAD BIRDS  #
@@ -956,7 +753,7 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
           mat_mass[i,t]<<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
           # MOVE ALL VARAIBLES TO T+1 
           # Note that this should only happen if you're not in the last timestep 
-          if(t<T){
+          if(t<TS){
             # For the fr matrix 
             mat_fr[,(t+1)]<<-mat_fr[,t]
             # For the mass matrix 
@@ -974,7 +771,6 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
     #    wrap up timestep    # 
     ##########################
     
-    
     # COUNT WHAT HAPPENED 
     # For each timestep, count what the birds are doing 
     # These are global now, can be changed if not necessary 
@@ -990,7 +786,6 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
     alive_mean[t]<<-mean(mat_alive[,t], na.rm= TRUE)
     
     ####################
-    
     #      PLOT        #
     ####################
     
@@ -1012,21 +807,13 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
       plot4<-plot(1:t, total_alive[1,(1:t)], ylim=c(0, N), ylab='Number of birds alive', xlab='Timestep', main='Number birds alive', type='l')
       # 5
       plot5<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
-      
-      # Code to plot total number of birds foraging (omitted)
-      #plot5<-plot(1:t, (total_forage[1,(1:t)]), ylim=c(0, N), ylab='#', xlab='Timestep', main='Number of birds foraging', type='l')
-      
       # 6
       plot6<-plot(1:t, ((total_rest[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds resting', type='l')
-      
-      # Code to plot total number of birds resting (omitted)
-      # plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
-      
       # 7: To show predation
       plot7<-plot(1:t, (total_predated[1,(1:t)]), ylim=c(0, 5), ylab='# killed by predation', xlab='Timestep', main='Number of birds killed by predation', type='l')
       
       # code for title 
-      mtext((paste('T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max)), side=3, cex=0.8,line=-2, outer=TRUE)
+      mtext((paste('T=', TS, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max)), side=3, cex=0.8,line=-2, outer=TRUE)
       Sys.sleep(0)             # turns that back off 
     }# end if statement 
     
@@ -1034,7 +821,7 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
   } # end of big timestep loop 
   
   # create variable with the number of the last timesstep done 
-  last_T<<-T
+  last_T<<-TS
   # Plot some initial distributions if wanted 
   if(plot_init_value==1){
     par(mfrow=c(2,3))
@@ -1060,23 +847,18 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
       print(paste0('NonH function did run for sc:', current_th_sc ))
       print(paste0('NonH function did run for fr:', current_th_fr ))
     }
-  }
+  } # end of printings 
   
   if(!exists('opt_type')){
     print(paste0('ready to save NonH simulation plots'))
     # SAVE LINE PLOTS 
     setwd(paste0(mainDir, '/NonH_sim//')) # set current wd 
-    dev.print(pdf, (paste0('Plot_Rest_forage_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    dev.print(pdf, (paste0('NonH sim_T=', TS, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     
-    
-  }
-  
+  }# end the printing of figures 
+ 
   
 } # end the rest/forage function 
-
-
-
-
 
 ##############################
 #    testing the function    # 
@@ -1086,7 +868,7 @@ NonHoarding_function_copy<-function(TS, N, temp_day, temp_night, th_forage_sc, t
 # REST_OR_FORAGE (timesteps, individuals, daytemp, nighttemp, th_forage_sc, th_forage_fr, mean-food, max-food)
 
 # vary with number of food found 
-NonHoarding_function_copy(2, 3, -5,-5, 0.1, 1,3,6, 0)   # short one 
+NonHoarding_function(5, 10, -5,-5, 0.1, 1,3,6, 0)   # short one 
 # rest_or_forage(1000,100,-5,-5, 0.2,1,2,4)
 # rest_or_forage(1000,100,-5, -5, 0.2,1,3,6)
 # rest_or_forage(1000,100,-5, -5, 0.2,1,1,2)
@@ -1170,12 +952,12 @@ rest_or_forage(2160, 100, -5, -5, 0.03, 3, 3, 6, 0)
 rest_or_forage(2160, 100, -5, -5, 0.2, 3, 3, 6, 0)
 #### Testing 
 
-###########################################
-#  optimization th-sc function  visually  # 
-###########################################
-NonH_opt_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
+###############################################
+#  optimization th-sc function  visually NonH # 
+###############################################
+NonH_opt_th_sc<-function(TS, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
   # show that optimizatio started 
-  print(paste0('optimization th_sc start' ))
+  print(paste0('NonH opt th_sc start' ))
   
   # select optimization type 
   opt_type<<-c('th_sc')
@@ -1185,31 +967,30 @@ NonH_opt_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean
   # now create a space to save the survival for each different value fo th_forage_sc 
   survival_end<<-matrix(NA, 1, length(th_forage_sc))
   
-  
-  for (th in 1:length(th_forage_sc)){
-    # Run the rest_forage function for each th_forage_sc that you have created. 
-    # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
-    # determine the current threshold for each loop 
-    current_th_sc<<-th_forage_sc[th]
-    # current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing
-    # now run 
-    NonHoarding_function(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
-    # add to the previously created matrix
-    survival_end[1,th]<<-birds_alive_at_end
-  } # end of optimization for loop 
-  
+      for (th in 1:length(th_forage_sc)){
+        # Run the rest_forage function for each th_forage_sc that you have created. 
+        # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
+        # determine the current threshold for each loop 
+        current_th_sc<<-th_forage_sc[th]
+        # current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing
+        # now run 
+        NonHoarding_function(TS, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
+        # add to the previously created matrix
+        survival_end[1,th]<<-birds_alive_at_end
+      } # end of optimization for loop 
+      
   # in the end, plot the whole thing 
   par(mfrow=c(1,1))
   #jpeg('plot_opt_forage_th_sc.jpg')
-  fig_opt_forage_th_sc<<-plot(th_forage_sc, survival_end, main = paste0('Opt th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  fig_opt_forage_th_sc<<-plot(th_forage_sc, survival_end, main = paste0('NonH Opt th_sc T=', TS, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-m=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
   fig_opt_forage_th_sc
   
   # for checking during coding 
-  print(paste0('optimization th_sc function did run' ))
+  print(paste0('NonH opt th_sc function did run' ))
   
   # save the figure in previously made folders 
   setwd(paste0(mainDir, '//NonH_opt_th_sc/'))
-  dev.print(pdf, (paste0('NonH-Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('NonH_opt_th_sc_T=', TS, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimization function 
 
@@ -1245,12 +1026,12 @@ NonH_opt_th_sc(2160,100,-5,-5,0.5,3,6,1, 0, 0.4)         # full version
 NonH_opt_th_sc(2160,100,-5,-5,0.75,3,6,1, 0, 0.4)         # full version
 
 
-###########################################
-#      optimize visually for th-fr        # 
-###########################################
-NonH_opt_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max){
+############################################
+#      optimize visually for th-fr NonH    # 
+############################################
+NonH_opt_th_fr<-function(TS, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max){
   # show start of optimization 
-  print(paste0('optimization th_fr start' ))
+  print(paste0('NonH opt th_fr start' ))
   # set the optimization 
   opt_type<<-'th_fr'
   # creates 100 values between 0 and 0.4, evenly spaced 
@@ -1259,42 +1040,29 @@ NonH_opt_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_mean
   # now create a space to save the survival for each different value fo th_forage_sc 
   survival_end<<-matrix(NA, 1, length(th_forage_fr))
   
-  
   for (th in 1:length(th_forage_fr)){
     # Run the rest_forage function for each th_forage_sc that you have created. 
     # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
     # determine the current threshold for each loop 
     current_th_fr<<-th_forage_fr[th]
     # now run 
-    NonHoarding_function(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+    NonHoarding_function(TS, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
     # add to the previously created matrix
     survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
   
   # in the end, plot the whole thing 
   par(mfrow=c(1,1))
-  plot(th_forage_fr, survival_end, main = paste0('Opt th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  plot(th_forage_fr, survival_end, main = paste0('NonH opt th_fr T=', TS, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-m=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
   
   # for checking during coding 
-  print(paste0('optimization th_fr function finished' ))
-  
-  # save the figure 
-  # for uni desktop 
-  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # for uni laptop 
-  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # local on VERA account 
-  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # Save in smulders folder 
-  #dev.print(pdf, (paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'NonH_Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  
+  print(paste0('NonH opt th_fr function finished' ))
   
   # save in previously made folders 
   setwd(paste0(mainDir, '//NonH_opt_th_fr/'))
-  dev.print(pdf, (paste0('NonH_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('NonH_opt_th_fr_T=', TS, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
-  
-} # end of optimization function for th-fr in NonHoard
+  } # end of optimization function for th-fr in NonHoard
 
 ##################################
 #  testing optimization th-fr    # 
@@ -1322,8 +1090,8 @@ NonH_opt_th_fr(2160,100,-5,-5,0.09,3,6,1, 0, 4)         # full version
 ########################################
 NonH_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max, th_fr_min, th_fr_max){
   # show that optimizatio started 
-  print(paste0('optimization th_sc AND th_fr start' ))
-  
+  print(paste0('NonH opt th_sc AND th_fr start' ))
+  start_time<-Sys.time()
   # specify optimization type 
   opt_type<<-'th_sc_and_fr'
   # creates 100 values between min and max, evenly spaced 
@@ -1353,7 +1121,7 @@ NonH_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_f
   # The matrix should be completely filled in now and ready to do 
   
   # for checking during coding 
-  print(paste0('optimization th_sc_and_fr function did run' ))
+  print(paste0('NonH opt th_sc_and_fr function did run' ))
   
   # plot it so you can visualise
   fig3<-persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr')
@@ -1366,7 +1134,7 @@ NonH_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_f
   )
   fig2<<-fig2 %>% add_surface()
   fig2<<-fig2 %>% layout(
-    title=list(text=paste0('NOnH Optimised th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+    title=list(text=paste0('NOnH Opt th_Sc and th_fr T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-m=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
     scene=list(
       xaxis=list(title= 'Threshold Fr  (gram)'),
       yaxis=list(title= 'Threshold Sc (gram)'),
@@ -1378,64 +1146,31 @@ NonH_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_f
   ggplotly(fig2)
   
   # SAVE THE WIDGET 
-  # The saveWidget function has trouble saving in new directories and sometimes doesnt delete the temporary files
-  # I found this code that should get rid of it (works so far )
-  # Function that warns you when you are overwriting 
-  save_widget_wrapper <- function(plot, file, overwrite = FALSE){
-    # save the file if it doesn't already exist or if overwrite == TRUE
-    if( !file.exists(file) | overwrite ){
-      withr::with_dir(new = dirname(file), 
-                      code = htmlwidgets::saveWidget(plot, 
-                                                     file = basename(file)))
-    } else {
-      print("File already exists and 'overwrite' == FALSE. Nothing saved to file.")
-    }
-  }
-  # Set to the correct working directory 
-  #setwd('C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr')
-  
-  # setwd(paste0(mainDir, '/NonH_opt_th_sc_and_fr//'))
-  # Filename<-paste0('NonH_opt_th_sc_and_th_fr','_T=', T, '_N=',N,'_dayT=', temp_day, '_nightT=',temp_night,'_foodM=', num_food_mean, '_foodMax=', num_food_max, '2.html')
-  # save_widget_wrapper(fig2, Filename)
-  # 
-  
-  # try and get that timestamp in 
-  setwd(paste0(mainDir, '/NonH_opt_th_sc_and_fr//'))
-  Fig_timestamp<-format(Sys.time(), "%Y_%m_%d__%H_%M_%S")
-  Filename<-paste0('NonH_opt_3D','_T', T, '_N',N,'_dayT', temp_day, '_nightT',temp_night,'_foodM', num_food_mean, '_foodMax', num_food_max,'_', Fig_timestamp,'.html')
-  #Filename<-paste0(Fig_timestamp,'.html')
-  save_widget_wrapper(fig2, Filename)
-  
-  
-  
-  
-  
-  
-  # # create the timestamp up front, 
-  # #otherwise the stamp for creating the supporting folders differs from the actual html file and the code crashes
-  # 
-  # 
-  # temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot
-  # 
-  # 
-  # 
-  # 
-  # Timestamp<-format(Sys.time(), "%Y_%m_%d__%H_%M_%S")     
-  # 
-  # 
-  # 
-  # 
-  # setwd(mainDir)
-  # 
-  # 
-  # setwd(paste0(mainDir, '/NonH_opt_th_sc_and_fr//'))
-  # Filename<- filename<-paste0('NonH_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max,'_Try again', '.html') # 
-  # #Filename<-'TestingFilenames.html'
-  # save_widget_wrapper(fig2, Filename)
-  # 
-  # saveWidget(fig2, Filename)
-  
-} # end of optimization function for th-sc and th-fr for NonHoard 
+      # The saveWidget function has trouble saving in new directories and sometimes doesnt delete the temporary files
+      # I found this code that should get rid of it (works so far )
+      # Function that warns you when you are overwriting 
+      save_widget_wrapper <- function(plot, file, overwrite = FALSE){
+        # save the file if it doesn't already exist or if overwrite == TRUE
+        if( !file.exists(file) | overwrite ){
+          withr::with_dir(new = dirname(file), 
+                          code = htmlwidgets::saveWidget(plot, 
+                                                         file = basename(file)))
+        } else {
+          print("File already exists and 'overwrite' == FALSE. Nothing saved to file.")
+        }
+      }
+    
+      
+      # save the widget with the wrapper 
+      setwd(paste0(mainDir, '/NonH_opt_th_sc_and_fr//'))                  # set the working directory 
+      Fig_timestamp<-format(Sys.time(), "%Y_%m_%d__%H_%M_%S")             # set a seperate timestamp (supporting folders and html need to have the same name otherwise the function crashes )
+      Filename<-paste0('NonH_opt_3D','_T', T, '_N',N,'_dayT', temp_day, '_nightT',temp_night,'_foodM', num_food_mean, '_foodMax', num_food_max,'_', Fig_timestamp,'.html')
+      save_widget_wrapper(fig2, Filename)
+
+      end_time<-Sys.time()
+      time_taken<-round(end_time-start_time,2)
+      print(time_taken)
+      } # end of optimization function for th-sc and th-fr for NonHoard 
 
 ##################################
 # testing optimization th-sc-fr  # 
@@ -1443,7 +1178,7 @@ NonH_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_f
 NonH_opt_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
 NonH_opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)        # fast version 
 NonH_opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # fast version 
-NonH_opt_th_sc_and_fr(50,5,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
+NonH_opt_th_sc_and_fr(30,5,-10,-10,3,6,1, 0, 0.4, 0, 4)          # half a day 
 # what if it is a bit colder
 NonH_opt_th_sc_and_fr(2160,100,-10,-10,3,6,1, 0, 0.4, 0, 4)         # colder
 NonH_opt_th_sc_and_fr(2160,100,-15,-15,3,6,1, 0, 0.4, 0, 4)         # full version 
@@ -1457,18 +1192,18 @@ NonH_opt_th_sc_and_fr(2160,100,-5,-5,2,4,1, 0, 0.4, 0, 4)         # full version
 #######################################
 #   Rest or Forage or Hoard function  #     
 #######################################
-
-Hoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
+rm(opt_type)
+Hoarding_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot){
   
   # Set up the environment: run environment function 
-  set_up_env(T, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
+  set_up_env(TS, N, temp_cur, num_food_mean, num_food_max)              # could be a problem that temp-cur is not known atm. 
   
   ###################################
   #   start the for loop  timesteps # 
   ###################################
   
   # Start a for loop for each timestep 
-  for (t in 1:T){
+  for (t in 1:TS){
     
     # Check if it is night or day 
     if ((t%%72)>=start_day && (t%%72<end_day)){
@@ -1770,7 +1505,7 @@ Hoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_
         
         # MOVE ALL VARAIBLES TO T+1 
         # Note that this should only happen if youre not in the last timestep 
-        if(t<T){
+        if(t<TS){
           # For the fr matrix 
           mat_fr[,(t+1)]<<-mat_fr[,t]
           # For the mass matrix 
@@ -1826,36 +1561,25 @@ Hoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_
       plot3<<-plot(1:t, mass_mean[1,(1:t)], ylim=c(0,(20)), ylab='Mean mass', xlab='timestep', main='Mean mass', type='l')
       # 4
       plot4<<-plot(1:t, total_alive[1,(1:t)], ylim=c(0, N), ylab='Number of birds alive', xlab='Timestep', main='Number birds alive', type='l')
-      
-      # 5 foraging plot omited for now
-      #plot5<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
-      
       # 5
       plot5<<-plot(1:t, ((total_eat[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds eating', type='l')
-      
-      # Code to plot total number of birds foraging (omitted)
-      #plot5<-plot(1:t, (total_forage[1,(1:t)]), ylim=c(0, N), ylab='#', xlab='Timestep', main='Number of birds foraging', type='l')
-      
       # 6
       plot6<<-plot(1:t, ((total_rest[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds resting', type='l')
-      
-      # Code to plot total number of birds resting (omitted)
-      # plot6<-plot(1:t, total_rest[1,(1:t)], ylim=c(0, N), ylab='Number of birds resting', xlab='Timestep', main='Nuber birds resting', type='l')
-      
+
       # 7
       plot7<<-plot(1:t, ((total_retrieve[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds retrieving', type='l')
       
       # 8
       plot8<<-plot(1:t, ((total_eat_hoard[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds eat-hoarding', type='l')
       
-      mtext((paste('T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max)), side=3, cex=0.8,line=-2, outer=TRUE)
+      mtext((paste('T=', TS, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max)), side=3, cex=0.8,line=-2, outer=TRUE)
       Sys.sleep(0)             # turns that back off 
     }# end if statement for plots
     
   } # end of big timestep loop 
   
   # create variable with the number of the last timesstep done 
-  last_T<<-T
+  last_T<<-TS
   
   # Plot some initial distributions if wanted 
   if(plot_init_value==1){
@@ -1887,12 +1611,11 @@ Hoarding_function<-function(T, N, temp_day, temp_night, th_forage_sc, th_forage_
   }
   
   
-  
   if(!exists('opt_type')){
     print(paste0('ready to save H simulation plots'))
     # SAVE LINE PLOTS 
     setwd(paste0(mainDir, '/H_sim//')) # set current wd 
-    dev.print(pdf, (paste0('H_simulation_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    dev.print(pdf, (paste0('H_simulation_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     
     
   }
@@ -1913,9 +1636,9 @@ Hoarding_function(102, 10, -5, -5, 0.2, 1, 3, 6, 0)           # shorter
 ######################################################
 #  optimization th-sc function  visually - hoarding  # 
 ######################################################
-Hoard_opt_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
+Hoard_opt_th_sc<-function(TS, N, temp_day, temp_night, th_forage_fr, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max){
   # show that optimizatio started 
-  print(paste0('opt hoarding th_sc start' ))
+  print(paste0('Hoard opt th_sc start' ))
   
   # select optimization type 
   opt_type<<-c('th_sc')
@@ -1932,7 +1655,7 @@ Hoard_opt_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mea
     current_th_sc<<-th_forage_sc[th]
     current_th<<-current_th_sc            # needs to have a general name for the rest-forage function printing (works for both sc and fr optimisations)
     # now run 
-    Hoarding_function(T, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
+    Hoarding_function(TS, N, temp_day, temp_night, current_th_sc, th_forage_fr, num_food_mean, num_food_max, noplot)
     # add to the previously created matrix
     survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
@@ -1940,27 +1663,16 @@ Hoard_opt_th_sc<-function(T, N, temp_day, temp_night, th_forage_fr, num_food_mea
   # in the end, plot the whole thing 
   par(mfrow=c(1,1))
   #jpeg('plot_opt_forage_th_sc.jpg')
-  fig_opt_hoard_th_sc<<-plot(th_forage_sc, survival_end, main = paste0('Opt hoarding th_sc for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  fig_opt_hoard_th_sc<<-plot(th_forage_sc, survival_end, main = paste0('Hoard opt th_sc T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-fr=', th_forage_fr, ', food-m=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
   fig_opt_hoard_th_sc
   #dev.off()
   
   # for checking during coding 
-  print(paste0('opt hoard th_sc function did run' ))
+  print(paste0('Hoard opt th_sc function did run' ))
   
-  # save the figure 
-  # for uni desktop 
-  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # for uni laptop 
-  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_sc/','Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  
-  # saving to smulders lab folder 
-  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc/', 'Plot_hoard_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # Local vera account- should work for both 
-  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc/', 'Plot_hoard_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  
-  # save the figure in previously made folders 
+    # save the figure in previously made folders 
   setwd(paste0(mainDir, '//H_opt_th_sc/'))
-  dev.print(pdf, (paste0('H-Plot_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('H_opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimization function 
 
@@ -1988,10 +1700,9 @@ Hoard_opt_th_sc(2160,100,-12,-12,1,3,6,1, 0, 0.4)
 ##################################################
 #      optimize visually for th-fr - hoarding    # 
 ##################################################
-
-Hoard_opt_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max){
+Hoard_opt_th_fr<-function(TS, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max){
   # show start of optimization 
-  print(paste0('opt hoarding th_fr start' ))
+  print(paste0('Hoard opt th_fr start' ))
   # set the optimization 
   opt_type<<-'th_fr'
   # creates 100 values between 0 and 0.4, evenly spaced 
@@ -2005,32 +1716,21 @@ Hoard_opt_th_fr<-function(T, N, temp_day, temp_night, th_forage_sc, num_food_mea
     # determine the current threshold for each loop 
     current_th_fr<<-th_forage_fr[th]
     # now run 
-    Hoarding_function(T, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+    Hoarding_function(TS, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot)
     # add to the previously created matrix
     survival_end[1,th]<<-birds_alive_at_end
   } # end of optimization for loop 
   
   # in the end, plot the whole thing 
   par(mfrow=c(1,1))
-  plot(th_forage_fr, survival_end, main = paste0('Opt hoarding th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-mean=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
+  plot(th_forage_fr, survival_end, main = paste0('Hoard Opt th_fr T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-m=',num_food_mean, ', foodMax=',num_food_max ), ylim = c(0,1) )
   
   # for checking during coding 
-  print(paste0('opt hoarding th_fr function finished' ))
-  
-  # save the figure 
-  # for uni desktop 
-  # dev.print(pdf, (paste0('\\\\webfolders.ncl.ac.uk@SSL/DavWWWRoot/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage_or_hoard/','Plot_Rest_retrieve_eat_hoard_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # for uni laptop 
-  # dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/rest_or_forage/opt_th_fr/','Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  
-  # local on VERA account 
-  #dev.print(pdf, (paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  # To smulders labfolder 
-  #dev.print(pdf, (paste0('//campus/rdw/ion02/02/smulderslab/VeraVinken/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_fr/', 'Plot_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-  
+  print(paste0('Hoard opt th_fr function finished' ))
+
   # save in previously made folders 
   setwd(paste0(mainDir, '//H_opt_th_fr/'))
-  dev.print(pdf, (paste0('H_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('H_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimisation th_fr for hoarding model 
 
@@ -2056,9 +1756,9 @@ Hoard_opt_th_fr(2160,100,-5,-5,0.2,2.5, 5,1, 0, 4)
 ##################################################
 #   3D visual optimization fr & sc - hoarding    # 
 ##################################################
-Hoard_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max, th_fr_min, th_fr_max){
+Hoard_opt_th_sc_and_fr<-function(TS, N, temp_day, temp_night, num_food_mean, num_food_max, noplot, th_sc_min, th_sc_max, th_fr_min, th_fr_max){
   # show that optimizatio started 
-  print(paste0('opt hoarding th_sc AND th_fr start' ))
+  print(paste0('Hoard opt th_sc AND th_fr start' ))
   # specify optimization type 
   opt_type<<-'th_sc_and_fr'
   # creates 100 values between min and max, evenly spaced 
@@ -2076,7 +1776,7 @@ Hoard_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_
       # set the current fat reserve threshold 
       current_th_fr<<-th_forage_fr[th_fr]
       # run the forage or rest function: 
-      Hoarding_function(T, N, temp_day, temp_night, current_th_sc, current_th_fr, num_food_mean, num_food_max, noplot)
+      Hoarding_function(TS, N, temp_day, temp_night, current_th_sc, current_th_fr, num_food_mean, num_food_max, noplot)
       # add to the previously created matrix 
       survival_end[th_sc,th_fr]<<-birds_alive_at_end
     } # end of loop for fat reserve thresholds 
@@ -2084,36 +1784,12 @@ Hoard_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_
   
   # The matrix should be completely filled in now and ready to do 
   # for checking during coding 
-  print(paste0('opt hoarding th_sc_and_fr function did run' ))
+  print(paste0('Hoard opt th_sc_and_fr function did run' ))
   # plot it so you can visualise
-  persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='optimal survival for th_sc and th_fr: hoarding bird')
+  persp3D(z=survival_end, xlab='th_sc', ylab='th_fr', zlab='survival', main='Optimal survival for th_sc and th_fr: hoarding bird')
   # I want a better graphic 
-  # #as.numeric(survival_end)
-  # fig<<-plot_ly(
-  #   x=as.numeric(th_forage_sc), 
-  #   y=as.numeric(th_forage_fr), 
-  #   z=survival_end
-  # ) %>% 
-  #   add_surface() %>%
-  #   layout(
-  #     title=list(text=paste0('Opt hoarding th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
-  #     scene=list(
-  #       xaxis=list(title= 'Threshold Sc  (gram)'),
-  #       yaxis=list(title= 'Threshold Fr (gram)'),
-  #       zaxis=list(title= 'Survival prob')
-  #     )
-  #   )
-  # fig
-  # 
-  # # Save the image 
-  # # Directory for 'vera' not the smulderslab folder 
-  # # This one works on both laptop and desktop 
-  # # saveWidget(fig, file=(paste0('//campus/home/home2019/c0070955/Vera/NCLU/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')))
-  # # to the smulderslab folder 
-  # saveWidget(fig, file=(paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr/', 'Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')), selfcontained=TRUE, libdir=NULL, background='white')
   
-  
-  # testing if there is something wrong in my plotting 
+  # Use the other way of plotting 3D plots 
   fig3<-plot_ly(
     x=as.numeric(th_forage_fr), 
     y=as.numeric(th_forage_sc), 
@@ -2121,20 +1797,14 @@ Hoard_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_
   )
   fig3<-fig3 %>% add_surface()
   fig3<-fig3 %>% layout(
-    title=list(text=paste0('H opt th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-mean=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
+    title=list(text=paste0('H opt th_Sc and th_fr for:T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, 'food-m=',num_food_mean, ', foodMax=',num_food_max ), y=0.95),
     scene=list(
       xaxis=list(title= 'Threshold Fr (gram)'),
       yaxis=list(title= 'Threshold Sc (gram)'),
       zaxis=list(title= 'Survival prob'
       )))
   fig3
-  
-  # # save it 
-  # # set path 
-  # path<-paste0('Z:/1-PHD_PROJECT/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr//', 'H_Plot_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.html')
-  # # save the thing
-  # saveWidget(fig3, file.path(normalizePath(dirname(path)), basename(path)))
-  
+
   # SAVE THE WIDGET 
   # The saveWidget function has trouble saving in new directories and sometimes doesnt delete the temporary files
   # I found this code that should get rid of it (works so far )
@@ -2149,13 +1819,7 @@ Hoard_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_
       print("File already exists and 'overwrite' == FALSE. Nothing saved to file.")
     }
   }
-  # Set to the correct working directory 
-  #setwd('C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/hoarding_model_predation/opt_th_sc_and_fr')
-  # setwd(mainDir)
-  # Filename<- filename<-paste0('H_opt_th_sc_and_fr//','H_opt_th_sc_and_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_food-mean=',num_food_mean, '_foodMax=',num_food_max, format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.html')
-  # save_widget_wrapper(fig3, Filename)
-  # 
-  
+
   # try and get that timestamp in 
   setwd(paste0(mainDir, '/H_opt_th_sc_and_fr//'))
   # create  seperate timesamp so the supproting folders don't have a differen tone than the html file 
@@ -2164,20 +1828,11 @@ Hoard_opt_th_sc_and_fr<-function(T, N, temp_day, temp_night, num_food_mean, num_
   #Filename<-paste0(Fig_timestamp,'.html')
   save_widget_wrapper(fig3, Filename)
   
-  
-  
-  
-  
-  
-  
-  
-  
 } # end of optimization function for hoarding bird th-sc and th-fr
 
 #############################################
 # testing optimization th-sc-fr - hoarding  # 
 #############################################
-
 Hoard_opt_th_sc_and_fr(2160,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # full version 
 Hoard_opt_th_sc_and_fr(1080,100,-5,-5,3,6,1, 0, 0.4, 0, 4)         # fast version 
 Hoard_opt_th_sc_and_fr(360,10,-10,-10,3,6,1, 0, 0.4, 0, 4)         # faster version 
