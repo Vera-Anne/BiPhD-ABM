@@ -125,6 +125,7 @@ set_up_env<-function(TS,N, temp_cur, num_food_mean, num_food_max){
   # Do some calculations for food distributions: 
   gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
   gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
+  food_sd<<-0.3
   
   # create individual matrices (Global)
   mat_alive<<-matrix(NA, N, TS)            # matrix to keep track of who's alive 
@@ -430,12 +431,14 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
                 
                 # FIND FOOD FROM NORMAL DISTRIBUTION AND DECIDE BEHAVIOUR 
                 # First, calculate how much food the bird finds 
-                food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0.2)
-                # Pop this in the matrix 
-                #mat_food_found
+                food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=food_sd)
+               
                 # now round this up/down to the closest number of items (a bird cannot find half items)
                 # then move this back to grams 
-                food_g_found<<-((round(food_g_found/food_item))*food_item)
+                food_g_found<<-(round(food_g_found/food_item))
+                # Pop this in the matrix 
+                mat_find_food[i,t]<<-food_g_found
+                food_g_found<<-(food_g_found*food_item)
                 # Food is found, we need to check how much it is and if the bird will hoard the surpluss 
                 
                 # First, increase the stomach content with whatever food is found
@@ -499,10 +502,14 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
               
               # UPDATE AGENT OWNED VARIABLES 
               # First, calculate how much food the bird finds 
-              food_cur<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=0.1)
+              food_cur<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=food_sd)
               # now round this up/down to the closest number of items (a bird cannot find half items)
+              
+              food_cur<<-(round(food_cur/food_item))
+              # pop in the matrix 
+              mat_find_food[i,t]<<-food_cur
               # then move this back to grams 
-              food_cur<<-((round(food_cur/food_item))*food_item)
+              food_cur<<-(food_cur*food_item)
               # Now, increase the stomach content
               mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_cur)
               # now check if this doesnt exceed the stomach size 
@@ -776,7 +783,7 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
     # debugging the eat-hoarding issue 
     combi_function(500, 25, -5, -5, 0.2, 1, 10, 20, 0, 1)         # lots of food - hoard on 
     combi_function(500, 25, -5, -5, 0.2, 1, 3, 6, 0, 1)           # default food - hoard on 
-    combi_function(500, 25, -5, -5, 0.2, 1, 2, 4, 0, 1)         # little of food - hoard on 
+    combi_function(500, 25, -5, -5, 0.2, 1, 2, 4, 1, 1)         # little of food - hoard on 
     
     # What happens with a lover food availaiblity? 
     combi_function(2160, 100, -5, -5, 0.2, 1, 2, 4, 0, 0)         # default -  hoard-off
@@ -788,10 +795,33 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
     
     
     
+    # Look at the actual food distributions we have 
+    combi_function(2160, 100, -5, -5, 0.2, 1, 3, 20, 0, 0)         # normal mean, high nonhoard
+    combi_function(2160, 100, -5, -5, 0.2, 1, 3, 20, 1, 1)      
     
+    combi_function(2160, 100, -5, -5, 0.2, 1, 2, 20, 1, 0)         # no plot no hoarding 
+    combi_function(2160, 100, -5, -5, 0.2, 1, 2, 20, 1, 1)         # no plot yes hoarding
+    
+    # plot it so you can visualise the distribution of items found 
+    par(mfrow=c(1,1))
+    vector<-c(mat_find_food) # make the food finding matrix into a vector so you can plot 
+    hist(vector, xlab='# Food items found', main='Food found when foraging') # make histogram 
     
 
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 ########################################
 ## optimize combi function for th_sc   ##
 #########################################
@@ -846,10 +876,7 @@ combi_opt_th_sc<-function(TS, N, temp_day, temp_night, th_forage_fr, num_food_me
 combi_opt_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4, 1)          # short with hoarding on 
 combi_opt_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4, 0)          # short with hoarding on 
 
-# It looks like no hoarding/retrieving is happening 
 
-
-# debuggin the eat-hoarding issue 
 
 
 
