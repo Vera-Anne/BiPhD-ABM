@@ -808,20 +808,6 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
     hist(vector, xlab='# Food items found', main='Food found when foraging') # make histogram 
     
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 ########################################
 ## optimize combi function for th_sc   ##
 #########################################
@@ -866,7 +852,7 @@ combi_opt_th_sc<-function(TS, N, temp_day, temp_night, th_forage_fr, num_food_me
   if(hoard_on=='0'){
     setwd(paste0(mainDir, '//NonH_opt_th_sc/'))
   }
-  dev.print(pdf, (paste0('opt_th_sc_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max, 'Hoard=', hoard_on, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  dev.print(pdf, (paste0('opt_th_sc_T=', TS, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max, 'Hoard=', hoard_on, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   
 } # end of optimization function 
 
@@ -876,9 +862,56 @@ combi_opt_th_sc<-function(TS, N, temp_day, temp_night, th_forage_fr, num_food_me
 combi_opt_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4, 1)          # short with hoarding on 
 combi_opt_th_sc(360,50,-5,-5,1,3,6,1, 0, 0.4, 0)          # short with hoarding on 
 
+# defaults: 
+combi_opt_th_sc(2160, 100, -5, -5, 1, 3, 6, 1, 0, 0.4, 1)    # hoard - default 
+combi_opt_th_sc(2160, 100, -5, -5, 1, 3, 6, 1, 0, 0.4, 0)    # non hoard - default 
 
+##################################################
+#      optimize visually for th-fr - combi       # 
+##################################################
+combi_opt_th_fr<-function(TS, N, temp_day, temp_night, th_forage_sc, num_food_mean, num_food_max, noplot, th_fr_min, th_fr_max, hoard_on){
+  # show start of optimization 
+  print(paste0('Combi opt th_fr start' ))
+  # set the optimization 
+  opt_type<<-'th_fr'
+  # creates 100 values between 0 and 0.4, evenly spaced 
+  th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+  # now create a space to save the survival for each different value fo th_forage_sc 
+  survival_end<<-matrix(NA, 1, length(th_forage_fr))
+  
+  for (th in 1:length(th_forage_fr)){
+    # Run the rest_forage function for each th_forage_sc that you have created. 
+    # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distributuion the same
+    # determine the current threshold for each loop 
+    current_th_fr<<-th_forage_fr[th]
+    # now run 
+    combi_function(TS, N, temp_day, temp_night, th_forage_sc, current_th_fr, num_food_mean, num_food_max, noplot, hoard_on)
+    # add to the previously created matrix
+    survival_end[1,th]<<-birds_alive_at_end
+  } # end of optimization for loop 
+  
+  # in the end, plot the whole thing 
+  par(mfrow=c(1,1))
+  plot(th_forage_fr, survival_end, main = paste0('Combi Opt th_fr T=', T, ', N=', N, ', dayT=', temp_day, ', nightT=', temp_night, ', th-sc=', th_forage_sc, ', food-m=',num_food_mean, ', foodMax=',num_food_max, 'Hoard=', hoard_on ), ylim = c(0,1) )
+  
+  # for checking during coding 
+  print(paste0('Combi opt th_fr function finished' ))
+  
+  # save in previously made folders depending on the hoarding switch 
+  if (hoard_on=='1'){
+  setwd(paste0(mainDir, '//H_opt_th_fr/'))}
+  else{
+  setwd(paste0(mainDir, '//NonH_opt_th_fr/'))  
+  }
+  dev.print(pdf, (paste0('Combi_opt_th_fr_T=', T, '_N=', N, '_dayT=', temp_day, '_nightT=', temp_night, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_foodMax=',num_food_max, 'Hoard=', hoard_on, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  
+} # end of optimisation th_fr for combi model 
 
-
+################################
+## Test opt th-fr function    ##
+################################
+combi_opt_th_fr(2160,100,-5,-5,0.2,3,6,1, 0, 4, 1)          # default - hoard 
+combi_opt_th_fr(2160,100,-5,-5,0.2,3,6,1, 0, 4, 0)          # default - non hoard 
 
 
 ##################################################
