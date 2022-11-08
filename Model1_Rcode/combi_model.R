@@ -116,8 +116,13 @@ set_up_env<-function(TS,N, temp_cur, num_food_mean, num_food_max){
   stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
   fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
   plot_interval<<-50   # every x timestep a dot on the graph is added 
-  start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
-  end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
+  # start_day<<-27      # set the start of the day. Example: 27/3= 9.00 am 
+  # end_day<<-45        # set the end of the day.   Example: 45/3= 15.00 
+  
+  # New variable for time (restructured on 8/11/2022)
+  n_daylight_hours<<-6                                    # Sets you up for a 6 hour day 
+  n_daylight_timestep<<-(n_daylight_hours*3)              # translates this into timesteps 
+  
   num_cache_min<<-50  # minimum number of caches that each bird has initially 
   num_cache_max<<-100 # maximum number of caches each bird has initially 
   retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
@@ -191,7 +196,7 @@ set_up_env<-function(TS,N, temp_cur, num_food_mean, num_food_max){
   }
   
   # Do some calculations for the daylength etc. 
-  daylength<<-(end_day-start_day-1)
+  # daylength<<-(end_day-start_day-1)
   
   # PREDATION  
   # Pattack: 
@@ -226,7 +231,7 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
   for (t in 1:TS){
     
     # Check if it is night or day 
-    if ((t%%72)>=start_day && (t%%72<end_day)){
+    if ((t%%72)<= n_daylight_timestep){
       dayOrNight<<-1                       # this means it is day 
       temp_cur<<-temp_day
     }else{
@@ -383,13 +388,13 @@ combi_function<-function(TS, N, temp_day, temp_night, th_forage_sc, th_forage_fr
               # DETERMINE CURRENT RETRIEVAL THRESHOLD 
               # What is the time of day?
               cur_timestep_in72<<-t%%72                                 # this gives the timestep within the 24 hour (72 timesteps)
-              cur_timestep_inDaylight<<-(cur_timestep_in72-start_day)   # gives the timestep within the time that there is daylight 
-              add_each_step<<-(0.63/(end_day-start_day))                # determines how much to add for each hour of daylight (0.63 is total adding for a day)
+              # cur_timestep_inDaylight<<-(cur_timestep_in72-start_day)   # gives the timestep within the time that there is daylight -> not needed as this is now the case anyway
+              add_each_step<<-(0.63/(n_daylight_timestep))                # determines how much to add for each 20min  of daylight (0.63 is total adding for a day)
               # The threshold is supposed to increase from 0.12 to 0.75
               # 0.12 is the minimum needed to survive if foraging wouldnt be succesful 
               # 0.75 is the minimum needed to survive the night 
               # note that these are based on the netlogo values. Talk to tom to see if these need adapting 
-              cur_th_retrieval<<-(cur_timestep_inDaylight*add_each_step)+0.12
+              cur_th_retrieval<<-(cur_timestep_in72*add_each_step)+0.12
               
               # CHECK IF BIRD IS RETRIEVING 
               if ((mat_fr[i,t]<cur_th_retrieval)&& (mat_caches[i,t]>retrieve_min)){
