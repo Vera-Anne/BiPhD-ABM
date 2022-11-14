@@ -56,14 +56,14 @@ t<-(1:72)
 
 # how long is it light for? 
 # 6 hours means 18 timesteps 
-hours<-8
+hours<-6
 n_daylight_timestep<-(3*hours)
 
 # Identify the first constant
 # I think this is for the distance between extremes 
 
 # maximum reached on daytime
-amp_day<<-(1)
+amp_day<<-(5)
 # minimum reached on nighttime 
 amp_night<<-(-10)
 
@@ -114,11 +114,11 @@ for (timestep in 1:length(t)){
 
 yellow<-adjustcolor( 'lightgoldenrod', alpha.f = 0.5)
 blue<-adjustcolor('skyblue', alpha.f=0.5)
-plot(t,temps, main = paste('Temperature during the day (yellow) and night (blue) daylength=', hours, 'hours'), ylab='Temperature in degrees Celcius', xlab='Timestep (20min intervals)')
+plot(t,temps, main = paste('Temperature during the dayand night daylength=', hours, 'hours', 'day_amp= ', amp_day, ' night_amp= ', amp_night), ylab='Temperature in degrees Celcius',  xlab='Timestep (20min intervals)')
 abline(v=n_daylight_timestep)
 abline(h=v_shift, col='blue', lty=2)
-polygon(x=c(0,0, n_daylight_timestep, n_daylight_timestep), y=c((amp_night-2), (amp_day+2), (amp_day+2), (amp_night-2)), col=yellow, border=F)
-polygon(x=c(n_daylight_timestep, n_daylight_timestep, (length(t)+2), (length(t)+2)), y=c((amp_night-2), (amp_day+2), (amp_day+2), (amp_night-2)), col=blue, border=F)
+polygon(x=c(0,0, n_daylight_timestep, n_daylight_timestep), y=c((min(temps)-2), (max(temps)+2), (max(temps)+2), (min(temps)-2)), col=yellow, border=F)
+polygon(x=c(n_daylight_timestep, n_daylight_timestep, (length(t)+2), (length(t)+2)), y=c((min(temps)-2), (max(temps)+2), (max(temps)+2), ( min(temps)-2)), col=blue, border=F)
 
 
 #polygon(x=c(0,0,n_daylight_timestep, n_daylight_timestep), y=c((amp_night-2),(amp_day+2),(amp_day+2),(amp_night-2)), col="#0000FF22", border=F)
@@ -127,6 +127,59 @@ temps
 
 
 
+#############################
 
+# new version wehere the amplitude is calcualted based on the midline and the min/max temperatures. 
+# The amplitude is not the same as this min/max  values 
 
+Temp_func<-function(t_max, t_min, daylight_hours){
+  # timesteps in a day 
+  t<-(1:72)
+  
+  # how long is it day  in timesteps 
+  n_daylight_timestep<-(3*daylight_hours)
+  
+  # Calculate the midline 
+  midline<-((t_max+t_min)/2) 
+  
+  # Now calcualte the amplitudes 
+  amp_day<-(t_max-midline)
+  amp_night<-(t_min-midline)
+  
+  temps<<-c()
+  
+  for (timestep in 1:length(t)){
+    # First determine the timestep within 1 day we are in 
+    t_in24<-timestep  # not very necesasry here but should be in the final code 
+    
+    # First determine if youre in night or day 
+    if (timestep<= n_daylight_timestep){
+      # this means it is day 
+      curr_temp<<-((amp_day*sin((t_in24*pi)/n_daylight_timestep))+midline)
+      print(paste('it is day and the current temp is', curr_temp))
+      # add the temperature to the vector 
+      temps<<-append(temps,curr_temp)
+    } else{                                          
+      # this means it is night 
+      curr_temp<<-(((-amp_night*sin(((t_in24+72-(2*n_daylight_timestep))*pi)/(72-n_daylight_timestep)))+midline))
+      print(paste0('it is night', curr_temp))
+      temps<<-append(temps,curr_temp)
+    }
+    
+  } # end of for loop 
+  
+  yellow<-adjustcolor( 'lightgoldenrod', alpha.f = 0.5)
+  blue<-adjustcolor('skyblue', alpha.f=0.5)
+  plot(t,temps, main = paste('Temperature during the dayand night daylength=', daylight_hours, 'hours', 'day_amp= ', amp_day, ' night_amp= ', amp_night), ylab='Temperature in degrees Celcius',  xlab='Timestep (20min intervals)')
+  abline(v=n_daylight_timestep)
+  abline(h=midline, col='blue', lty=2)
+  polygon(x=c(0,0, n_daylight_timestep, n_daylight_timestep), y=c((min(temps)-2), (max(temps)+2), (max(temps)+2), (min(temps)-2)), col=yellow, border=F)
+  polygon(x=c(n_daylight_timestep, n_daylight_timestep, (length(t)+2), (length(t)+2)), y=c((min(temps)-2), (max(temps)+2), (max(temps)+2), ( min(temps)-2)), col=blue, border=F)
+  
+  
+  
+}
+
+Temp_func(5, -10, 6)
+Temp_func(1, -5, 8)
 
