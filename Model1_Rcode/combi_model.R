@@ -936,43 +936,34 @@ combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmi
 combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 8)
 combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 10)
 
-# Old testing; 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 3, 6, 0, 0)         # default -  hoard-off
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 3, 6, 0, 1)         # default -  hoard-on
-    # # It looks like no hoarding/retrieving is happening 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 2, 4, 0, 1)         # less food -  hoard-on -
-    # # Now the birds do retrieve 
-    # # What about the lack of eat-hoarding? 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 4, 8, 0, 1)         # more food -  hoard-on
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 5, 10, 0, 1)         # more food -  hoard-on
-    # 
-    # # debugging the eat-hoarding issue 
-    # combi_function(500, 25, -5, -5, 0.2, 1, 10, 20, 0, 1)         # lots of food - hoard on 
-    # combi_function(500, 25, -5, -5, 0.2, 1, 3, 6, 0, 1)           # default food - hoard on 
-    # combi_function(500, 25, -5, -5, 0.2, 1, 2, 4, 1, 1)         # little of food - hoard on 
-    # 
-    # # What happens with a lover food availaiblity? 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 2, 4, 0, 0)         # default -  hoard-off
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 2, 4, 0, 1)         # default -  hoard-on
-    # 
-    # # higher availability of food: 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 4, 8, 0, 0)         # default -  hoard-off
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 4, 8, 0, 1)         # default -  hoard-on
-    # 
-    # 
-    # 
-    # # Look at the actual food distributions we have 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 3, 20, 0, 0)         # normal mean, high nonhoard
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 3, 20, 1, 1)      
-    # 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 2, 20, 1, 0)         # no plot no hoarding 
-    # combi_function(2160, 100, -5, -5, 0.2, 1, 2, 20, 1, 1)         # no plot yes hoarding
-    # 
-    # # plot it so you can visualise the distribution of items found 
-    # par(mfrow=c(1,1))
-    # vector<-c(mat_find_food) # make the food finding matrix into a vector so you can plot 
-    # hist(vector, xlab='# Food items found', main='Food found when foraging') # make histogram 
-    # 
+
+#########################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################## Older optimization functions #####################################################
+
+
 
 ########################################
 ## optimize combi function for th_sc   ##

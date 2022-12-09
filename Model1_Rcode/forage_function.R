@@ -24,17 +24,19 @@ mean(test)
 set.seed(1) 
 test<-
 
-prob_bonanza<-0.5
-
+  
+  # temporary vars 
+prob_for_b<-0.5
+mean_food<-3
+bonanza_size<-25
   
   
   
   
   
-forage_function<-function(mean_food, prob_bonanza){
+forage_function<-function(mean_food, prob_for_b, bonanza_size){
   # First decide if you're going into bonanza chances or normal foraging 
-  set.seed(1)
-  cur_forage_type<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_bonanza, (1-prob_bonanza)))
+  cur_forage_type<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_for_b, (1-prob_for_b)))
   
   if (cur_forage_type=='forage-b'){ 
     # Write code for bonanza here 
@@ -43,6 +45,9 @@ forage_function<-function(mean_food, prob_bonanza){
     # set the size of your bonanza (should be input)
     # calculate the amount of times you need to find 0 
     # pull a number from that distribution 
+    num_zero<-round(((bonanza_size-mean_food)/mean_food))
+    item_options<-c(bonanza_size, (rep(0, num_zero)))
+    food_item_found<-sample(item_options,1)
   }
   
   else {
