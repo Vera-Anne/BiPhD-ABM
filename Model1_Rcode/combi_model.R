@@ -57,7 +57,7 @@ library(plot3D)
 library(htmlwidgets)
 library(webshot)
 library(withr)
-
+library('plyr')
 
 ############################# 
 #   set up directories      # 
@@ -68,7 +68,6 @@ library(withr)
 mainDir<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model'
 setwd(mainDir)
 
-#################
 # Run the following if doing this for the first time on devide: 
 # create list of folders that we want present 
 folders<-c('NonH_opt_th_fr', 'H_opt_th_fr', 'NonH_opt_th_sc', 'H_opt_th_sc', 'NonH_opt_th_sc_and_fr', 'H_opt_th_sc_and_fr','NonH_sim', 'H_sim')
@@ -222,11 +221,51 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
 #temp_func(TS=2160, Tmax_range_low=2, Tmax_range_high=5, Tmin_range_low=-5, Tmin_range_high = -2, days=30, daylight_h = 6, n_daylight_timestep = 18)
 
 
+#################################
+#        Forage function        #
+#################################
+
+forage_function_probKnown<-function(mean_food, prob_b_forage, b_prob){
+  # First decide if you're going into bonanza chances or normal foraging 
+  cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
+  
+  if (cur_forage_type=='forage-b'){ 
+    
+    # Alternatively: calculate the size of teh bonanza, given the bonanza probability and the mean 
+    # calcualte how many options in total
+    total_options<-round((1/b_prob))
+    # calcualte how many 0 
+    num_zero<<-(total_options-1)
+    # calculate bonanza size
+    bonanza_size<<-(mean_food*total_options)
+    # string of optoins 
+    item_options<<-c(bonanza_size, (rep(0, num_zero)))
+    # pick an item from these randomly 
+    food_item_found<<-sample(item_options,1)
+    #print(paste('Bonanza foraging with ', food_item_found, 'items found'))
+  }
+  
+  else {
+    # Write code for normal foraging here 
+    # Can be the poisson distributuion 
+    # pull a number from the poisson 
+    # Write code for normal foraging here 
+    # Can be the poisson distributuion 
+    # pull a number from the poisson 
+    food_item_found<<-sample(rpois(100, mean_food),1)
+    #print(paste('Normal foraging with', food_item_found, 'items found'))
+    
+  }
+  
+  
+} # end of the foraging function 
+
+
 ##################################
 #  set-up environment function   #
 ##################################
 
-set_up_env<-function(days,N, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, num_food_mean, num_food_max, daylight_h){
+set_up_env<-function(days,N, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, num_food_mean, daylight_h){
   
   
   # PLOTTING PARAMETERS 
@@ -277,9 +316,10 @@ print('temp func did run ')
       retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
       
       # Do some calculations for food distributions: 
-      gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
-      gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
-      food_sd<<-0.3
+      # Took these out as the forage-function was implemented 12/12/2022
+      #gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
+      #gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
+      #food_sd<<-0.3
       
   # PREDATION  PARAMETERS 
       # Pattack: 
@@ -357,11 +397,11 @@ print('temp func did run ')
 # There should be a hoardin on/off switch in the input variables 
 rm(opt_type)
 
-combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, th_forage_sc, th_forage_fr, num_food_mean, num_food_max, noplot, hoard_on, daylight_h){
+combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, th_forage_sc, th_forage_fr, num_food_mean, prob_b_forage, b_prob, noplot, hoard_on, daylight_h){
   
   # Set up the environment: run environment function 
   # set_up_env(days, N, temp_cur, num_food_mean, num_food_max, daylight_h)              # could be a problem that temp-cur is not known atm. 
-  set_up_env(days,N, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, num_food_mean, num_food_max, daylight_h)
+  set_up_env(days,N, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, num_food_mean, daylight_h)
   
   print('Setup ran')
   ###################################
@@ -570,6 +610,10 @@ combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_lo
               
               else{
                 
+                #######################
+                #   NORMAL FORAGING   # 
+                #######################
+                
                 # code checking
                 #print(paste('bird ', N, 'is foraging not retrieving'))
                 # If the bird is foraging, but not retrieving, it will eat-hoard or eat the food 
@@ -578,25 +622,35 @@ combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_lo
                 # update the global counting variable
                 retrieve_count[i,t]<<-0
                 
-                # FIND FOOD FROM NORMAL DISTRIBUTION AND DECIDE BEHAVIOUR 
-                # First, calculate how much food the bird finds 
-                food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=food_sd)
-               
-                # now round this up/down to the closest number of items (a bird cannot find half items)
-                # then move this back to grams 
-                food_g_found<<-(round(food_g_found/food_item))
-                # Pop this in the matrix 
-                mat_find_food[i,t]<<-food_g_found
-                food_g_found<<-(food_g_found*food_item)
-                # Food is found, we need to check how much it is and if the bird will hoard the surpluss 
+                # OLD: 
+                      # FIND FOOD FROM NORMAL DISTRIBUTION AND DECIDE BEHAVIOUR 
+                      # First, calculate how much food the bird finds 
+                      #food_g_found<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=food_sd)
+                     
+                      # now round this up/down to the closest number of items (a bird cannot find half items)
+                      # then move this back to grams 
+                      #food_g_found<<-(round(food_g_found/food_item))
+                      #food_g_found<<-(food_g_found*food_item)
+                      # Food is found, we need to check how much it is and if the bird will hoard the surpluss 
+                      
+                # Run the forage function and decide what number of items is found
+                # The outcoem here is 'food_item_found'
+                forage_function_probKnown(num_food_mean, prob_b_forage, b_prob)
                 
-                # First, increase the stomach content with whatever food is found
-                mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_g_found)
-                # now check if this exceeds the stomach size 
+                # Pop this in the matrix (this is in number of items found)
+                mat_find_food[i,t]<<-food_item_found
+                # convert to grams
+                food_item_found_gram<<-(food_item_found*food_item)
+                
+                # Update agent-owned variables: 
+                    # First, increase the stomach content with whatever food is found
+                    mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
+                
+                    # now check if this exceeds the stomach size 
                 if (mat_sc[i,(t)]>stom_size){
-                  # This means the bird found more than it can eat
-                  # It will hoard the surpluss 
-                  
+                      # This means the bird found more than it can eat
+                      # It will hoard the surpluss 
+                      
                   ######################
                   #    EAT-HOARD       # 
                   ######################
@@ -649,18 +703,30 @@ combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_lo
               
               # The non-hoarding birds can only 'eat' food they find. 
               
-              # UPDATE AGENT OWNED VARIABLES 
-              # First, calculate how much food the bird finds 
-              food_cur<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=food_sd)
-              # now round this up/down to the closest number of items (a bird cannot find half items)
+              # OLD: 
+                    # # UPDATE AGENT OWNED VARIABLES 
+                    # # First, calculate how much food the bird finds 
+                    # food_cur<<-rtruncnorm(1, a=0, b=gram_food_max, mean=gram_food_mean, sd=food_sd)
+                    # # now round this up/down to the closest number of items (a bird cannot find half items)
+                    # 
+                    # food_cur<<-(round(food_cur/food_item))
+                    # 
+                    # # pop in the matrix 
+                    # mat_find_food[i,t]<<-food_cur
+                    # # then move this back to grams 
+                    # food_cur<<-(food_cur*food_item)
               
-              food_cur<<-(round(food_cur/food_item))
-              # pop in the matrix 
-              mat_find_food[i,t]<<-food_cur
-              # then move this back to grams 
-              food_cur<<-(food_cur*food_item)
+              # Run the forage function 
+              # The outcome here is 'food_item_found'
+              forage_function_probKnown(num_food_mean, prob_b_forage, b_prob)
+              
+              # Pop this in the matrix (this is in number of items found)
+              mat_find_food[i,t]<<-food_item_found
+              # convert to grams
+              food_item_found_gram<<-(food_item_found*food_item)
+              
               # Now, increase the stomach content
-              mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_cur)
+              mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
               # now check if this doesnt exceed the stomach size 
               # if so, set the stomach content to stomach size 
               if (mat_sc[i,(t)]>stom_size){
@@ -863,7 +929,7 @@ combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_lo
       plot10<<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
       
       
-      mtext((paste('Days=', days, '_N=', N, 'Daylight_h=', daylight_h, 'MaxT-range=', Tmax_range_low, '-', Tmax_range_high, ' MinT-range=', Tmin_range_high, '-', Tmin_range_low, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, '_foodMax=',num_food_max, 'Hoarding?=', hoard_on)), side=3, cex=0.8,line=-2, outer=TRUE)
+      mtext((paste('Days=', days, '_N=', N, 'Daylight_h=', daylight_h, 'MaxT-range=', Tmax_range_low, '-', Tmax_range_high, ' MinT-range=', Tmin_range_high, '-', Tmin_range_low, '_th-fr=', th_forage_fr, '_food-m=',num_food_mean, 'Hoarding?=', hoard_on)), side=3, cex=0.8,line=-2, outer=TRUE)
       Sys.sleep(0)             # turns that back off 
     }# end if statement for plots
     
@@ -911,7 +977,7 @@ combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_lo
     else(
     setwd(paste0(mainDir, '/NonH_sim//')) # set current wd 
     )
-    dev.print(pdf, (paste0('Simulation_Days=', days, '_N=', N, 'MaxT-range=', Tmax_range_low, '-', Tmax_range_high, ' MinT-range=', Tmin_range_high, '-', Tmin_range_low, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_foodMax=',num_food_max, '_hoard=', hoard_on, '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+    dev.print(pdf, (paste0('Simulation_Days=', days, '_N=', N, 'MaxT-range=', Tmax_range_low, '-', Tmax_range_high, ' MinT-range=', Tmin_range_high, '-', Tmin_range_low, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_hoard=', hoard_on, '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
     
     
   }
@@ -923,18 +989,24 @@ combi_function<-function(days, N, Tmax_range_low, Tmax_range_high, Tmin_range_lo
 #################################
 
 # Testing the new function (added new vars) 
+combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, prob_b_forage=0, b_prob=0, noplot = 0, hoard_on = 1, daylight_h = 6)
 
-# Varying daylength 
-combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 6)
-combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 8)
-combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 10)
+# introduce bonanzas 
+combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, prob_b_forage=0.5, b_prob=0.1, noplot = 0, hoard_on = 1, daylight_h = 6)
+# Compare the above to a non=hoarding bird 
+combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, prob_b_forage=0.5, b_prob=0.1, noplot = 0, hoard_on = 0, daylight_h = 6)
 
-# varying Temperature ranges 
-combi_function(days = 30, N = 100, Tmax_range_low = 1, Tmax_range_high = 3, Tmin_range_low = -2.5, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 6)
-combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 6)
-# Now it will matter what the daylength is: 
-combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 8)
-combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 10)
+
+
+# combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 8)
+# combi_function(days = 30, N = 100, Tmax_range_low = 2.5, Tmax_range_high = 5, Tmin_range_low = -5, Tmin_range_high = -2.5, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 10)
+# 
+# # varying Temperature ranges 
+# combi_function(days = 30, N = 100, Tmax_range_low = 1, Tmax_range_high = 3, Tmin_range_low = -2.5, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 6)
+# combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 6)
+# # Now it will matter what the daylength is: 
+# combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 8)
+# combi_function(days = 30, N = 100, Tmax_range_low = -5, Tmax_range_high = 2, Tmin_range_low = -15, Tmin_range_high = -10, th_forage_sc = 0.2, th_forage_fr = 1, num_food_mean = 3, num_food_max = 6, noplot = 0, hoard_on = 1, daylight_h = 10)
 
 
 #########################
