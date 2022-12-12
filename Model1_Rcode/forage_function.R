@@ -94,7 +94,7 @@ forage_function_sizeKnown(mean_food=3, prob_b_forage=0.5, bonanza_size = 25)
 items_found_100s<-c()
 # Run the forage function 100x
 for (i in 1:100){
-  forage_function_sizeKnown(mean_food=3, prob_b_forage=0.25, bonanza_size =15)
+  forage_function_sizeKnown(mean_food=3, prob_b_forage=0.2, bonanza_size =33)
   items_found_100s<-c(items_found_100s, food_item_found)
   
 }
@@ -150,13 +150,16 @@ forage_function_probKnown<-function(mean_food, prob_b_forage, b_prob){
   
 } # end of the foraging function 
 
+
+
+forage_function_probKnown(mean_food=3, prob_b_forage=0.2, b_prob=0.1)
 # Check how the probabilities work out 
 
 # empty variable 
 items_found_100p<-c()
 # Run the forage function 100x
 for (i in 1:100){
-  forage_function_probKnown(mean_food=3, prob_b_forage=0.25, b_prob=0.05)
+  forage_function_probKnown(mean_food=3, prob_b_forage=0.2, b_prob=0.3)
   items_found_100p<-c(items_found_100p, food_item_found)
   
 }
@@ -169,7 +172,7 @@ count_p$x<-as.factor(count_p$x)
 plot_p<-ggplot(count_p, aes(x, freq, fill=x))+
   geom_col()+
   labs(
-    title=paste('# items found in 100x forage  with mean=', mean(items_found_100s))
+    title=paste('# items found in 100x forage  with mean=', mean(items_found_100p))
   )
 plot_p
 
