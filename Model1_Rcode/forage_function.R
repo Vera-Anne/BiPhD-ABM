@@ -91,10 +91,10 @@ forage_function_sizeKnown(mean_food=3, prob_b_forage=0.5, bonanza_size = 25)
 # Check how the probabilities work out 
 
 # empty variable 
-items_found_100s<-c()
+items_found_100s<<-c()
 # Run the forage function 100x
 for (i in 1:100){
-  forage_function_sizeKnown(mean_food=3, prob_b_forage=0.2, bonanza_size =33)
+  forage_function_sizeKnown(mean_food=3, prob_b_forage=0.5, bonanza_size =24)
   items_found_100s<-c(items_found_100s, food_item_found)
   
 }
