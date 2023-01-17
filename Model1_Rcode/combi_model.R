@@ -2344,14 +2344,30 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
       ###########################################
       #    Environments loop  optimisation 1.1  # 
       ###########################################
+          # library(gridExtra)
+          # library(grid)
+          # library(ggplot2)
+          # library(lattice)
+          # library(pracma)
           
+          # open a new window 
           dev.new()
+          # with the right outlines 
           par(mfrow=c(6,3))
-          optimization_1_1_plot_list<<-list()
+          
+          # create an empty object to put the maximum values in 
+          mat_max_survival_th_sc<<-matrix(NA, 18, 1)
+          
+          # START THE FOR LOOP THROUGH EACH OF THE ENVIRONMENTS 
           for (i in 1:18){
+            if (i==1){
+              # create an empty list to put the optimisation plots in
+              optimization_1_1_plot_list<<-list()
+
+            }
             # For every environment run the optimisation function
             cur_env_type<<-i
-            MOD_1_1_opt_th_sc(days=15, N=10, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+            MOD_1_1_opt_th_sc(days=30, N=1000, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
          
             # create temporary dataframe for ggplot 
             current_optimization_df<<-as.data.frame(t(rbind(survival_end, th_forage_sc)))
@@ -2364,16 +2380,18 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
               # Then use the average of those thresholds as the 'best threshold' to get maximum survival
               current_max_th<<-mean(max_thresholds_df$th_forage_sc) # note this will just take the 1 value if there is only one trheshold at the value 
               # get an idea of how many values were used
-              num_max<<-length(max_thresholds_df)
+              num_max<<-nrow(max_thresholds_df)
+              # save the current optimal threshold in the matrix 
+              mat_max_survival_th_sc[i,1]<-current_max_th
               
               
             # CREATING THE PLOT   
               # create an object with the optimisation plot in it
               current_optimization_plot<<-ggplot(current_optimization_df, aes(x=th_forage_sc, y=V1))+
-                geom_point()+
+                geom_line()+
                 labs(
-                  title = paste('Survival % at end- Environment =', cur_env_type), 
-                  y='% Alive', 
+                  title = paste('Mean survival at end- Environment =', cur_env_type), 
+                  y='Mean survival', 
                   x='SC-threshold')+
                 ylim(0,1)
                 #annotate('text', x=0.2, y=0.2, 'Some text')
@@ -2388,14 +2406,16 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
                 # add the label 
                 current_optimization_plot<<-current_optimization_plot + geom_label(data=annotation, aes(x=x, y=y, label=label), 
                            color='orange', 
-                           size=2, angle=45, fontface='bold')
+                           size=3, angle=45, fontface='bold')
               
               
               #survival_plot_list[[i]]<<-current_survival_plot
               #paste('survival_plot_', i)<<-current_survival_plot
               
               # put the current plot in a list 
-              optimization_1_1_plot_list[[i]]<-current_optimization_plot
+              # optimization_1_1_plot_list[[i]]<<-current_optimization_plot
+              optimization_1_1_plot_list<<-append(optimization_1_1_plot_list, list(current_optimization_plot))
+              
               
             # confirm
             print(paste('Optimization ran for environment ', cur_env_type))
@@ -2404,13 +2424,49 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
 
 
           # now plot all of this 
-          dev.new() # new window
+          #dev.new() # new window
           do.call('grid.arrange', c(optimization_1_1_plot_list, ncol=3)) # aggregate the plots 
           
+      
+      ###########################################
+      #   Outputs for optimal values SC-TH 1.1  # 
+      ###########################################
           
-          
-          
-          
+      # For i in 18 environments 
+          # Take the best TH from that enviornment (needs to be created in above code)
+          # Run the model 1.1 with it 
+          # Take those matrices and make the graph with the bheaviours
+          # Also make a graph with the stomach content and fat reserves in it 
+        
+      # Loop for environments 
+          for (i in 1:18){
+            
+            # indicate the current environment
+            cur_env_type<<-i
+            # Take the sc-th from the optimisation that had maximum survival 
+            current_opt_sc_th<<-mat_max_survival_th_sc[i,1]
+            # Now run the model 1.1 with this value 
+            MOD_1_1_func(days=30, N=100, env_type=cur_env_type, th_forage_sc=current_opt_sc_th, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
+            
+            # Now, for each model I need to get the following information: 
+                # The matrix for how many birds are resting
+                # the matrix for how many birds are foraging 
+                # the matrix for how many birds are sleeping 
+            
+            # Then, I need to take the average accross all 30 days to see what the average day look slike
+                # Ideally, I end up with a dataframe/matrix 
+                # This has a column for each timestep 
+                # Rows indicate what percentage of birds was resting, sleeping or foraging 
+            
+            # Then, I need to create a graph that accumulates these 
+                # use this: https://www.geeksforgeeks.org/stacked-area-chart-with-r/ 
+            
+            # Then, create a graph with the stom-C and the FR across the day 
+            
+            
+        
+            
+          }
  
           
         
