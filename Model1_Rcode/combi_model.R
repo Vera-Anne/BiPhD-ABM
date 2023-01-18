@@ -2448,12 +2448,12 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
           rm(opt_type)
           
       # Set up some necessary matrices 
-          mat_cur_perc_rest<<-matrix(data=NA, nrow=5, ncol=TS)
-          mat_cur_perc_for<<-matrix(NA, 5, TS)
-          mat_cur_perc_sleep<<-matrix(NA, 5, TS)
+          mat_cur_perc_rest<<-matrix(data=NA, nrow=18, ncol=TS)
+          mat_cur_perc_for<<-matrix(NA, 18, TS)
+          mat_cur_perc_sleep<<-matrix(NA, 18, TS)
 
       # Loop for environments 
-          for (i in 1:5){
+          for (i in 1:18){
             # indicate the current environment
             cur_env_type<<-i
             # Take the sc-th from the optimisation that had maximum survival 
@@ -2469,7 +2469,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
                 # the matrix for how many birds are sleeping 
                  # mat_cur_perc_sleep<<-matrix(NA, 1, TS)
             # Once you have hte matrices, calculate this for every timestep 
-                  for (j in 1:TS){
+                  for (j in (1:TS)){
                     # The percentage resting 
                     mat_cur_perc_rest[i,j]<-((total_rest[1,j]/total_alive[1,j])*100)
                     # The percentage foraging 
@@ -2477,13 +2477,14 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
                     # the percentage sleeping 
                     mat_cur_perc_sleep[i,j]<-((total_sleep[1,j]/total_alive[1,j])*100)
                   }
-            # Transpose matrices 
-            mat_cur_perc_rest<-t(mat_cur_perc_rest)
-            mat_cur_perc_for<-t(mat_cur_perc_for)
-            mat_cur_perc_sleep<-t(mat_cur_perc_sleep)
             
+            # Transpose matrices 
+            # mat_cur_perc_rest<-t(mat_cur_perc_rest)
+            # mat_cur_perc_for<-t(mat_cur_perc_for)
+            # mat_cur_perc_sleep<-t(mat_cur_perc_sleep)
+            # 
             # Add a line that counts the timesteps 
-            mat_cur_perc_rest[,]
+            #mat_cur_perc_rest[,(5+1)]
             
             # Then, I need to take the average accross all 30 days to see what the average day look slike
                 # Ideally, I end up with a dataframe/matrix 
