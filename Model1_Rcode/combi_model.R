@@ -437,6 +437,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       total_eat_hoard<<-matrix(NA, 1, TS)              # total number of birds eat-hoarding in each timestep
       total_eat<<-matrix(NA, 1, TS)                    # total number of birds eating in each timestep 
       total_predated<<-matrix(NA, 1, TS)
+      total_sleep<<-matrix(NA,1,TS)
       
 
   
@@ -2142,7 +2143,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         total_eat_hoard[1,t]<<-sum(eat_hoard_count[,t], na.rm=TRUE)       # counts how many birds are eat-hoarding in this timestep
         total_eat[1,t]<<-sum(eat_count[,t], na.rm=TRUE)                   # counts how many birds are eating this timestep
         total_predated[1,t]<<-sum(predation_count[,t], na.rm=TRUE) # how many birds were killed by predation in this timestep 
-        
+        total_sleep[1,t]<<-sum(sleep_count[,t], na.rm=TRUE)
         
         # CALCULATE MEANS 
         sc_mean[t]<<-mean(mat_sc[,t], na.rm = TRUE)        # adds mean stomach content for this timestep to matrix
@@ -2344,12 +2345,14 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
       ###########################################
       #    Environments loop  optimisation 1.1  # 
       ###########################################
+           
           # library(gridExtra)
-          # library(grid)
-          # library(ggplot2)
-          # library(lattice)
-          # library(pracma)
-          
+           # library(grid)
+           # library(ggplot2)
+           # library(lattice)
+           # library(pracma)
+           #  library(truncnorm)
+           # 
           # open a new window 
           dev.new()
           # with the right outlines 
@@ -2367,7 +2370,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             }
             # For every environment run the optimisation function
             cur_env_type<<-i
-            MOD_1_1_opt_th_sc(days=30, N=1000, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+            MOD_1_1_opt_th_sc(days=10, N=10, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
          
             # create temporary dataframe for ggplot 
             current_optimization_df<<-as.data.frame(t(rbind(survival_end, th_forage_sc)))
@@ -2433,25 +2436,54 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
       ###########################################
           
       # For i in 18 environments 
-          # Take the best TH from that enviornment (needs to be created in above code)
+          # Take the best TH from that enviornment (needs to be created in above code) - Done? 
           # Run the model 1.1 with it 
           # Take those matrices and make the graph with the bheaviours
           # Also make a graph with the stomach content and fat reserves in it 
         
+          # temp:
+          #current_opt_sc_th<<-0.2
+          
+      # remove optimisation type
+          rm(opt_type)
+          
+      # Set up some necessary matrices 
+          mat_cur_perc_rest<<-matrix(data=NA, nrow=5, ncol=TS)
+          mat_cur_perc_for<<-matrix(NA, 5, TS)
+          mat_cur_perc_sleep<<-matrix(NA, 5, TS)
+
       # Loop for environments 
-          for (i in 1:18){
-            
+          for (i in 1:5){
             # indicate the current environment
             cur_env_type<<-i
             # Take the sc-th from the optimisation that had maximum survival 
-            current_opt_sc_th<<-mat_max_survival_th_sc[i,1]
+            current_opt_sc_th<<-0.2 #mat_max_survival_th_sc[i,1]
             # Now run the model 1.1 with this value 
-            MOD_1_1_func(days=30, N=100, env_type=cur_env_type, th_forage_sc=current_opt_sc_th, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
+            MOD_1_1_func(days=15, N=10, env_type=cur_env_type, th_forage_sc=current_opt_sc_th, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
             
             # Now, for each model I need to get the following information: 
-                # The matrix for how many birds are resting
+                # The matrix for how many birds are resting --> calculate the percentage of birds doing behaviours (of alive birds)
+                 # mat_cur_perc_rest<<-matrix(data=NA, nrow=1, ncol=TS)
                 # the matrix for how many birds are foraging 
+                 # mat_cur_perc_for<<-matrix(NA, 1, TS)
                 # the matrix for how many birds are sleeping 
+                 # mat_cur_perc_sleep<<-matrix(NA, 1, TS)
+            # Once you have hte matrices, calculate this for every timestep 
+                  for (j in 1:TS){
+                    # The percentage resting 
+                    mat_cur_perc_rest[i,j]<-((total_rest[1,j]/total_alive[1,j])*100)
+                    # The percentage foraging 
+                    mat_cur_perc_for[i,j]<-((total_forage[1,j]/total_alive[1,j])*100)
+                    # the percentage sleeping 
+                    mat_cur_perc_sleep[i,j]<-((total_sleep[1,j]/total_alive[1,j])*100)
+                  }
+            # Transpose matrices 
+            mat_cur_perc_rest<-t(mat_cur_perc_rest)
+            mat_cur_perc_for<-t(mat_cur_perc_for)
+            mat_cur_perc_sleep<-t(mat_cur_perc_sleep)
+            
+            # Add a line that counts the timesteps 
+            mat_cur_perc_rest[,]
             
             # Then, I need to take the average accross all 30 days to see what the average day look slike
                 # Ideally, I end up with a dataframe/matrix 
@@ -2468,7 +2500,22 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             
           }
  
+ 
           
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+                   
         
 #################################################################
 ##   Model 1.2: Non-hoarding bird, Access to Fat-reserves      ##
@@ -3000,7 +3047,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
       # 5
       plot5<<-plot(1:t, ((total_eat[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds eating', type='l')
       
-      # 6
+      # 6 Percentage of birds that are resting (of the alive birds)
       plot6<<-plot(1:t, ((total_rest[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds resting', type='l')
       
       # 7
