@@ -61,6 +61,14 @@ library('plyr')
 library('gridExtra')
 library(grid)
 library(lattice)
+library(dplyr)
+library(data.table)
+library(tidyverse)
+library(viridis)
+library(hrbrthemes)
+
+
+
 
 ############################# 
 #   set up directories      # 
@@ -297,6 +305,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
       TS<<-(days*72)
       # Of every day, how many timesteps of daylight do we have 
       n_daylight_timestep<<-(daylight_h*3)              # translates this into timesteps 
+      
+      # For the grpahs after optimization (day by day)
+      daylight_h<<-daylight_h
       
 # debugging 
 #print('just before Temp func')
@@ -2233,7 +2244,8 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
       
       if(!exists('opt_type')){
         print(paste0('ready to save MOD 1.1 simulation plots'))
-        # SAVE LINE PLOTS 
+       
+         # SAVE LINE PLOTS 
         if(hoard_on=='1'){
           setwd(paste0(mainDir, '/H_sim//')) # set current wd 
         }
@@ -2249,7 +2261,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         
       # Run it 
         dev.new()
-        MOD_1_1_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
+        MOD_1_1_func(days=30, N=1000, env_type=8, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
      
       # Optimise for ideal SC-threshold 
         MOD_1_1_opt_th_sc<-function(days, N, env_type, th_forage_fr, noplot,  hoard_on, daylight_h, th_sc_min, th_sc_max){
@@ -2370,7 +2382,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             }
             # For every environment run the optimisation function
             cur_env_type<<-i
-            MOD_1_1_opt_th_sc(days=10, N=10, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+            MOD_1_1_opt_th_sc(days=30, N=1000, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
          
             # create temporary dataframe for ggplot 
             current_optimization_df<<-as.data.frame(t(rbind(survival_end, th_forage_sc)))
@@ -2423,7 +2435,8 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             # confirm
             print(paste('Optimization ran for environment ', cur_env_type))
             print(paste('The optimal Sc-th for this environment = ', current_max_th))
-             }
+             
+            } # end of the loop for each environment 
 
 
           # now plot all of this 
@@ -2448,19 +2461,39 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
           rm(opt_type)
           
       # Set up some necessary matrices 
-          mat_cur_perc_rest<<-matrix(data=NA, nrow=18, ncol=TS)
-          mat_cur_perc_for<<-matrix(NA, 18, TS)
-          mat_cur_perc_sleep<<-matrix(NA, 18, TS)
+           # mat_cur_perc_rest<-matrix(data=NA, nrow=1, ncol=TS)
+           # mat_cur_perc_for<-matrix(NA, 1, TS)
+           # mat_cur_perc_sleep<-matrix(NA, 1, TS)
+          
+          # temp
+          daylight_h<<-8
 
       # Loop for environments 
+          dev.new()
           for (i in 1:18){
+            
+            if (i==1){
+              stacked_chart_data_list<-list()
+              stacked_chart_plot_list<-list()
+              fr_sc_plot_list<-list()
+            }
+            
+             mat_cur_perc_rest<-matrix(data=NA, nrow=TS, ncol=1)
+             mat_cur_perc_for<-matrix(NA, TS, 1)
+             mat_cur_perc_sleep<-matrix(NA, TS, 1)
+            # 
             # indicate the current environment
             cur_env_type<<-i
             # Take the sc-th from the optimisation that had maximum survival 
             current_opt_sc_th<<-0.2 #mat_max_survival_th_sc[i,1]
-            # Now run the model 1.1 with this value 
-            MOD_1_1_func(days=15, N=10, env_type=cur_env_type, th_forage_sc=current_opt_sc_th, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
             
+            # debugging
+            #print('ready to run model')
+            # Now run the model 1.1 with this value 
+            MOD_1_1_func(days=30, N=1000, env_type=cur_env_type, th_forage_sc=current_opt_sc_th, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
+            
+            #debuggin 
+            #print('model ran')
             # Now, for each model I need to get the following information: 
                 # The matrix for how many birds are resting --> calculate the percentage of birds doing behaviours (of alive birds)
                  # mat_cur_perc_rest<<-matrix(data=NA, nrow=1, ncol=TS)
@@ -2471,60 +2504,123 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             # Once you have hte matrices, calculate this for every timestep 
                   for (j in (1:TS)){
                     # The percentage resting 
-                    mat_cur_perc_rest[i,j]<-((total_rest[1,j]/total_alive[1,j])*100)
+                    mat_cur_perc_rest[j,1]<-((total_rest[1,j]/total_alive[1,j])*100)
                     # The percentage foraging 
-                    mat_cur_perc_for[i,j]<-((total_forage[1,j]/total_alive[1,j])*100)
+                    mat_cur_perc_for[j,1]<-((total_forage[1,j]/total_alive[1,j])*100)
                     # the percentage sleeping 
-                    mat_cur_perc_sleep[i,j]<-((total_sleep[1,j]/total_alive[1,j])*100)
+                    mat_cur_perc_sleep[j,1]<-((total_sleep[1,j]/total_alive[1,j])*100)
                   }
             
-            # Transpose matrices 
-            # mat_cur_perc_rest<-t(mat_cur_perc_rest)
-            # mat_cur_perc_for<-t(mat_cur_perc_for)
-            # mat_cur_perc_sleep<-t(mat_cur_perc_sleep)
-            # 
-            # Add a line that counts the timesteps 
-            #mat_cur_perc_rest[,(5+1)]
+            # Add column with numbers 
+            timesteps<-1:TS
+            # put them on a daily scale 
+            timesteps_dayscale<-timesteps%%72
+            # Attach matrices 
+            mat_perc_cur_env<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, timesteps_dayscale)
+            # turn to df 
+            df_perc_cur_env<-as.data.frame(mat_perc_cur_env)
+            # set names 
+            colnames(df_perc_cur_env)[1]<-'rest'
+            colnames(df_perc_cur_env)[2]<-'forage'
+            colnames(df_perc_cur_env)[3]<-'sleep'
             
-            # Then, I need to take the average accross all 30 days to see what the average day look slike
-                # Ideally, I end up with a dataframe/matrix 
-                # This has a column for each timestep 
-                # Rows indicate what percentage of birds was resting, sleeping or foraging 
+            # now start grouping 
+            rest_perc<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
+            forage_perc<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
+            sleep_perc<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
             
-            # Then, I need to create a graph that accumulates these 
-                # use this: https://www.geeksforgeeks.org/stacked-area-chart-with-r/ 
+            # add group
+            rest_perc$beh<-rep('rest')
+            forage_perc$beh<-rep('forage')
+            sleep_perc$beh<-rep('sleep')
             
-            # Then, create a graph with the stom-C and the FR across the day 
+            # make new dataframe 
+            df_for_chart<-rbind(rest_perc, forage_perc, sleep_perc)
             
+            # For checking why the percentages are sometimes above 0100
+            #df_for_chart_colbind<-cbind(rest_perc, forage_perc, sleep_perc)
+            #print(rowSums(df_for_chart_colbind[,c(2,5,8)]))
+         
+            # Ideally, I'd store this in some sort of list so I can access it afterwards 
+            stacked_chart_data_list<-append(stacked_chart_data_list, list(df_for_chart))
             
-        
+            # I want to plot only the time that the birds are awake (they all go to sleep at night anyway)
+            # calculate the # of timesteps that birds are awake and put this in the xlim of the graphs 
+            timesteps_awake<-daylight_h*3
             
+            # Now make the chart 
+            cur_stacked_plot<-ggplot(df_for_chart, aes(x=timesteps_dayscale, y=m, fill=beh))+
+              geom_area(alpha=0.8, size=0.5, colour='white')+
+              scale_fill_viridis(discrete = T)+
+              #theme_ipsum()+
+              #ggtitle('Percentage of Birds per Behaviour')
+              labs(
+                title = paste('Average %of Alive Birds in env.', i), 
+                x='Timestep in a 24 day (20 min increments)', 
+                y='% of Alive birds')+
+              xlim(0, timesteps_awake)
+            
+            # put plot in the list 
+            stacked_chart_plot_list<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+            
+            # # FR- SC graphs
+              # create a df
+              fr_sc_graph<-rbind(fr_mean, sc_mean, timesteps_dayscale)
+              fr_sc_graph<-t(fr_sc_graph)
+              # turn to df
+              fr_sc_graph<-as.data.frame(fr_sc_graph)
+              # set names
+              colnames(fr_sc_graph)[1]<-'fr'
+              colnames(fr_sc_graph)[2]<-'sc'
+              # start grouping
+              # now start grouping
+              fr_grouped<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(fr))
+              sc_grouped<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(sc))
+
+              # add group
+              fr_grouped$type<-rep('fr')
+              sc_grouped$type<-rep('sc')
+              #sleep_perc$beh<-rep('sleep')
+
+              # make new dataframe
+              df_for_sc_fr_chart<-rbind(fr_grouped, sc_grouped)
+
+
+              # graph
+              # Now make the chart
+              cur_fr_sc_plot<-ggplot(df_for_sc_fr_chart, aes(x=timesteps_dayscale, y=m, col=type))+
+                #geom_area(alpha=0.8, size=0.5, colour='white')+
+                geom_line()+
+                scale_fill_viridis(discrete = T)+
+                #theme_ipsum()+
+                #ggtitle('Percentage of Birds per Behaviour')
+                labs(
+                  title = paste('FR and SC in environment', i),
+                  x='Timestep in a 24 day (20 min increments)',
+                  y='grams')+
+                xlim(0, timesteps_awake)
+
+              # put plot in the list
+              fr_sc_plot_list<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
+              
+              # for ease of use 
+              print('Code for the stacked area graphs/sc-fr graphs is done')
+
+
           }
+          
+          do.call('grid.arrange', c(stacked_chart_plot_list, ncol=3)) # aggregate the plots 
+          dev.new()
+          do.call('grid.arrange', c(fr_sc_plot_list, ncol=3)) # aggregate the plots
  
- 
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-                   
         
 #################################################################
 ##   Model 1.2: Non-hoarding bird, Access to Fat-reserves      ##
 #################################################################        
         
-        ############################# 
-        #   set up directories      # 
-        #############################
+        ################################ 
+        #   set up directories   1.2   # 
+        ################################
         # Set up the main directory for where you want the figures saved 
         # This can be replaced by any folder you have on your computer (just make sure you have continuous connection if its a webfolder)
         mainDir<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_2'
@@ -2538,9 +2634,9 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
           dir.create(file.path(mainDir, folder ), showWarnings = TRUE)
         }
         
-        ############################
-        #    Functions & running   #
-        ############################
+        ###############################
+        #    Functions & running 1.2  #
+        ###############################
         rm(opt_type)
         # write function 
         MOD_1_2_func<-function(days, N, env_type, th_forage_sc, th_forage_fr, noplot, hoard_on, daylight_h){
@@ -3119,8 +3215,10 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
   
 } # end the 1.2 function 
         
-        # Run it 
-        MOD_1_2_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
+        # Run it
+        dev.new()
+        MOD_1_2_func(days=30, N=1000, env_type=8, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
+        #MOD_1_2_func(days=30, N=1000, env_type=3, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
         
         # Optmise for ideal FR-threshold 
         MOD_1_2_opt_th_fr<-function(days, N, env_type, th_forage_sc, noplot,  hoard_on, daylight_h, th_fr_min, th_fr_max){
@@ -3173,18 +3271,17 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         # Run optimization 
         dev.new()
         par(mfrow=c(1,1))
-        MOD_1_2_opt_th_fr(days=3, N=10, env_type=15, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
+        MOD_1_2_opt_th_fr(days=30, N=100, env_type=15, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
+        MOD_1_2_opt_th_fr(days=30, N=100, env_type=3, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
         
         
-        
-        
-        ############################
-        #    Environments loop     # 
-        ############################
-        
+        ###############################
+        #    Environments loop  1.2   # 
+        ###############################
         # Run the model 1.1 function for each of the environments 
         rm(opt_type)
         survival_plot_list<<-list()
+        dev.new()
         for (i in 1:18){
           
           # For every environment run the optimisation function 
@@ -3200,22 +3297,108 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
               title = paste('Survival - % birds alive - Environment =', cur_env_type), 
               y='% Alive', 
               x='Timestep')+
-            ylim(0,100)
+            ylim(0,101)
           #survival_plot_list[[i]]<<-current_survival_plot
           #paste('survival_plot_', i)<<-current_survival_plot
           
           survival_plot_list[[i]]<-current_survival_plot
           
+          # for ease of use 
+          print(paste('environment loop 1.2 done for env=', cur_env_type))
+          
         } # end for loop for the environments 
+        
         # now plot all of this 
         dev.new() # new window
         do.call('grid.arrange', c(survival_plot_list, ncol=3)) # aggregate the plots 
         
+        ###########################################
+        #    Environments loop  optimisation 1.2  # 
+        ###########################################
+        
+        # open a new window 
+        dev.new()
+        # with the right outlines 
+        par(mfrow=c(6,3))
+        
+        # create an empty object to put the maximum values in 
+        mat_max_survival_th_fr<<-matrix(NA, 18, 1)
+        
+        # START THE FOR LOOP THROUGH EACH OF THE ENVIRONMENTS 
+        for (i in 1:18){
+          if (i==1){
+            # create an empty list to put the optimisation plots in
+            optimization_1_2_plot_list<<-list()
+            
+          }
+          # For every environment run the optimisation function
+          cur_env_type<<-i
+          MOD_1_2_opt_th_fr(days=30, N=100, env_typ=cur_env_type, th_forage_sc=0.2, noplot=1, hoard_on=0, daylight_h=8 , th_fr_min=0, th_fr_max=4)
+          #MOD_1_2_opt_th_fr(days=3, N=10, env_type=15, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
+          
+          # create temporary dataframe for ggplot 
+          current_optimization_df<<-as.data.frame(t(rbind(survival_end, th_forage_fr)))
+          
+          # SELECTING THE BEST/MAX SURVIVAL SC-TH 
+          # Calculate for which threshold the survival is maximum
+          current_max_survival<<-max(current_optimization_df$V1)
+          # Create a dataframe which holds all rows for which survival is maximum 
+          max_thresholds_df<<-subset(current_optimization_df, V1==current_max_survival)
+          # Then use the average of those thresholds as the 'best threshold' to get maximum survival
+          current_max_th<<-mean(max_thresholds_df$th_forage_fr) # note this will just take the 1 value if there is only one trheshold at the value 
+          # get an idea of how many values were used
+          num_max<<-nrow(max_thresholds_df)
+          # save the current optimal threshold in the matrix 
+          mat_max_survival_th_fr[i,1]<-current_max_th
+          
+          
+          # CREATING THE PLOT   
+          # create an object with the optimisation plot in it
+          current_optimization_plot<<-ggplot(current_optimization_df, aes(x=th_forage_fr, y=V1))+
+            geom_line()+
+            labs(
+              title = paste('Mean survival at end- Environment =', cur_env_type), 
+              y='Mean survival', 
+              x='FR-threshold')+
+            ylim(0,1)
+          #annotate('text', x=0.2, y=0.2, 'Some text')
+          
+          # df with annotation info
+          annotation<<-data.frame(
+            x<-c(0.2), 
+            y<-c(0.2), 
+            label=paste('Opt FR-TH taken from', num_max, 'values = ', current_max_th)
+          )
+          
+          # add the label 
+          current_optimization_plot<<-current_optimization_plot + geom_label(data=annotation, aes(x=x, y=y, label=label), 
+                                                                             color='orange', 
+                                                                             size=3, angle=45, fontface='bold')
+          
+          
+          #survival_plot_list[[i]]<<-current_survival_plot
+          #paste('survival_plot_', i)<<-current_survival_plot
+          
+          # put the current plot in a list 
+          # optimization_1_1_plot_list[[i]]<<-current_optimization_plot
+          optimization_1_2_plot_list<<-append(optimization_1_2_plot_list, list(current_optimization_plot))
+          
+          
+          # confirm
+          print(paste('Optimization ran for environment ', cur_env_type))
+          print(paste('The optimal FR-th for this environment = ', current_max_th))
+          
+        } # end of the loop for each environment 
+        
+        
+        # now plot all of this 
+        #dev.new() # new window
+        do.call('grid.arrange', c(optimization_1_2_plot_list, ncol=3)) # aggregate the plots 
         
         
         
         
-        
+
         
         
         
