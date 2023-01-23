@@ -283,7 +283,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       # Want to plot some initial value graphs? 
       # 1 for yes, 0 for no 
       plot_init_value<<-0
-      plot_interval<<-50   # every x timestep a dot on the graph is added 
+      plot_interval<<-100   # every x timestep a dot on the graph is added 
                                   # Sets you up for a 6 hour day 
   
   # BIRD PARAMETERS 
@@ -2315,8 +2315,11 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
       # Run optimisation 
         dev.new()
         par(mfrow=c(1,1))
-        MOD_1_1_opt_th_sc(days=3, N=10, env_typ=8, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
-
+        MOD_1_1_opt_th_sc(days=3, N=10, env_type=8, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+        MOD_1_1_opt_th_sc(days=3, N=10, env_type=1, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+        MOD_1_1_opt_th_sc(days=3, N=10, env_type=11, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+        MOD_1_1_opt_th_sc(days=3, N=10, env_type=18, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+        
         
       ##############################
       #    Environments loop  1.1  # 
@@ -3215,66 +3218,66 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
   
 } # end the 1.2 function 
         
-        # Run it
-        dev.new()
-        MOD_1_2_func(days=30, N=1000, env_type=8, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
-        #MOD_1_2_func(days=30, N=1000, env_type=3, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
-        
+          # Run it
+          dev.new()
+          MOD_1_2_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
+          #MOD_1_2_func(days=30, N=1000, env_type=3, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
+          
         # Optmise for ideal FR-threshold 
         MOD_1_2_opt_th_fr<-function(days, N, env_type, th_forage_sc, noplot,  hoard_on, daylight_h, th_fr_min, th_fr_max){
-          # show that optimizatio started 
-          print(paste0('MOD 1.2 opt th_fr start' ))
-          # select optimization type 
-          opt_type<<-c('th_fr')
-          # creates 100 values between 0 and 0.4, evenly spaced between minimum and maximum inputs 
-          th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
-          
-          # now create a space to save the survival for each different value of th_forage_sc 
-          survival_end<<-matrix(NA, 1, length(th_forage_fr))
-          
-          for (th in 1:length(th_forage_fr)){
-            # Run the rest_forage function for each th_forage_fr that you have created. 
-            # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distribution the same
-            # determine the current threshold for each loop 
-            current_th_fr<<-th_forage_fr[th]
-            current_th<<-current_th_fr            # needs to have a general name for the rest-forage function printing (works for both sc and fr optimisations)
-            # now run 
-            MOD_1_2_func(days, N, env_type, current_th_fr, th_forage_sc, noplot, hoard_on, daylight_h)
-            # add to the previously created matrix
-            survival_end[1,th]<<-birds_alive_at_end
-          } # end of optimization for loop 
-          
-          # in the end, plot the whole thing 
-          #dev.new()
-          #par(mfrow=c(1,1))
-          #jpeg('plot_opt_forage_th_sc.jpg')
-          fig_opt_hoard_th_fr<<-plot(th_forage_fr, survival_end, main = paste0('opt th_fr T=', days, ', N=', N, 'env type=', env_type, ', th-sc=', th_forage_sc, 'Hoard=', hoard_on ), ylim = c(0,1) )
-          fig_opt_hoard_th_fr
-          #dev.off()
-          
-          # for checking during coding 
-          print(paste0('MOD 1.2 opt th_fr function did run' ))
-          
-          # save the figure in previously made folders 
-          if (hoard_on=='1'){
-            setwd(paste0(mainDir, '//H_opt_th_fr/'))
-          }
-          if(hoard_on=='0'){
-            setwd(paste0(mainDir, '//NonH_opt_th_fr/'))
-          }
-          # dev.off()
-          #dev.new()
-          dev.print(pdf, (paste0('opt_th_fr_T=', days, '_N=', N, '_th-sc=', th_forage_sc,  'Hoard=', hoard_on, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-          
-        } # end of optimization function 
+              # show that optimizatio started 
+              print(paste0('MOD 1.2 opt th_fr start (v2)' ))
+              # select optimization type 
+              opt_type<<-c('th_fr')
+              # creates 100 values between 0 and 0.4, evenly spaced between minimum and maximum inputs 
+              th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+              
+              # now create a space to save the survival for each different value of th_forage_sc 
+              survival_end<<-matrix(NA, 1, length(th_forage_fr))
+              
+              for (th in 1:length(th_forage_fr)){
+                # Run the rest_forage function for each th_forage_sc that you have created. 
+                # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distribution the same
+                # determine the current threshold for each loop 
+                current_th_fr<<-th_forage_fr[th]
+                current_th<<-current_th_fr            # needs to have a general name for the rest-forage function printing (works for both sc and fr optimisations)
+                # now run 
+                MOD_1_2_func(days, N, env_type, th_forage_sc,current_th_fr, noplot, hoard_on, daylight_h)
+                # add to the previously created matrix
+                survival_end[1,th]<<-birds_alive_at_end
+              } # end of optimization for loop 
+              
+              # in the end, plot the whole thing 
+              #dev.new()
+              #dev.cur()
+              #par(mfrow=c(1,1))
+              #jpeg('plot_opt_forage_th_sc.jpg')
+              fig_opt_hoard_th_fr<<-plot(th_forage_fr, survival_end, main = paste0('opt th_fr T=', days, ', N=', N, 'env type=', env_type, ', th-sc=', th_forage_sc, 'Hoard=', hoard_on ), ylim = c(0,1) )
+              fig_opt_hoard_th_fr
+              #dev.off()
+              
+              # for checking during coding 
+              print(paste0('MOD 1.2 opt th_fr function did run' ))
+              
+              # save the figure in previously made folders 
+              if (hoard_on=='1'){
+                setwd(paste0(mainDir, '//H_opt_th_sc/'))
+              }
+              if(hoard_on=='0'){
+                setwd(paste0(mainDir, '//NonH_opt_th_sc/'))
+              }
+              # dev.off()
+              #dev.new()
+              dev.print(pdf, (paste0('opt_th_fr_T=', days, '_N=', N, '_th-sc=', th_forage_sc,  'Hoard=', hoard_on, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+              
+            } # end of optimization function 
+            
+            # Run it 
+            dev.new()
+            MOD_1_2_opt_th_fr(days=30, N=100, env_type=3, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
+            MOD_1_2_opt_th_fr(days=30, N=100, env_type=9, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
+            
 
-        # Run optimization 
-        dev.new()
-        par(mfrow=c(1,1))
-        MOD_1_2_opt_th_fr(days=30, N=100, env_type=15, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
-        MOD_1_2_opt_th_fr(days=30, N=100, env_type=3, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
-        
-        
         ###############################
         #    Environments loop  1.2   # 
         ###############################
