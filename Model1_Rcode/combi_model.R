@@ -4195,24 +4195,9 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         # Run it
         dev.new()
         MOD_1_3_func(days=30, N=100, env_type=8, th_forage_sc1=0.1, th_forage_sc2=0.3, th_forage_fr=1, noplot=0, hoard_on=1, daylight_h=8)
-        #MOD_1_2_func(days=30, N=1000, env_type=3, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
         
         # Write function for optimisation 
-        
-              # temp for coding
-              days<<-30
-              N<<-10
-              env_type<<-8
-              th_sc1_min<<-0
-              th_sc1_max<<-0.4
-              th_sc2_min<<-0
-              th_sc2_max<<-0.4
-              noplot<<-1
-              hoard_on<<-1
-              daylight_h<<-8
-        
-        
-      
+
         MOD_1_3_opt_thsc1_thsc2<-function(days, N, env_type, th_sc1_min, th_sc1_max, th_sc2_min, th_sc2_max, noplot, hoard_on, daylight_h){
           
           # show that optimizatio started 
@@ -4301,46 +4286,45 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
           
         } # end of optimization function for hoarding bird th-sc1 and th-sc2
         
+        # run the optimization function 
         MOD_1_3_opt_thsc1_thsc2(days=30, N=100, env_type=8, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, noplot=1, hoard_on=1, daylight_h=8)
         
-        
-
         ###############################
         #    Environments loop  1.3   # 
         ###############################
-        # # Run the model 1.1 function for each of the environments 
-        # rm(opt_type)
-        # survival_plot_list<<-list()
-        # dev.new()
-        # for (i in 1:18){
-        #   
-        #   # For every environment run the optimisation function 
-        #   cur_env_type<<-i
-        #   #MOD_1_1_opt_th_sc(days=30, N=100, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
-        #   MOD_1_2_func(days=30, N=100, env_type=cur_env_type, th_forage_sc=0.2, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
-        #   
-        #   # create temporary dataframe for ggplot 
-        #   current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
-        #   current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=V1))+
-        #     geom_line()+
-        #     labs(
-        #       title = paste('Survival - % birds alive - Environment =', cur_env_type), 
-        #       y='% Alive', 
-        #       x='Timestep')+
-        #     ylim(0,101)
-        #   #survival_plot_list[[i]]<<-current_survival_plot
-        #   #paste('survival_plot_', i)<<-current_survival_plot
-        #   
-        #   survival_plot_list[[i]]<-current_survival_plot
-        #   
-        #   # for ease of use 
-        #   print(paste('environment loop 1.2 done for env=', cur_env_type))
-        #   
-        # } # end for loop for the environments 
-        # 
-        # # now plot all of this 
-        # dev.new() # new window
-        # do.call('grid.arrange', c(survival_plot_list, ncol=3)) # aggregate the plots 
+            # Run the model 1.3 function for each of the environments
+            # rm(opt_type)
+            survival_plot_list<<-list()
+            dev.new()
+            for (i in 1:18){
+    
+              # For every environment run the optimisation function
+              cur_env_type<<-i
+              #MOD_1_1_opt_th_sc(days=30, N=100, env_typ=cur_env_type, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8 , th_sc_min=0, th_sc_max=0.4)
+              MOD_1_3_func(days=30, N=100, env_type=cur_env_type, th_forage_sc1=0.1, th_forage_sc2=0.3, th_forage_fr=1, noplot=1, hoard_on=0, daylight_h=8)
+    
+              # create temporary dataframe for ggplot
+              current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
+              current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=V1))+
+                geom_line()+
+                labs(
+                  title = paste('Survival - % birds alive - Environment =', cur_env_type),
+                  y='% Alive',
+                  x='Timestep')+
+                ylim(0,101)
+              #survival_plot_list[[i]]<<-current_survival_plot
+              #paste('survival_plot_', i)<<-current_survival_plot
+    
+              survival_plot_list[[i]]<-current_survival_plot
+    
+              # for ease of use
+              print(paste('environment loop 1.3 done for env=', cur_env_type))
+    
+            } # end for loop for the environments
+    
+            # now plot all of this
+            dev.new() # new window
+            do.call('grid.arrange', c(survival_plot_list, ncol=3)) # aggregate the plots
         
         ###########################################
         #    Environments loop  optimization 1.3  # 
