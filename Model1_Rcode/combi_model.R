@@ -3591,7 +3591,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             setwd(mainDir)
             # Run the following if doing this for the first time on devide: 
             # create list of folders that we want present 
-            folders<-c('NonH_opt_th_fr', 'H_opt_th_fr', 'NonH_opt_th_sc', 'H_opt_th_sc', 'NonH_opt_th_sc_and_fr', 'H_opt_th_sc_and_fr','NonH_sim', 'H_sim')
+            folders<-c('run_model', 'run_opt', 'env_loop', 'opt_loop', 'beh_loop')
             # Check if they exist and if not, create them 
             # Note that this code will warn you if it already existed 
             for (folder in folders){
@@ -3605,7 +3605,10 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         # remove if needed 
         rm(opt_type)
         
-        # write function 
+        # write function for the  model
+        # Set the simulation type 
+        sim_type<<-'run_model'
+        # run function 
         MOD_1_3_func<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_fr, noplot, hoard_on, daylight_h){
           
           # Set up the environment 
@@ -3800,7 +3803,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
                       if ((mat_sc[i,t]<th_forage_sc1)&& (mat_caches[i,t]>retrieve_min)){
 
                         # code checking (temp for debugging)
-                        print(paste0('bird ', N, ' is retrieving'))
+                        #print(paste0('bird ', N, ' is retrieving'))
 
                         # The bird will retrieve: update global counters
                         retrieve_count[i, t]<<-1
@@ -3873,7 +3876,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
                           ######################
 
                           # code checking
-                          print(paste0('bird ', i, ' is eat-hoarding'))
+                          #print(paste0('bird ', i, ' is eat-hoarding'))
 
                           # update the global counters
                           eat_hoard_count[i,t]<<-1
@@ -4161,34 +4164,31 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
           # Calculates the mean probability of being alive in the last timestep for the current conditions 
           birds_alive_at_end<<-alive_mean[last_T]
           
+          
           # Print some text to keep track of the simulation 
-          if (exists('opt_type')){                                                      # Check if you are optimising or just running 
-            if(opt_type=='th_sc'){                                                      # If so, are you optimising th_sc? 
-              print(paste0('Combi function did run for sc:', current_th_sc ))
+          if (exists('sim_type')){                                                      # Check if you are optimising or just running 
+            if(sim_type=='run_model'){                                                      # If so, are you optimising th_sc? 
+              print(paste0('Model 1.3 ran'))
             }
-            if(opt_type=='th_fr'){                                                      # Or are you optimising th_fr? 
-              print(paste0('MOD1.2 function did run for fr:', current_th_fr ))
+            if(opt_type=='run_opt'){                                                      # Or are you optimising th_fr? 
+              print(paste0('Model 1.3 optimization ran'))
             }
-            if(opt_type=='th_sc_and_fr'){                                               # or both? 
-              print(paste0('Combi function did run for sc:', current_th_sc ))
-              print(paste0('Combi function did run for fr:', current_th_fr ))
-            }
+            
           }
           
           
-          if(!exists('opt_type')){
-            print(paste0('ready to save MOd1.2 simulation plots'))
+          if(sim_type=='run_model'){
+            #print(paste0('ready to save MOd1.3 simulation plots'))
+            
             # SAVE LINE PLOTS 
             if(hoard_on=='1'){
-              setwd(paste0(mainDir, '/H_sim//')) # set current wd 
+              setwd(paste0(mainDir, '/run_model//')) # set current wd 
             }
-            else(
-              setwd(paste0(mainDir, '/NonH_sim//')) # set current wd 
-            )
-            dev.print(pdf, (paste0('Simulation_Days=', days, '_N=', N, 'MaxT-range=', Tmax_range_low, '-', Tmax_range_high, ' MinT-range=', Tmin_range_high, '-', Tmin_range_low, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_food-m=',num_food_mean, '_hoard=', hoard_on, '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+           
+            dev.print(pdf, (paste0('Sim_days=', days, '_N=', N, 'env=', env_type, '_th-fr=', th_forage_fr, '_th-sc=', th_forage_sc, '_hoard=', hoard_on, '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
             
             
-          }
+          } # end loop for run_model
           
         } # end the 1.3 function 
         
@@ -4197,61 +4197,114 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         MOD_1_3_func(days=30, N=100, env_type=8, th_forage_sc1=0.1, th_forage_sc2=0.3, th_forage_fr=1, noplot=0, hoard_on=1, daylight_h=8)
         #MOD_1_2_func(days=30, N=1000, env_type=3, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
         
-        # Optimize for ideal FR-threshold 
-        MOD_1_2_opt_th_fr<-function(days, N, env_type, th_forage_sc, noplot,  hoard_on, daylight_h, th_fr_min, th_fr_max){
+        # Write function for optimisation 
+        
+              # temp for coding
+              days<<-30
+              N<<-10
+              env_type<<-8
+              th_sc1_min<<-0
+              th_sc1_max<<-0.4
+              th_sc2_min<<-0
+              th_sc2_max<<-0.4
+              noplot<<-1
+              hoard_on<<-1
+              daylight_h<<-8
+        
+        
+      
+        MOD_1_3_opt_thsc1_thsc2<-function(days, N, env_type, th_sc1_min, th_sc1_max, th_sc2_min, th_sc2_max, noplot, hoard_on, daylight_h){
+          
           # show that optimizatio started 
-          print(paste0('MOD 1.2 opt th_fr start (v2)' ))
-          # select optimization type 
-          opt_type<<-c('th_fr')
-          # creates 100 values between 0 and 0.4, evenly spaced between minimum and maximum inputs 
-          th_forage_fr<<-linspace(th_fr_min, th_fr_max, n=100)
+          print(paste0('Optimizing MOD 1.3 for sc-th1 and sc-th2' ))
           
-          # now create a space to save the survival for each different value of th_forage_sc 
-          survival_end<<-matrix(NA, 1, length(th_forage_fr))
+          # specify optimization type (fix this later)
+          sim_type<<-'run_opt'
           
-          for (th in 1:length(th_forage_fr)){
-            # Run the rest_forage function for each th_forage_sc that you have created. 
-            # keep the number of days ,individuals, day temp, night temp, fat-reserve threshold, food distribution the same
+          # creates 100 values between min and max, evenly spaced 
+          th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=100)
+          th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=100)
+          
+          # now create a space to save the survival for each different value fo th_forage_sc1 and th_forage_sc2 
+          survival_end<<-matrix(NA, length(th_forage_sc1), length(th_forage_sc2))
+          
+          
+          for (th_sc1 in 1:length(th_forage_sc1)){          # Outside for loop that goes through all values of forage_sc1 
             # determine the current threshold for each loop 
-            current_th_fr<<-th_forage_fr[th]
-            current_th<<-current_th_fr            # needs to have a general name for the rest-forage function printing (works for both sc and fr optimisations)
-            # now run 
-            MOD_1_2_func(days, N, env_type, th_forage_sc,current_th_fr, noplot, hoard_on, daylight_h)
-            # add to the previously created matrix
-            survival_end[1,th]<<-birds_alive_at_end
-          } # end of optimization for loop 
+            current_th_sc1<<-th_forage_sc1[th_sc1]
+                # now run through all the possible sc2 values for this specific sc1
+                for (th_sc2 in 1:length(th_forage_sc2)){
+                  # set the current sc2 threshold 
+                  current_th_sc2<<-th_forage_sc2[th_sc2]
+                  # run the MOD 1.3 function: 
+                  MOD_1_3_func(days, N, env_type, th_forage_sc1=current_th_sc1, th_forage_sc2=current_th_sc2, th_forage_fr, noplot, hoard_on, daylight_h)
+                  # add to the previously created matrix 
+                  survival_end[th_sc1,th_sc2]<<-birds_alive_at_end
+                  print(paste('opt MOD 1.3 for sc1=', current_th_sc1, ' and sc2=', current_th_sc2))
+            } # end of loop for sc2 thresholds 
+          } # end of loop for sc1 thesholds 
           
-          # in the end, plot the whole thing 
-          #dev.new()
-          #dev.cur()
-          #par(mfrow=c(1,1))
-          #jpeg('plot_opt_forage_th_sc.jpg')
-          fig_opt_hoard_th_fr<<-plot(th_forage_fr, survival_end, main = paste0('opt th_fr T=', days, ', N=', N, 'env type=', env_type, ', th-sc=', th_forage_sc, 'Hoard=', hoard_on ), ylim = c(0,1) )
-          fig_opt_hoard_th_fr
-          #dev.off()
+          # The matrix should be completely filled in now and ready to do 
           
           # for checking during coding 
-          print(paste0('MOD 1.2 opt th_fr function did run' ))
+          print(paste0('Optimization MOD 1.3 ran' ))
           
-          # save the figure in previously made folders 
-          if (hoard_on=='1'){
-            setwd(paste0(mainDir, '//H_opt_th_sc/'))
+          # plot it so you can visualise
+          persp3D(z=survival_end, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2')
+          
+          # setwd 
+          setwd(paste0(mainDir, '/run_opt//'))
+          # Use the other way of plotting 3D plots 
+          fig_MOD_1_3<-plot_ly(
+            x=as.numeric(th_forage_sc2), 
+            y=as.numeric(th_forage_sc1), 
+            z=survival_end
+          )
+          fig_MOD_1_3<-fig_MOD_1_3 %>% add_surface()
+          fig_MOD_1_3<-fig_MOD_1_3 %>% layout(
+            title=list(text=paste0('Opt MOD 1.3 th_Sc1 and th_sc2 for:T=', days, ', N=', N, ', env=', env_type ), y=0.95),
+            scene=list(
+              xaxis=list(title= 'Threshold sc2 (gram)'),
+              yaxis=list(title= 'Threshold Sc1 (gram)'),
+              zaxis=list(title= 'Survival prob'
+              )))
+          fig_MOD_1_3
+          
+          # SAVE THE WIDGET 
+          # The saveWidget function has trouble saving in new directories and sometimes doesnt delete the temporary files
+          # I found this code that should get rid of it (works so far )
+          # Function that warns you when you are overwriting 
+          save_widget_wrapper <- function(plot, file, overwrite = FALSE){
+            # save the file if it doesn't already exist or if overwrite == TRUE
+            if( !file.exists(file) | overwrite ){
+              withr::with_dir(new = dirname(file), 
+                              code = htmlwidgets::saveWidget(plot, 
+                                                             file = basename(file)))
+            } else {
+              print("File already exists and 'overwrite' == FALSE. Nothing saved to file.")
+            }
+          }
+          
+          # try and get that timestamp in 
+          if(hoard_on=='1'){
+            setwd(paste0(mainDir, '/run_opt//'))
           }
           if(hoard_on=='0'){
-            setwd(paste0(mainDir, '//NonH_opt_th_sc/'))
+            setwd(paste0(mainDir, '/run_opt//'))  # not relevan there 
           }
-          # dev.off()
-          #dev.new()
-          dev.print(pdf, (paste0('opt_th_fr_T=', days, '_N=', N, '_th-sc=', th_forage_sc,  'Hoard=', hoard_on, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
           
-        } # end of optimization function 
+          # create  seperate timesamp so the supproting folders don't have a differen tone than the html file 
+          Fig_timestamp<-format(Sys.time(), "%Y_%m_%d__%H_%M_%S")
+          Filename<-paste0('MOD_1_3_opt_3D','_T', days, '_N',N, '_env',env_type,'_', Fig_timestamp,'.html')
+          #Filename<-paste0(Fig_timestamp,'.html')
+          save_widget_wrapper(fig_MOD_1_3, Filename)
+          
+        } # end of optimization function for hoarding bird th-sc1 and th-sc2
         
-        # Run it 
-        dev.new()
-        MOD_1_2_opt_th_fr(days=30, N=100, env_type=3, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
-        MOD_1_2_opt_th_fr(days=30, N=100, env_type=9, th_forage_sc=0.2, noplot=1,  hoard_on=0, daylight_h=8, th_fr_min=0, th_fr_max=4) 
+        MOD_1_3_opt_thsc1_thsc2(days=30, N=100, env_type=8, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, noplot=1, hoard_on=1, daylight_h=8)
         
         
+
         ###############################
         #    Environments loop  1.3   # 
         ###############################
