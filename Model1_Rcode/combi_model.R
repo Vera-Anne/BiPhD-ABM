@@ -4293,6 +4293,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         #    Environments loop  1.3   # 
         ###############################
             # Run the model 1.3 function for each of the environments
+            sim_type<<-env_loop
             # rm(opt_type)
             survival_plot_list<<-list()
             dev.new()
@@ -4325,6 +4326,11 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
             # now plot all of this
             dev.new() # new window
             do.call('grid.arrange', c(survival_plot_list, ncol=3)) # aggregate the plots
+            # SAVE  PLOTS 
+            setwd(paste0(mainDir, '/env_loop//')) # set current wd 
+            # Now save it 
+            dev.print(pdf, (paste0('Sim_env_loop_days=', days, '_N=', N,  '_th-fr=', th_forage_fr, '_th-sc1=', th_forage_sc1, '_th-sc2=', th_forage_sc2,'_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+            
         
         ###########################################
         #    Environments loop  optimization 1.3  # 
@@ -4610,7 +4616,7 @@ combi_function(days = 30, N = 100, env_type=8, th_forage_sc = 0.2, th_forage_fr 
         
         
         
-        ########################## Older optimization functions #####################################################
+########################## Older optimization functions #####################################################
 
         ############################
         #    Environments loop     # 
