@@ -81,7 +81,7 @@ setwd(mainDir)
 
 # Run the following if doing this for the first time on devide: 
 # create list of folders that we want present 
-folders<-c('NonH_opt_th_fr', 'H_opt_th_fr', 'NonH_opt_th_sc', 'H_opt_th_sc', 'NonH_opt_th_sc_and_fr', 'H_opt_th_sc_and_fr','NonH_sim', 'H_sim')
+folders<-c('MOD_1_1', 'MOD_1_2', 'MOD_1_3', 'MOD_1_4')
 # Check if they exist and if not, create them 
 # Note that this code will warn you if it already existed 
 for (folder in folders){
@@ -3014,6 +3014,30 @@ set_up_env<-function(days,N, env_type, daylight_h){
         
         
         
+        
+        
+        
+        
+        
+#################################################################
+##   Model 1.3: Hoarding bird, Access to Stomach content       ##
+#################################################################        
+        
+        ################################ 
+        #   set up directories   1.4   # 
+        ################################
+        # Set up the main directory for where you want the figures saved 
+        # This can be replaced by any folder you have on your computer (just make sure you have continuous connection if its a webfolder)
+        mainDir<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_4'
+        setwd(mainDir)
+        # Run the following if doing this for the first time on devide: 
+        # create list of folders that we want present 
+        folders<-c('1-run_model', '2-run_opt', '3-env_loop', '4-opt_loop', '5-beh_loop')
+        # Check if they exist and if not, create them 
+        # Note that this code will warn you if it already existed 
+        for (folder in folders){
+          dir.create(file.path(mainDir, folder ), showWarnings = TRUE)
+        }    
         
         
         
