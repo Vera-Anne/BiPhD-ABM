@@ -2074,7 +2074,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
             setwd(mainDir)
             # Run the following if doing this for the first time on devide: 
             # create list of folders that we want present 
-            folders<-c('run_model', 'run_opt', 'env_loop', 'opt_loop', 'beh_loop')
+            folders<-c('1-run_model', '2-run_opt', '3-env_loop', '4-opt_loop', '5-beh_loop')
             # Check if they exist and if not, create them 
             # Note that this code will warn you if it already existed 
             for (folder in folders){
@@ -2608,7 +2608,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               #print(paste0('ready to save MOd1.3 simulation plots'))
               
               # SAVE LINE PLOTS 
-              setwd(paste0(mainDir, '/run_model//')) # set current wd 
+              setwd(paste0(mainDir, '/1-run_model//')) # set current wd 
               dev.print(pdf, (paste0('Run_MOD_1_3_days=', days, '_N=', N, 'env=', env_type, '_th-fr=', th_forage_fr, '_th-sc1=', th_forage_sc1, '_th-sc2=', th_forage_sc2, '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
               
             } # end loop for run_model
@@ -2632,8 +2632,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
             print(paste0('Optimizing MOD 1.3 for sc-th1 and sc-th2' ))
             
             # creates 100 values between min and max, evenly spaced 
-            th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=10)
-            th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=10)
+            th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=100)
+            th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=100)
             
             # now create a space to save the survival for each different value fo th_forage_sc1 and th_forage_sc2 
             survival_end<<-matrix(NA, length(th_forage_sc1), length(th_forage_sc2))
@@ -2666,7 +2666,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
             persp3D(z=survival_end, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2', zlim= c(0, 1))
             
             # setwd 
-            setwd(paste0(mainDir, '/run_opt//'))
+            setwd(paste0(mainDir, '/2-run_opt//'))
             # Use the other way of plotting 3D plots 
             fig_MOD_1_3<-plot_ly(
               x=as.numeric(th_forage_sc2), 
@@ -2757,7 +2757,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               #dev.new() # new window
               do.call('grid.arrange', c(survival_plot_list, ncol=3)) # aggregate the plots
               # set wd 
-              setwd(paste0(mainDir, '/env_loop//')) # set current wd 
+              setwd(paste0(mainDir, '/3-env_loop//')) # set current wd 
               # Now save it 
               dev.print(pdf, (paste0('Sim_env_loop_MOD_1_3', '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
               
@@ -2770,71 +2770,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         ###########################################
         #      Optimization loop model  1.3       # 
         ###########################################
-        
-        # Start writing a function 
-        MOD_1_3_opt_loop_func<-function(days, N, th_sc1_min, th_sc1_max, th_sc2_min, th_sc2_max, noplot, hoard_on, daylight_h){
-        
-          # Set the simulation type 
-          sim_type<<-'opt_loop'
-          # open a new window
-          dev.new()
-          # with the right outlines
-          par(mfrow=c(6,3))
-          # create an empty object to put the values  of th_sc2 and th_sc1 for max survival in 
-          # These can be used in the behaviour loop
-          mat_max_survival_th_sc1_sc2<<-matrix(NA, 18, 2) 
-          
-          # START THE FOR LOOP THROUGH EACH OF THE ENVIRONMENTS
-          for (i in 1:18){
-            if (i==1){
-              
-              # create an empty list to put the optimisation plots in
-              opt_loop_1_3_df_list<<-list()
-              
-            }
-            # For every environment run the optimisation function
-            cur_env_type<<-i
-            #run the function 
-            MOD_1_3_opt_thsc1_thsc2(days=days, N=N, env_type=cur_env_type, th_sc1_min=th_sc1_min, th_sc1_max=th_sc1_max, th_sc2_min=th_sc2_min, th_sc2_max=th_sc2_max, noplot=noplot, hoard_on=hoard_on, daylight_h=daylight_h)
-            
-            # At the end of each optimisation (for each of the environments) --> there is one matrix names 'survival_end'
-            # Rows: th_sc1 
-            # Columns: th_sc2 
-            # Cell values: survival at the end of the model run (30 days in most cases)
-            
-  
-            # confirm
-            print(paste('Optimization ran for environment ', cur_env_type))
-            #print(paste('The optimal FR-th for this environment = ', current_max_th))
-            
-            current_opt_df<<-survival_end
-            opt_loop_1_3_df_list<<-append(opt_loop_1_3_df_list, list(current_opt_df))
-            
-            #What is the current max? 
-            #current
-            
-          } # end of the loop for each environment
-          
-          # Save the whole thing 
-          # Set the wd 
-          setwd(paste0(mainDir, '/Opt_loop//'))
-          # save the big images 
-          dev.print(pdf, (paste0('Sim_1_3_opt_loop_days=', days, '_N=', N,'sc1min', th_sc1_min, '_sc1max', th_sc1_max, '_sc2min', th_sc2_min, '_sc2max', th_sc2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-          
-          
-        } # end mod 1.3 opt_loop function 
-        
-        # Run it 
-        MOD_1_3_opt_loop_func(days = 30, N = 10, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, noplot=1, hoard_on=1, daylight_h=8 )
-          
-          ###### To do next: 
-                  # Get the threshold values for max survival printed on graph 
-                  # save them in a dataframe/matrix
-                  # Then run the beh-loop with this 
- 
-
-     
-
+       
        
         # Start writing a function 
         MOD_1_3_opt_loop_func<-function(days, N, th_sc1_min, th_sc1_max, th_sc2_min, th_sc2_max, daylight_h, sim_type){
@@ -2850,10 +2786,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # START THE FOR LOOP THROUGH EACH OF THE ENVIRONMENTS
           for (i in 1:18){
             if (i==1){
-              
               # create an empty list to put the optimisation plots in
               opt_loop_1_3_df_list<<-list()
-              
             }
             # For every environment run the optimisation function
             cur_env_type<<-i
@@ -2865,7 +2799,6 @@ set_up_env<-function(days,N, env_type, daylight_h){
             # Columns: th_sc2 
             # Cell values: survival at the end of the model run (30 days in most cases)
             
-            
             # confirm
             print(paste('Optimization ran for environment ', cur_env_type))
             #print(paste('The optimal FR-th for this environment = ', current_max_th))
@@ -2873,14 +2806,29 @@ set_up_env<-function(days,N, env_type, daylight_h){
             current_opt_df<<-survival_end
             opt_loop_1_3_df_list<<-append(opt_loop_1_3_df_list, list(current_opt_df))
             
-            #What is the current max? 
-            #current
+            # EXTRACT THRESHOLD VALUES FOR OPTIMAL SURVIVAL  
+                #current max is: 
+                cur_max_surv<<-max(current_opt_df)
+                # What is the location of the current max? 
+                cur_location<<-which(current_opt_df == max(current_opt_df), arr.ind = TRUE)
+                # There could be a problem here, if there are multiple maxima/or everything is 0 (common when no birds survive)
+                    # The code will take the middle value of the th-sc1 and th-sc2 
+                    # It wil take the average column/row number and round this up to the closest whole number. 
+                    # This will be the location of the threshold used 
+                # What is the current optimal th-sc1 
+                cur_opt_th_sc1<<-th_forage_sc1[(round(mean(cur_location[,1])))]
+                #What is the current optimal th_sc2
+                cur_opt_th_sc2<<-th_forage_sc2[(round(mean(cur_location[,2])))]
+                # now pop the values into the previously made df 
+                mat_max_survival_th_sc1_sc2[i, 1]<<-cur_opt_th_sc1
+                mat_max_survival_th_sc1_sc2[i, 2]<<-cur_opt_th_sc2
+                
             
           } # end of the loop for each environment
           
           # Save the whole thing 
           # Set the wd 
-          setwd(paste0(mainDir, '/opt_loop//'))
+          setwd(paste0(mainDir, '/4-opt_loop//'))
           # save the big images 
           dev.print(pdf, (paste0('Sim_1_3_opt_loop_days=', days, '_N=', N,'sc1min', th_sc1_min, '_sc1max', th_sc1_max, '_sc2min', th_sc2_min, '_sc2max', th_sc2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
           
@@ -2888,20 +2836,181 @@ set_up_env<-function(days,N, env_type, daylight_h){
         } # end mod 1.3 opt_loop function 
         
         # Run it 
-        MOD_1_3_opt_loop_func(days = 30, N = 10, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'opt_loop')
+        MOD_1_3_opt_loop_func(days = 30, N = 100, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'opt_loop')
         
         ###### To do next: 
-        # Get the threshold values for max survival printed on graph 
-        # save them in a dataframe/matrix
-        # Then run the beh-loop with this 
-        
-        
-        
+        # Get the threshold values for max survival printed on graph - might be difficult. Graph code is in the opt code -_- (30/01/2023) --> but I did put it in the beh-loop
+        # save them in a dataframe/matrix - DONE 30/01/23
+        # Then run the beh-loop with this - DONE 30/01/23
         
         
         ############################################
         #      Behaviour loop - SC-TH 1.3          # 
         ############################################
+        
+        # Write the function 
+        MOD_1_3_beh_loop_func<<-function(days, N, th_forage_fr, daylight_h, sim_type){
+          # Open a new plotting area 
+          dev.new()
+          par(mfrow=c(6,3))
+          
+          # Loop for each environment 
+          for (i in 1:18){
+            # Make some lists to fill 
+            if (i==1){
+              stacked_chart_data_list<<-list()
+              stacked_chart_plot_list<<-list()
+              fr_sc_plot_list<<-list()
+              survival_plot_list<<-list()
+            }
+            mat_cur_perc_rest<<-matrix(data=NA, nrow= (days*72), ncol=1)
+            mat_cur_perc_for<<-matrix(NA, TS, 1)
+            mat_cur_perc_sleep<<-matrix(NA, TS, 1)
+            # indicate the current environment
+            cur_env_type<<-i
+            
+            # Take the sc-th from the optimisation that had maximum survival 
+            current_opt_th_sc1<<-mat_max_survival_th_sc1_sc2[i,1]
+            current_opt_th_sc2<<-mat_max_survival_th_sc1_sc2[i,2]
+            
+            
+            # Now run the model 1.3 with these values 
+            MOD_1_3_func(days=days, N=N, env_type=i, th_forage_sc1=current_opt_th_sc1, th_forage_sc2=current_opt_th_sc2, th_forage_fr=th_forage_fr,  daylight_h=daylight_h, sim_type = sim_type)
+            
+            
+            # GRAPHS TO SHOW SUVIVAL TRAJECTORIES 
+                # For the graphs that display the survival trajectories throughout 30 days in each env 
+                # create temporary dataframe for ggplot 
+                current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
+                # make percentages
+                current_survival_df$perc_survival<<-((current_survival_df$V1/N)*100)
+                # plot it 
+                current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=perc_survival))+
+                  geom_line()+
+                  labs(
+                    title = paste('Survival - % birds alive - Environment =', cur_env_type), 
+                    y='% Alive', 
+                    x='Timestep')+
+                  ylim(0,100)+
+                  annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2)) 
+                # pop the plot in the list 
+                survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
+                
+            
+            # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
+                  # Once you have hte matrices, calculate this for every timestep 
+                  for (j in (1:TS)){
+                    # The percentage resting 
+                    mat_cur_perc_rest[j,1]<<-((total_rest[1,j]/total_alive[1,j])*100)
+                    # The percentage foraging 
+                    mat_cur_perc_for[j,1]<<-((total_forage[1,j]/total_alive[1,j])*100)
+                    # the percentage sleeping 
+                    mat_cur_perc_sleep[j,1]<<-((total_sleep[1,j]/total_alive[1,j])*100)
+                  }
+                  # Add column with numbers 
+                  timesteps<<-1:TS
+                  # put them on a daily scale 
+                  timesteps_dayscale<<-timesteps%%72
+                  # Attach matrices 
+                  mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, timesteps_dayscale)
+                  # turn to df 
+                  df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
+                  # set names 
+                  colnames(df_perc_cur_env)[1]<<-'rest'
+                  colnames(df_perc_cur_env)[2]<<-'forage'
+                  colnames(df_perc_cur_env)[3]<<-'sleep'
+                  # now start grouping 
+                  rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
+                  forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
+                  sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
+                  # add group
+                  rest_perc$beh<<-rep('rest')
+                  forage_perc$beh<<-rep('forage')
+                  sleep_perc$beh<<-rep('sleep')
+                  # make new dataframe 
+                  df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc)
+                  # Ideally, I'd store this in some sort of list so I can access it afterwards 
+                  stacked_chart_data_list<<-append(stacked_chart_data_list, list(df_for_chart))
+                  # I want to plot only the time that the birds are awake (they all go to sleep at night anyway)
+                  # calculate the # of timesteps that birds are awake and put this in the xlim of the graphs 
+                  timesteps_awake<<-daylight_h*3
+                  # Now make the chart 
+                  cur_stacked_plot<<-ggplot(df_for_chart, aes(x=timesteps_dayscale, y=m, fill=beh))+
+                    geom_area(alpha=0.8, size=0.5, colour='white')+
+                    scale_fill_viridis(discrete = T)+
+                    #theme_ipsum()+
+                    #ggtitle('Percentage of Birds per Behaviour')
+                    labs(
+                      title = paste('Env.', i, " th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2), 
+                      x='Timestep in a 24 day (20 min increments)', 
+                      y='Mean % of Alive birds')+
+                    xlim(0, timesteps_awake)+
+                    #annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2))  
+                  # put plot in the list 
+                  stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+            
+            # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
+                # create a df
+                fr_sc_graph<<-rbind(fr_mean, sc_mean, timesteps_dayscale)
+                fr_sc_graph<<-t(fr_sc_graph)
+                # turn to df
+                fr_sc_graph<<-as.data.frame(fr_sc_graph)
+                # set names
+                colnames(fr_sc_graph)[1]<<-'fr'
+                colnames(fr_sc_graph)[2]<<-'sc'
+                # start grouping
+                # now start grouping
+                fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(fr))
+                sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(sc))
+                # add group
+                fr_grouped$type<<-rep('fr')
+                sc_grouped$type<<-rep('sc')
+                #sleep_perc$beh<-rep('sleep')
+                # make new dataframe
+                df_for_sc_fr_chart<<-rbind(fr_grouped, sc_grouped)
+                # graph
+                # Now make the chart
+                cur_fr_sc_plot<<-ggplot(df_for_sc_fr_chart, aes(x=timesteps_dayscale, y=m, col=type, size=0.5))+
+                  #geom_area(alpha=0.8, size=0.5, colour='white')+
+                  geom_line()+
+                  scale_fill_viridis(discrete = T)+
+                  #theme_ipsum()+
+                  #ggtitle('Percentage of Birds per Behaviour')
+                  labs(
+                    title = paste('Env.', i, " th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2),
+                    x='Timestep in a 24 day (20 min increments)',
+                    y='FR and SC (gram)')+
+                  xlim(0, timesteps_awake)+
+                  ylim(0,5)
+                # put plot in the list
+                fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
+            
+            # for ease of use 
+            print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
+            
+          } # END FOR LOOP ENVIRONTMENTS 
+          
+          
+        } # end function MOD 1.3 behaviour loop 
+        
+        # Run it 
+        MOD_1_3_beh_loop_func(days = 30, N = 10, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
+        
+        
+        # Plot all 3 the graph panels
+        setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+        dev.new()
+        par(mfrow=c(6,3))
+        do.call('grid.arrange', c(survival_plot_list, ncol=3))
+        dev.print(pdf, (paste0('beh_loop_surv_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+        # beh
+        do.call('grid.arrange', c(stacked_chart_plot_list, ncol=3)) # aggregate the plots
+        dev.print(pdf, (paste0('beh_loop_beh_traj_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+        # fr and sc
+        do.call('grid.arrange', c(fr_sc_plot_list, ncol=3)) # aggregate the plots
+        dev.print(pdf, (paste0('beh_loop_sc_fr_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+        
+        
         
         
         
