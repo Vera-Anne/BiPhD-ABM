@@ -38,7 +38,7 @@
 
 ##    addressed in this version  ## 
 
-
+# testing GIT on laptop 
 
 
 
@@ -47,7 +47,6 @@
 ##############################
 library(usethis)
 library(devtools)
-# install_github("olafmersmann/truncnorm")
 library(truncnorm)
 library(pracma)
 library(ggplot2)
@@ -3670,7 +3669,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
         
         
         
- ##################################### OLD STUFF ##################################################################
+ 
+        
+        ##################################### OLD STUFF ##################################################################
         
                   
                   
