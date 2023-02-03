@@ -38,7 +38,7 @@
 
 ##    addressed in this version  ## 
 
-# testing GIT on laptop 
+
 
 
 
@@ -47,6 +47,7 @@
 ##############################
 library(usethis)
 library(devtools)
+# install_github("olafmersmann/truncnorm")
 library(truncnorm)
 library(pracma)
 library(ggplot2)
@@ -1147,7 +1148,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                     current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=perc_survival))+
                       geom_line()+
                       labs(
-                        title = paste('Survival - % birds alive - Environment =', cur_env_type), 
+                        title = paste('Survival - % birds alive - Environment =', cur_env_type, 'opt SC-TH=', (round(current_opt_sc_th, digits = 2))), 
                         y='% Alive', 
                         x='Timestep')+
                       ylim(0,100)
@@ -1199,7 +1200,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                       #theme_ipsum()+
                       #ggtitle('Percentage of Birds per Behaviour')
                       labs(
-                        title = paste('Average %of Alive Birds in env.', i), 
+                        title = paste('Average %of Alive Birds in env.', i, 'Opt SC-TH=', round(current_opt_sc_th, digits = 2)), 
                         x='Timestep in a 24 day (20 min increments)', 
                         y='% of Alive birds')+
                       xlim(0, timesteps_awake)
@@ -1234,7 +1235,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                         #theme_ipsum()+
                         #ggtitle('Percentage of Birds per Behaviour')
                         labs(
-                          title = paste('FR and SC in environment', i),
+                          title = paste('FR and SC in environment', i, 'Opt SC-TH=', round(current_opt_sc_th, digits = 2)),
                           x='Timestep in a 24 day (20 min increments)',
                           y='grams')+
                         xlim(0, timesteps_awake)+
@@ -1936,7 +1937,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
                     title = paste('Survival - % birds alive - Environment =', cur_env_type), 
                     y='% Alive', 
                     x='Timestep')+
-                  ylim(0,100)
+                  ylim(0,100)+
+                  annotate("text", x=1500, y=90, label= paste("th_fr=", (round(current_opt_fr_th, digits = 2)))) 
+                # pop the plot in the list 
                 # pop the plot in the list 
                 survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
             
@@ -1985,7 +1988,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   #theme_ipsum()+
                   #ggtitle('Percentage of Birds per Behaviour')
                   labs(
-                    title = paste('Average %of Alive Birds in env.', i), 
+                    title = paste('Average %of Alive Birds in env.', i, ' TH-FR=', (round(current_opt_fr_th, digits = 2))), 
                     x='Timestep in a 24 day (20 min increments)', 
                     y='% of Alive birds')+
                   xlim(0, timesteps_awake)
@@ -2020,7 +2023,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   #theme_ipsum()+
                   #ggtitle('Percentage of Birds per Behaviour')
                   labs(
-                    title = paste('FR and SC in environment', i),
+                    title = paste('FR and SC in environment', i, 'TH-FR=', (round(current_opt_fr_th, digits = 2))),
                     x='Timestep in a 24 day (20 min increments)',
                     y='grams')+
                   xlim(0, timesteps_awake)+
@@ -2627,8 +2630,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
             print(paste0('Optimizing MOD 1.3 for sc-th1 and sc-th2' ))
             
             # creates 100 values between min and max, evenly spaced 
-            th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=100)
-            th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=100)
+            th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=10)
+            th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=10)
             
             # now create a space to save the survival for each different value fo th_forage_sc1 and th_forage_sc2 
             survival_end<<-matrix(NA, length(th_forage_sc1), length(th_forage_sc2))
@@ -2831,7 +2834,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         } # end mod 1.3 opt_loop function 
         
         # Run it 
-        MOD_1_3_opt_loop_func(days = 30, N = 100, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'opt_loop')
+        MOD_1_3_opt_loop_func(days = 30, N = 10, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'opt_loop')
         
         ###### To do next: 
         # Get the threshold values for max survival printed on graph - might be difficult. Graph code is in the opt code -_- (30/01/2023) --> but I did put it in the beh-loop
@@ -2887,7 +2890,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                     y='% Alive', 
                     x='Timestep')+
                   ylim(0,100)+
-                  annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2)) 
+                  annotate("text", x=1500, y=90, label= paste("th_sc1=", (round(current_opt_th_sc1, digits=2)), ' & th_sc2=', (round(current_opt_th_sc2, digits=2)))) 
                 # pop the plot in the list 
                 survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
                 
@@ -2936,10 +2939,10 @@ set_up_env<-function(days,N, env_type, daylight_h){
                     #theme_ipsum()+
                     #ggtitle('Percentage of Birds per Behaviour')
                     labs(
-                      title = paste('Env.', i, " th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2), 
+                      title = paste('Env.', i, " th_sc1=", (round(current_opt_th_sc1, digits = 2)), ' & th_sc2=', (round(current_opt_th_sc2, digits = 2))), 
                       x='Timestep in a 24 day (20 min increments)', 
                       y='Mean % of Alive birds')+
-                    xlim(0, timesteps_awake)+
+                    xlim(0, timesteps_awake)
                     #annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2))  
                   # put plot in the list 
                   stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
@@ -2965,14 +2968,14 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 df_for_sc_fr_chart<<-rbind(fr_grouped, sc_grouped)
                 # graph
                 # Now make the chart
-                cur_fr_sc_plot<<-ggplot(df_for_sc_fr_chart, aes(x=timesteps_dayscale, y=m, col=type, size=0.5))+
+                cur_fr_sc_plot<<-ggplot(df_for_sc_fr_chart, aes(x=timesteps_dayscale, y=m, col=type) )+
                   #geom_area(alpha=0.8, size=0.5, colour='white')+
-                  geom_line()+
+                  geom_line(size=2)+
                   scale_fill_viridis(discrete = T)+
                   #theme_ipsum()+
                   #ggtitle('Percentage of Birds per Behaviour')
                   labs(
-                    title = paste('Env.', i, " th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2),
+                    title = paste('Env.', i, " th_sc1=", (round(current_opt_th_sc1, digits = 2)), ' & th_sc2=', (round(current_opt_th_sc2, digits = 2))),
                     x='Timestep in a 24 day (20 min increments)',
                     y='FR and SC (gram)')+
                   xlim(0, timesteps_awake)+
@@ -3665,9 +3668,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         
         
         
- 
-        
-        ##################################### OLD STUFF ##################################################################
+ ##################################### OLD STUFF ##################################################################
         
                   
                   
