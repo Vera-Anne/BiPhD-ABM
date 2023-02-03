@@ -3555,9 +3555,110 @@ MOD_1_4_func<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forag
   
 } # end the 1.4 function 
 
-# Run it
-dev.new()
-MOD_1_4_func(days=30, N=100, env_type=8, th_forage_fr1=1, th_forage_fr2=3, th_forage_sc=0.2,  daylight_h=8, sim_type = 'run_model')
+    # Run it
+    dev.new()
+    MOD_1_4_func(days=30, N=100, env_type=8, th_forage_fr1=1, th_forage_fr2=3, th_forage_sc=0.2,  daylight_h=8, sim_type = 'run_model')
+
+# Write function for optimisation 
+MOD_1_4_opt_thfr1_thfr2<-function(days, N, env_type, th_fr1_min, th_fr1_max, th_fr2_min, th_fr2_max, daylight_h, sim_type){
+  
+  # open the right windows, but only if you're running the function by itself 
+  if (sim_type =='run_opt'){
+    dev.new()
+    par(mfrow=c(1,1))
+  }
+  
+  # show that optimizatio started 
+  print(paste0('Optimizing MOD 1.4 for fr-th1 and fr-th2' ))
+  
+  # creates 100 values between min and max, evenly spaced 
+  th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=100)
+  th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=100)
+  
+  # now create a space to save the survival for each different value fo th_forage_sc1 and th_forage_sc2 
+  survival_end<<-matrix(NA, length(th_forage_fr1), length(th_forage_fr2))
+  
+  
+  for (th_fr1 in 1:length(th_forage_fr1)){          # Outside for loop that goes through all values of forage_sc1 
+    # determine the current threshold for each loop 
+    current_th_fr1<<-th_forage_fr1[th_fr1]
+    # now run through all the possible sc2 values for this specific sc1
+    for (th_fr2 in 1:length(th_forage_fr2)){
+      # set the current sc2 threshold 
+      current_th_fr2<<-th_forage_fr2[th_fr2]
+      # run the MOD 1.3 function: 
+      MOD_1_4_func(days, N, env_type, th_forage_fr1=current_th_fr1, th_forage_fr2=current_th_fr2, th_forage_sc, daylight_h, sim_type = sim_type)
+      # add to the previously created matrix 
+      survival_end[th_fr1,th_fr2]<<-birds_alive_at_end
+      print(paste('opt MOD 1.4 for fr1=', current_th_fr1, ' and fr2=', current_th_fr2))
+    } # end of loop for fr2 thresholds 
+  } # end of loop for fr1 thesholds 
+  
+  # The matrix should be completely filled in now and ready to do 
+  
+  # for checking during coding 
+  print(paste0('Optimization MOD 1.4 ran' ))
+  
+  # plot it so you can visualise
+  # This is the simple lplot, not the html one 
+  #dev.new()
+  #par(mfrow=c(1,1))
+  persp3D(z=survival_end, xlab='th_fr1', ylab='th_fr2', zlab='survival', main='Optimal survival for th_fr1 and th_fr2', zlim= c(0, 1))
+  
+  # setwd 
+  setwd(paste0(mainDir, '/2-run_opt//'))
+  # Use the other way of plotting 3D plots 
+  fig_MOD_1_4<-plot_ly(
+    x=as.numeric(th_forage_sc2), 
+    y=as.numeric(th_forage_sc1), 
+    z=survival_end
+  )
+  fig_MOD_1_4<-fig_MOD_1_3 %>% add_surface()
+  fig_MOD_1_4<-fig_MOD_1_3 %>% layout(
+    title=list(text=paste0('Opt MOD 1.4 th_fr1 and th_fr2 for:T=', days, ', N=', N, ', env=', env_type ), y=0.95),
+    scene=list(
+      xaxis=list(title= 'Threshold fr2 (gram)'),
+      yaxis=list(title= 'Threshold fr1 (gram)'),
+      zaxis=list(title= 'Survival prob'
+      )))
+  fig_MOD_1_4
+  
+  # SAVE THE WIDGET 
+  # The saveWidget function has trouble saving in new directories and sometimes doesnt delete the temporary files
+  # I found this code that should get rid of it (works so far )
+  # Function that warns you when you are overwriting 
+  save_widget_wrapper <- function(plot, file, overwrite = FALSE){
+    # save the file if it doesn't already exist or if overwrite == TRUE
+    if( !file.exists(file) | overwrite ){
+      withr::with_dir(new = dirname(file), 
+                      code = htmlwidgets::saveWidget(plot, 
+                                                     file = basename(file)))
+    } else {
+      print("File already exists and 'overwrite' == FALSE. Nothing saved to file.")
+    }
+  }
+  
+  
+  
+  #setwd(paste0(mainDir, '/run_opt//'))
+  
+  # create  seperate timesamp so the supproting folders don't have a differen tone than the html file 
+  Fig_timestamp<-format(Sys.time(), "%Y_%m_%d__%H_%M_%S")
+  Filename<-paste0('MOD_1_4_opt_3D','_T', days, '_N',N, '_env',env_type,'_', Fig_timestamp,'.html')
+  #Filename<-paste0(Fig_timestamp,'.html')
+  save_widget_wrapper(fig_MOD_1_4, Filename)
+  
+} # end of optimization function for hoarding bird th-fr1 and th-fr2
+
+
+
+
+
+
+
+
+
+
 
 
 
