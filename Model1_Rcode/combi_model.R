@@ -39,7 +39,7 @@
 ##    addressed in this version  ## 
 
 # testing GIT on laptop 
-
+# try again 
 
 
 ##############################
@@ -66,7 +66,8 @@ library(tidyverse)
 library(viridis)
 library(hrbrthemes)
 
-
+# try committing to git 
+# agein 
 
 
 ############################# 
