@@ -221,11 +221,7 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
             
   } # for loop per day ends 
   
-  # plot the thing 
-  #timesteps<-1:TS
-  #vert_lines<-seq(0, (days*3), by=30)
-  #plot(timesteps, total_temp_profile, type='l', main=(paste('Temp profile for ', days, 'days', ', max-range=', Tmax_range_low, 'to', Tmax_range_high, ', min-range=', Tmin_range_low, 'to', Tmin_range_high)), col='red', ylab = 'Temperature in degrees Celsius', xlab='timesteps (20min)')
-  
+
 } # temp function ends 
 
 # test it 
