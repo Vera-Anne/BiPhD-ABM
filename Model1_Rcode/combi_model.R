@@ -34,6 +34,7 @@
 ##############################
 #      load packages         #
 ##############################
+load_packages<-function(){
 library(usethis)
 library(devtools)
 library(truncnorm)
@@ -54,6 +55,10 @@ library(data.table)
 library(tidyverse)
 library(viridis)
 library(hrbrthemes)
+}
+
+#run 
+load_packages()
 
 
 ############################# 
@@ -106,7 +111,7 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
   # Will be ran inside the 'set up environment' function
   # Every timestep within the simulation will pull the 'current temperature' from the vector that this function creates
   
-  
+
   # As we will set the minimum at the end of the day/start of the day
   # we can set the following before the for-loop: 
   minTemp_time_end<<-72
@@ -214,14 +219,44 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
 #temp_func(TS=2160, Tmax_range_low=2, Tmax_range_high=5, Tmin_range_low=-5, Tmin_range_high = -2, days=30, daylight_h = 6, n_daylight_timestep = 18)
 
 
+
 #################################
 #        Forage function        #
 #################################
 
+# For testing the function
+
+
+# function 
 forage_function<-function(num_food_mean, prob_b_forage, b_size){
   # First decide if you're going into bonanza chances or normal foraging 
   # First decide if you're going into bonanza chances or normal foraging 
+  
+  # The following code takes a sample of of size 1 of the elements 'forage b' and 'forage n'
+  # Samplign should be with replacement
+  # probw is a vector of the probability weights for obtaining the elements being sampled (forage b and forage-n)
   cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
+  
+  # Code to draw a piechart for testing the 'pick foraging type' code 
+        prob_b_forage<-0.5
+        temp_list<-list()
+        for (i in 1:1000){
+          cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
+          temp_list<<-append(temp_list, cur_forage_type)
+
+        }
+        df_for <- data.frame(do.call("rbind",temp_list)) #combine all vectors into a matrix
+        table_for<-data.frame(table(df_for$do.call..rbind...temp_list.))
+
+        pie<-ggplot(table_for, aes(x="", y=Freq, fill=Var1))+
+          geom_bar(stat='identity', width=1, color='white')+
+          coord_polar('y', start=0)+
+          theme_void()+
+          #geom_text(aes(y=ypos, label=Var1), color= 'white', size = 6)+
+          scale_fill_brewer(palette='Set3')+
+          ggtitle(label=paste('Prob B-forage =',prob_b_forage, ', #b-for = ', table_for[1,2], ', #n-for = ', table_for[2,2]))
+        pie
+
   
   if (cur_forage_type=='forage-b'){ 
     # Write code for bonanza here
@@ -248,11 +283,46 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     
   }
   
-  
-  
-  
 } # end of the foraging function 
 
+# Quick test of the function 
+    
+    # for (l in 1:1000){
+    #   if (l==1){
+    #     big_list<<-list()
+    #   }
+    # 
+    #     for (k in 1:1000){
+    #         if (k==1){
+    #           forage_list_temp<<-list()
+    #         }
+    #         forage_function(num_food_mean = 3, prob_b_forage = 0.8, b_size = 24)
+    #         forage_list_temp<<-append(forage_list_temp, food_item_found)
+    # 
+    #       }
+    # 
+    #       forage_df<-data.frame(t(data.frame(forage_list_temp)))
+    #       colnames(forage_df) <- c("items")
+    #       forage_table<-data.frame(table(forage_df))
+    #       # calulcate mean in practice
+    #       cur_mean<<-mean(forage_df$items)
+    # 
+    #       # plot it for an image
+    #       # forage_hist<- ggplot(forage_table) +
+    #       #   geom_bar(aes(x=items, y=Freq, fill=TRUE), stat="identity")+
+    #       #   scale_fill_brewer(palette='Set3')+
+    #       #   ggtitle(label = paste('Frequency of Number of Items found (1000 samples), mean = ', cur_mean ))
+    #       #forage_hist
+    #       big_list<<-append(big_list, cur_mean)
+    #       
+    #       
+    # }
+    # 
+    # # Check what the mean is over 1000 runs 
+    # big_list<-data.frame(big_list)
+    # big_list<<-t(big_list)
+    # mean<-mean(big_list)
+    # print(paste('The mean for 1000 runs of 1000 samples = ', mean))
 
 ##################################
 #  set-up environment function   #
@@ -2939,7 +3009,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               #theme_ipsum()+
               #ggtitle('Percentage of Birds per Behaviour')
               labs(
-                title = paste('Env.', i, " th_sc1=", round(current_opt_th_sc1, digits = 2), ' & th_sc2=', round(current_opt_th_sc2, digits = 2)),
+                title = paste('Env.', i, " th_sc1=", round(current_opt_th_fr1, digits = 2), ' & th_sc2=', round(current_opt_th_fr2, digits = 2)),
                 x='Timestep in a 24 day (20 min increments)',
                 y='FR and SC (gram)')+
               xlim(0, timesteps_awake)+
@@ -3520,14 +3590,14 @@ set_up_env<-function(days,N, env_type, daylight_h){
         th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=50)
         th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=50)
         
-        # now create a space to save the survival for each different value fo th_forage_sc1 and th_forage_sc2 
+        # now create a space to save the survival for each different value fo th_forage_fr1 and th_forage_fr2 
         survival_end<<-matrix(NA, length(th_forage_fr1), length(th_forage_fr2))
         
         
-        for (th_fr1 in 1:length(th_forage_fr1)){          # Outside for loop that goes through all values of forage_sc1 
+        for (th_fr1 in 1:length(th_forage_fr1)){          # Outside for loop that goes through all values of forage_fr1 
           # determine the current threshold for each loop 
           current_th_fr1<<-th_forage_fr1[th_fr1]
-          # now run through all the possible sc2 values for this specific sc1
+          # now run through all the possible sc2 values for this specific fr1
           for (th_fr2 in 1:length(th_forage_fr2)){
             # set the current sc2 threshold 
             current_th_fr2<<-th_forage_fr2[th_fr2]
@@ -3559,11 +3629,11 @@ set_up_env<-function(days,N, env_type, daylight_h){
         persp3D(z=survival_end, xlab='th_fr1', ylab='th_fr2', zlab='survival', main='Optimal survival for th_fr1 and th_fr2', zlim= c(0, 1))
         
         # setwd 
-        setwd(paste0(mainDir, '/2-run_opt//'))
+        setwd(paste0(mainDir_1_4, '/2-run_opt//'))
         # Use the other way of plotting 3D plots 
         fig_MOD_1_4<-plot_ly(
-          x=as.numeric(th_forage_sc2), 
-          y=as.numeric(th_forage_sc1), 
+          x=as.numeric(th_forage_fr2), 
+          y=as.numeric(th_forage_fr1), 
           z=survival_end
         )
         fig_MOD_1_4<-fig_MOD_1_4 %>% add_surface()
@@ -3622,7 +3692,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       # Start writing a function 
       MOD_1_4_opt_loop_func<-function(days, N, th_fr1_min, th_fr1_max, th_fr2_min, th_fr2_max, daylight_h, sim_type){
 
-        # create an empty object to put the values  of th_sc2 and th_sc1 for max survival in 
+        # create an empty object to put the values  of th_fr2 and th_fr1 for max survival in 
         # These can be used in the behaviour loop
         mat_max_survival_th_fr1_fr2<<-matrix(NA, 18, 2) 
         
@@ -3656,7 +3726,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # What is the location of the current max? 
           cur_location<<-which(current_opt_df == max(current_opt_df), arr.ind = TRUE)
           # There could be a problem here, if there are multiple maxima/or everything is 0 (common when no birds survive)
-          # The code will take the middle value of the th-sc1 and th-sc2 
+          # The code will take the middle value of the th-fr1 and th-fr2 
           # It wil take the average column/row number and round this up to the closest whole number. 
           # This will be the location of the threshold used 
           # What is the current optimal th-sc1 
@@ -3672,10 +3742,12 @@ set_up_env<-function(days,N, env_type, daylight_h){
         
         # Save the whole thing 
         # Set the wd 
-        setwd(paste0(mainDir, '/4-opt_loop//'))
+        setwd(paste0(mainDir_1_4, '/4-opt_loop//'))
         # save the big images 
         dev.print(pdf, (paste0('Sim_1_4_opt_loop_days=', days, '_N=', N,'fr1min', th_fr1_min, '_fr1max', th_fr1_max, '_fr2min', th_fr2_min, '_fr2max', th_fr2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-        
+        # save the dataframe with the optimal values 
+        write.csv(mat_max_survival_th_fr1_fr2, paste0(mainDir_1_4, '/4-opt_loop//max_surv_matrix_1_4', '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names=FALSE)
+  
         
       } # end mod 1.4 opt_loop function 
           
@@ -3840,7 +3912,15 @@ set_up_env<-function(days,N, env_type, daylight_h){
               
               
               # Plot all 3 the graph panels
-              setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+              setwd(paste0(        # Save the whole thing 
+                # Set the wd 
+                setwd(paste0(mainDir_1_4, '/4-opt_loop//'))
+                # save the big images 
+                dev.print(pdf, (paste0('Sim_1_4_opt_loop_days=', days, '_N=', N,'fr1min', th_fr1_min, '_fr1max', th_fr1_max, '_fr2min', th_fr2_min, '_fr2max', th_fr2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+                # save the dataframe with the optimal values 
+                write.csv(mat_max_survival_th_fr1_fr2, paste0(mainDir_1_4, '/4-opt_loop//max_surv_matrix_1_4', '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names=FALSE)
+                
+                , '/5-beh_loop//')) # set current wd 
               #dev.new()
               #par(mfrow=c(6,3))
               do.call('grid.arrange', c(survival_plot_list, ncol=3))
