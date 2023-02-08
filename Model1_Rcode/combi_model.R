@@ -158,15 +158,11 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
       # just set them to the same ones as current? 
       prev_tempMin<<-min_temp_vect[i]
       
-    }
-    
-    else if (i==(length(max_temp_vect))){
+    } else if (i==(length(max_temp_vect))){
       
       # just set them to the same ones as current? 
       prev_tempMin<<-min_temp_vect[i]
-    }
-    
-    else {
+    } else {
       
       # previous day minimum 
       prev_tempMin<<-min_temp_vect[(i-1)]
@@ -272,9 +268,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     food_item_found<<-sample(item_options,1)
     #print(paste('Bonanza foraging with ', food_item_found, 'items found'))
     
-  }
-  
-  else {
+  } else {
     # Write code for normal foraging here 
     # Can be the poisson distributuion 
     # pull a number from the poisson 
@@ -285,7 +279,10 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
   
 } # end of the foraging function 
 
+
 # Quick test of the function 
+######
+# This code was used to check if the means are correct and if the distributions look like what they're supposed to. 
     
     # for (l in 1:1000){
     #   if (l==1){
@@ -323,6 +320,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     # big_list<<-t(big_list)
     # mean<-mean(big_list)
     # print(paste('The mean for 1000 runs of 1000 samples = ', mean))
+
 
 ##################################
 #  set-up environment function   #
@@ -373,15 +371,13 @@ set_up_env<-function(days,N, env_type, daylight_h){
     Tmax_range_high<<- -7
     Tmin_range_low<<- -23
     Tmin_range_high<<- -17
-  }
-  else if (env_type==2|env_type==5|env_type==8|env_type==11|env_type==14|env_type==17){
+  } else if (env_type==2|env_type==5|env_type==8|env_type==11|env_type==14|env_type==17){
     # mid temperatures 
     Tmax_range_low<<- -3
     Tmax_range_high<<- 3
     Tmin_range_low<<- -13
     Tmin_range_high<<- -7
-  }
-  else{
+  } else{
     # high temperatures 
     Tmax_range_low<<- 7
     Tmax_range_high<<- 13
@@ -416,28 +412,22 @@ set_up_env<-function(days,N, env_type, daylight_h){
     # Low food and poisson distributions 
     num_food_mean<<-2
     prob_b_forage<<-0
-  }
-  else if (env_type>3 && env_type<7){
+  } else if (env_type>3 && env_type<7){
     num_food_mean<<-2
     prob_b_forage<<-0.5
-  }
-  else if (env_type>6 && env_type<10){
+  } else if (env_type>6 && env_type<10){
     num_food_mean<<-3
     prob_b_forage<<-0
-  }
-  else if (env_type>9 && env_type<13){
+  } else if (env_type>9 && env_type<13){
     num_food_mean<<-3
     prob_b_forage<<-0.5
-  }
-  else if (env_type>12 && env_type<16){
+  } else if (env_type>12 && env_type<16){
     num_food_mean<<-4
     prob_b_forage<<-0
-  }
-  else if (env_type>15){
+  } else if (env_type>15){
     num_food_mean<<-4
     prob_b_forage<<-0.5
-  }
-  else{
+  } else{
     print('something is wrong with the env -food settings')
   }
   # PREDATION  PARAMETERS 
@@ -502,10 +492,6 @@ set_up_env<-function(days,N, env_type, daylight_h){
   total_predated<<-matrix(NA, 1, TS)
   total_sleep<<-matrix(NA,1,TS)
   
-  
-  
-  
-  
 } # end set-up function 
 
 
@@ -554,8 +540,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # Check if it is night or day 
           if ((t%%72)<= n_daylight_timestep){
             dayOrNight<<-1                       # this means it is day 
-          }
-          else{
+          }else{
             dayOrNight<<-0                       # this means it is night 
             
           }
@@ -573,19 +558,16 @@ set_up_env<-function(days,N, env_type, daylight_h){
             # in step 1 all birds are alive 
             if (t==1){
               mat_alive[i,t]<<-1
-            }
-            # if not step 1, check if bird was previously dead
-            # if previously dead, it needs to be dead now 
-            else if (mat_alive[i,(t-1)]==0){
+            } else if (mat_alive[i,(t-1)]==0){
+              # if not step 1, check if bird was previously dead
+              # if previously dead, it needs to be dead now 
               mat_alive[i,t]<<-0
-            }
-            # if not step 1 and not previously dead 
-            # check if the bird should die now 
-            else if (mat_fr[i,t]==0){
+            } else if (mat_fr[i,t]==0){
+              # if not step 1 and not previously dead 
+              # check if the bird should die now 
               mat_alive[i,t]<<-0
-            }
-            # in all other cases the bird is alive 
-            else{
+            }else{
+              # in all other cases the bird is alive 
               mat_alive[i,t]<<-1
             }
             
@@ -603,9 +585,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               mat_sc[i,t]<<-NA
               # for the caches matrix 
               mat_caches[i,t]<<-NA
-            }
-            
-            else {
+            }else {
               
               #################
               #  ALIVE BIRDS  #
@@ -653,10 +633,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 # Into the fat reserves 
                 # and be burned depending on BMR-multi
                 # in the ' Everyone '  part of the code below
-                
-              } # end of birds that are asleep 
-              
-              else{
+                # end of birds that are asleep   
+              } else{
                 
                 # NON SLEEPING BIRDS START HERE : >>>>>>>>>
                 # set the sleeping matrix to 0 
@@ -690,7 +668,6 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   #set the predation risk 
                   # Note: this is currently the same for all types of foraging
                   Patt_cur<<-Patt_for
-                  
                   
                   # The non-hoarding birds can only 'eat' food they find. 
                   
@@ -726,11 +703,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   # Update BMR multi
                   #BMR_multi<<-8
                   # ends the foraging for non hoarding birds statement 
-                  
-                } # ends the foraging statement
-                
-                # CHECK IF RESTING 
-                else{
+                # ends the foraging statement   
+                } else{
                   ##################
                   #    RESTING     # 
                   ##################
@@ -774,8 +748,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 mat_alive[i,t]<<-0                                                # Set the matrix to 'dead' 
                 predation_count[i,t]<<-1
                 #print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
-              }
-              else{
+              } else{
                 # Surviving birds should update their values: 
                 predation_count[i,t]<<-0
                 
@@ -788,8 +761,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
                   # the new fat reserve has not been determined yet
                   mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
-                }
-                else{
+                } else{
                   mat_fr[i,t]<<-(mat_fr[i,t]+mat_sc[i,t])    # move whatever is left in the stomach to fat 
                   mat_sc[i,t]<<-0                           # set the stomach content to 0 
                 }
@@ -1118,15 +1090,12 @@ set_up_env<-function(days,N, env_type, daylight_h){
         current_optimization_plot<<-current_optimization_plot + geom_label(data=annotation, aes(x=x, y=y, label=label), 
                                                                            color='orange', 
                                                                            size=3, angle=45, fontface='bold')
-        
-        
         #survival_plot_list[[i]]<<-current_survival_plot
         #paste('survival_plot_', i)<<-current_survival_plot
         
         # put the current plot in a list 
         # optimization_1_1_plot_list[[i]]<<-current_optimization_plot
         optimization_1_1_plot_list<<-append(optimization_1_1_plot_list, list(current_optimization_plot))
-        
         
         # confirm
         print(paste('Optimization ran for environment ', cur_env_type))
@@ -1367,8 +1336,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         # Check if it is night or day 
         if ((t%%72)<= n_daylight_timestep){
           dayOrNight<<-1                       # this means it is day 
-        }
-        else{
+        }else{
           dayOrNight<<-0                       # this means it is night 
           
         }
@@ -1385,19 +1353,16 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # in step 1 all birds are alive 
           if (t==1){
             mat_alive[i,t]<<-1
-          }
-          # if not step 1, check if bird was previously dead
-          # if previously dead, it needs to be dead now 
-          else if (mat_alive[i,(t-1)]==0){
+          } else if (mat_alive[i,(t-1)]==0){
+            # if not step 1, check if bird was previously dead
+            # if previously dead, it needs to be dead now 
             mat_alive[i,t]<<-0
-          }
-          # if not step 1 and not previously dead 
-          # check if the bird should die now 
-          else if (mat_fr[i,t]==0){
+          }else if (mat_fr[i,t]==0){
+            # if not step 1 and not previously dead 
+            # check if the bird should die now
             mat_alive[i,t]<<-0
-          }
-          # in all other cases the bird is alive 
-          else{
+          }else{
+            # in all other cases the bird is alive 
             mat_alive[i,t]<<-1
           }
           
@@ -1415,9 +1380,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
             mat_sc[i,t]<<-NA
             # for the caches matrix 
             mat_caches[i,t]<<-NA
-          }
-          
-          else {
+          }else {
             
             #################
             #  ALIVE BIRDS  #
@@ -1462,10 +1425,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
               # Into the fat reserves 
               # and be burned depending on BMR-multi
               # in the ' Everyone '  part of the code below
-              
-            } # end of birds that are asleep 
-            
-            else{
+            # end of birds that are asleep   
+            }else{
               
               # NON SLEEPING BIRDS START HERE : >>>>>>>>>
               # set the sleeping matrix to 0 
@@ -1535,11 +1496,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 # Update BMR multi
                 BMR_multi<<-8
                 # ends the foraging for non hoarding birds statement 
-                
-              } # ends the foraging statement
-              
-              # CHECK IF RESTING 
-              else{
+              # ends the foraging statement  
+              }else{
                 ##################
                 #    RESTING     # 
                 ##################
@@ -1583,8 +1541,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               mat_alive[i,t]<<-0                                                # Set the matrix to 'dead' 
               predation_count[i,t]<<-1
               #print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
-            }
-            else{
+            }else{
               # Surviving birds should update their values: 
               predation_count[i,t]<<-0
               
@@ -1597,8 +1554,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
                 # the new fat reserve has not been determined yet
                 mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
-              }
-              else{
+              }else{
                 mat_fr[i,t]<<-(mat_fr[i,t]+mat_sc[i,t])    # move whatever is left in the stomach to fat 
                 mat_sc[i,t]<<-0                           # set the stomach content to 0 
               }
@@ -2675,8 +2631,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               MOD_1_3_func(days, N, env_type, th_forage_sc1=current_th_sc1, th_forage_sc2=current_th_sc2, th_forage_fr, daylight_h, sim_type = sim_type)
               # add to the previously created matrix 
               survival_end[th_sc1,th_sc2]<<-birds_alive_at_end
-          }
-          else {
+          }else {
             # Just give this teh value '0' as this is not a relevant option that we need to explore 
             survival_end[th_sc1, th_sc2]<<-0
           }
@@ -3587,8 +3542,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
         print(paste0('Optimizing MOD 1.4 for fr-th1 and fr-th2' ))
         
         # creates 100 values between min and max, evenly spaced 
-        th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=50)
-        th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=50)
+        th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=25)
+        th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=25)
         
         # now create a space to save the survival for each different value fo th_forage_fr1 and th_forage_fr2 
         survival_end<<-matrix(NA, length(th_forage_fr1), length(th_forage_fr2))
@@ -3608,8 +3563,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 MOD_1_4_func(days, N, env_type, th_forage_fr1=current_th_fr1, th_forage_fr2=current_th_fr2, th_forage_sc, daylight_h, sim_type = sim_type)
                 # add to the previously created matrix 
                 survival_end[th_fr1,th_fr2]<<-birds_alive_at_end
-            }
-            else{
+            }else{
               # Just set this to 0, as this is not a feasible option to explore 
               survival_end[th_fr1, th_fr2]<<-0
             }
@@ -3912,15 +3866,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
               
               
               # Plot all 3 the graph panels
-              setwd(paste0(        # Save the whole thing 
-                # Set the wd 
-                setwd(paste0(mainDir_1_4, '/4-opt_loop//'))
-                # save the big images 
-                dev.print(pdf, (paste0('Sim_1_4_opt_loop_days=', days, '_N=', N,'fr1min', th_fr1_min, '_fr1max', th_fr1_max, '_fr2min', th_fr2_min, '_fr2max', th_fr2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
-                # save the dataframe with the optimal values 
-                write.csv(mat_max_survival_th_fr1_fr2, paste0(mainDir_1_4, '/4-opt_loop//max_surv_matrix_1_4', '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names=FALSE)
-                
-                , '/5-beh_loop//')) # set current wd 
+            
+              # set wd
+              setwd(paste0(mainDir_1_4, '/5-beh_loop//')) # set current wd 
               #dev.new()
               #par(mfrow=c(6,3))
               do.call('grid.arrange', c(survival_plot_list, ncol=3))
