@@ -234,24 +234,24 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
   cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
   
   # Code to draw a piechart for testing the 'pick foraging type' code 
-        prob_b_forage<-0.5
-        temp_list<-list()
-        for (i in 1:1000){
-          cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
-          temp_list<<-append(temp_list, cur_forage_type)
-
-        }
-        df_for <- data.frame(do.call("rbind",temp_list)) #combine all vectors into a matrix
-        table_for<-data.frame(table(df_for$do.call..rbind...temp_list.))
-
-        pie<-ggplot(table_for, aes(x="", y=Freq, fill=Var1))+
-          geom_bar(stat='identity', width=1, color='white')+
-          coord_polar('y', start=0)+
-          theme_void()+
-          #geom_text(aes(y=ypos, label=Var1), color= 'white', size = 6)+
-          scale_fill_brewer(palette='Set3')+
-          ggtitle(label=paste('Prob B-forage =',prob_b_forage, ', #b-for = ', table_for[1,2], ', #n-for = ', table_for[2,2]))
-        pie
+        # prob_b_forage<-0.5
+        # temp_list<-list()
+        # for (i in 1:1000){
+        #   cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
+        #   temp_list<<-append(temp_list, cur_forage_type)
+        # 
+        # }
+        # df_for <- data.frame(do.call("rbind",temp_list)) #combine all vectors into a matrix
+        # table_for<-data.frame(table(df_for$do.call..rbind...temp_list.))
+        # 
+        # pie<-ggplot(table_for, aes(x="", y=Freq, fill=Var1))+
+        #   geom_bar(stat='identity', width=1, color='white')+
+        #   coord_polar('y', start=0)+
+        #   theme_void()+
+        #   #geom_text(aes(y=ypos, label=Var1), color= 'white', size = 6)+
+        #   scale_fill_brewer(palette='Set3')+
+        #   ggtitle(label=paste('Prob B-forage =',prob_b_forage, ', #b-for = ', table_for[1,2], ', #n-for = ', table_for[2,2]))
+        # pie
 
   
   if (cur_forage_type=='forage-b'){ 
@@ -540,7 +540,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # Check if it is night or day 
           if ((t%%72)<= n_daylight_timestep){
             dayOrNight<<-1                       # this means it is day 
-          }else{
+          } else {
             dayOrNight<<-0                       # this means it is night 
             
           }
@@ -566,7 +566,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               # if not step 1 and not previously dead 
               # check if the bird should die now 
               mat_alive[i,t]<<-0
-            }else{
+            } else {
               # in all other cases the bird is alive 
               mat_alive[i,t]<<-1
             }
@@ -585,7 +585,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               mat_sc[i,t]<<-NA
               # for the caches matrix 
               mat_caches[i,t]<<-NA
-            }else {
+            } else {
               
               #################
               #  ALIVE BIRDS  #
@@ -634,7 +634,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 # and be burned depending on BMR-multi
                 # in the ' Everyone '  part of the code below
                 # end of birds that are asleep   
-              } else{
+              } else {
                 
                 # NON SLEEPING BIRDS START HERE : >>>>>>>>>
                 # set the sleeping matrix to 0 
@@ -682,7 +682,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   
                   # Now, increase the stomach content
                   mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
-                  # now check if this doesnt exceed the stomach size 
+                  # now check if this doesn't exceed the stomach size
                   # if so, set the stomach content to stomach size 
                   if (mat_sc[i,(t)]>stom_size){
                     mat_sc[i,(t)]<<-stom_size
@@ -704,7 +704,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   #BMR_multi<<-8
                   # ends the foraging for non hoarding birds statement 
                 # ends the foraging statement   
-                } else{
+                } else {
                   ##################
                   #    RESTING     # 
                   ##################
@@ -748,7 +748,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 mat_alive[i,t]<<-0                                                # Set the matrix to 'dead' 
                 predation_count[i,t]<<-1
                 #print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
-              } else{
+              } else {
                 # Surviving birds should update their values: 
                 predation_count[i,t]<<-0
                 
@@ -761,8 +761,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   mat_sc[i,(t)]<<-(mat_sc[i,(t)]-stom_to_fat)
                   # the new fat reserve has not been determined yet
                   mat_fr[i,(t)]<<-(mat_fr[i,t]+stom_to_fat)
-                } else{
-                  mat_fr[i,t]<<-(mat_fr[i,t]+mat_sc[i,t])    # move whatever is left in the stomach to fat 
+                } else {
+                  mat_fr[i,t]<<-(mat_fr[i,t]+mat_sc[i,t])   # move whatever is left in the stomach to fat 
                   mat_sc[i,t]<<-0                           # set the stomach content to 0 
                 }
                 
@@ -925,6 +925,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       
       # Run it 
       dev.new()
+      MOD_1_1_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, daylight_h=8, sim_type='run_model')
       MOD_1_1_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, daylight_h=8, sim_type='run_model')
       
       # Optimise for ideal SC-threshold 
@@ -3477,7 +3478,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
             plot10<<-plot(1:t, ((total_forage[1,(1:t)])/(total_alive[1,(1:t)])*100), ylim=c(0, 100), ylab='%', xlab='Timestep', main='Percentage of alive birds foraging', type='l')
             
             
-            mtext((paste('Days=', days, '_N=', N, 'Daylight_h=', daylight_h,  '_th-sc=', th_forage_sc)), side=3, cex=0.8,line=-2, outer=TRUE)
+            mtext((paste('mod 1.4 Days=', days, '_N=', N, 'Daylight_h=', daylight_h,  '_th-sc=', th_forage_sc, 'env = ', env_type)), side=3, cex=0.8,line=-2, outer=TRUE)
             Sys.sleep(0)             # turns that back off 
           }# end if statement for plots
           
@@ -3527,7 +3528,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       
           # Run it
           dev.new()
-          MOD_1_4_func(days=30, N=100, env_type=8, th_forage_fr1=3, th_forage_fr2=1, th_forage_sc=0.2,  daylight_h=8, sim_type = 'run_model')
+          MOD_1_4_func(days=30, N=100, env_type=8, th_forage_fr1=1, th_forage_fr2=1.5, th_forage_sc=0.2,  daylight_h=8, sim_type = 'run_model')
       
       # Write function for optimisation 
       MOD_1_4_opt_thfr1_thfr2<-function(days, N, env_type, th_fr1_min, th_fr1_max, th_fr2_min, th_fr2_max, daylight_h, sim_type){
@@ -3552,9 +3553,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
         for (th_fr1 in 1:length(th_forage_fr1)){          # Outside for loop that goes through all values of forage_fr1 
           # determine the current threshold for each loop 
           current_th_fr1<<-th_forage_fr1[th_fr1]
-          # now run through all the possible sc2 values for this specific fr1
+          # now run through all the possible fr2 values for this specific fr1
           for (th_fr2 in 1:length(th_forage_fr2)){
-            # set the current sc2 threshold 
+            # set the current fr2 threshold 
             current_th_fr2<<-th_forage_fr2[th_fr2]
             
             # Again: only run for combinations that make sense 
@@ -3628,7 +3629,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       } # end of optimization function for hoarding bird th-fr1 and th-fr2
       
         # run it 
-        MOD_1_4_opt_thfr1_thfr2(days = 30, N = 100, env_type = 9, th_fr1_min = 0, th_fr1_max = 4, th_fr2_min = 0, th_fr2_max = 4, daylight_h = 8, sim_type = 'run_opt')
+        MOD_1_4_opt_thfr1_thfr2(days = 30, N = 100, env_type = 9, th_fr1_min = 1, th_fr1_max = 3, th_fr2_min = 0, th_fr2_max = 4, daylight_h = 8, sim_type = 'run_opt')
       
       
     ###############################
