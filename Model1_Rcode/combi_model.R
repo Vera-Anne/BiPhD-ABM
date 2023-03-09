@@ -286,7 +286,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
 # Quick test of the function 
 ######
 # This code was used to check if the means are correct and if the distributions look like what they're supposed to. 
-    
+    # 
     # for (l in 1:1000){
     #   if (l==1){
     #     big_list<<-list()
@@ -296,7 +296,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     #         if (k==1){
     #           forage_list_temp<<-list()
     #         }
-    #         forage_function(num_food_mean = 3, prob_b_forage = 0.8, b_size = 24)
+    #         forage_function(num_food_mean = 3, prob_b_forage = 0.5, b_size = 24)
     #         forage_list_temp<<-append(forage_list_temp, food_item_found)
     # 
     #       }
@@ -308,17 +308,18 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     #       cur_mean<<-mean(forage_df$items)
     # 
     #       # plot it for an image
-    #       # forage_hist<- ggplot(forage_table) +
-    #       #   geom_bar(aes(x=items, y=Freq, fill=TRUE), stat="identity")+
-    #       #   scale_fill_brewer(palette='Set3')+
-    #       #   ggtitle(label = paste('Frequency of Number of Items found (1000 samples), mean = ', cur_mean ))
-    #       #forage_hist
+    #       forage_hist<<- ggplot(forage_table) +
+    #         geom_bar(aes(x=items, y=Freq, fill=TRUE), stat="identity")+
+    #         scale_fill_brewer(palette='Set3')+
+    #         ylim (0, 400)+
+    #         ggtitle(label = paste('Frequency of Number of Items found (1000 samples), mean = ', cur_mean ))
+    #       forage_hist
     #       big_list<<-append(big_list, cur_mean)
-    #       
-    #       
+    # 
+    # 
     # }
     # 
-    # # Check what the mean is over 1000 runs 
+    # # Check what the mean is over 1000 runs
     # big_list<-data.frame(big_list)
     # big_list<<-t(big_list)
     # mean<-mean(big_list)
@@ -928,7 +929,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       
       # Run it 
       dev.new()
-      MOD_1_1_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, daylight_h=8, sim_type='run_model')
+      MOD_1_1_func(days=30, N=1000, env_type=8, th_forage_sc=0.2, th_forage_fr=1, daylight_h=8, sim_type='run_model')
       MOD_1_1_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, daylight_h=8, sim_type='run_model')
       
       # Optimise for ideal SC-threshold 
@@ -978,7 +979,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       # Run Visual optimisation 
       dev.new()
       par(mfrow=c(1,1))
-      MOD_1_1_opt_th_sc(days=3, N=10, env_type=8, th_forage_fr=1, daylight_h=8 , th_sc_min=0, th_sc_max=0.4, sim_type = 'run_opt_sc')
+      MOD_1_1_opt_th_sc(days=30, N=100, env_type=8, th_forage_fr=1, daylight_h=8 , th_sc_min=0, th_sc_max=0.4, sim_type = 'run_opt_sc')
       
       
 
@@ -1113,6 +1114,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
   # Save the plots in the directories made above   
   setwd(paste0(mainDir, '/4-opt_loop//')) # set current wd 
   dev.print(pdf, (paste0('MOD_1_1_opt_loop_Days=', days, '_N=', N, '_th-fr=', th_forage_fr, 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+  # save the matrix with optimal values in a dataframe 
+  write.csv(mat_max_survival_th_sc, (paste0('opt_loop_max_surv_sc_1_1_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
   
   
 } # end MOD 1.1 opt loop function 
@@ -1122,7 +1125,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         dev.new()
         # with the right outlines 
         par(mfrow=c(6,3))
-        MOD_1_1_opt_loop_func(days = 30, N = 10, th_forage_fr = 1,  th_sc_min = 0, th_sc_max = 0.4, daylight_h = 8, sim_type = 'opt_loop')
+        MOD_1_1_opt_loop_func(days = 30, N = 1000, th_forage_fr = 1,  th_sc_min = 0, th_sc_max = 0.4, daylight_h = 8, sim_type = 'opt_loop')
 
     ###########################################
     #       Behaviour loop - SC-TH 1.1        # 
@@ -1180,6 +1183,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 ylim(0,100)
               # pop the plot in the list 
               survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
+              # save the dataframe 
+              setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+              write.csv(current_survival_df, (paste0('beh_loop_surv_1_1_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
               
         
         # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
@@ -1232,6 +1238,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 xlim(0, timesteps_awake)
               # put plot in the list 
               stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+              # save dataframe 
+              write.csv(df_for_chart, (paste0('beh_loop_beh_1_1_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
         
         # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
               # create a df
@@ -1268,6 +1276,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 ylim(0,5)
               # put plot in the list
               fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
+              # save dataframe 
+              write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_1_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
               # for ease of use 
               print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
         
@@ -1717,6 +1727,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end the 1.2 function 
     
     # Run it
+    dev.new()
     MOD_1_2_func(days=30, N=100, env_type=8, th_forage_sc=0.2, th_forage_fr=1, daylight_h=8, sim_type='run_model')
     #MOD_1_2_func(days=30, N=1000, env_type=3, th_forage_sc=0.2, th_forage_fr=1, noplot=0, hoard_on=0, daylight_h=8)
     
