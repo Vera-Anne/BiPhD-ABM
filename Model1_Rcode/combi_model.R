@@ -5,14 +5,6 @@
 
 #################################
 
-# 23-03-03 Test if I can push from here (new laptop)  16.16
-# 23-03-07 Test again :'(  
-# push 23-03-09 
-
-
-# now push from desktop and test if it works with  the laptop 
-
-# yes it works, now push again from laptop to desktop 
 
 
 ##    Description     ##
