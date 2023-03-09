@@ -12,6 +12,8 @@
 
 # now push from desktop and test if it works with  the laptop 
 
+# yes it works, now push again from laptop to desktop 
+
 
 ##    Description     ##
     
