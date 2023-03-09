@@ -1902,6 +1902,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
       # Save the plots in the directories made above   
       setwd(paste0(mainDir_1_2, '/4-opt_loop//')) # set current wd 
       dev.print(pdf, (paste0('MOD_1_2_opt_loop_Days=', days, '_N=', N, '_th-sc=', th_forage_sc, 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      # save the matrix with optimal values in a dataframe 
+      write.csv(mat_max_survival_th_sc, (paste0('opt_loop_max_surv_sc_1_2_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       
       
     } # End of the optimization loop MOD 1.2 function 
@@ -1960,6 +1962,10 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   ylim(0,100)
                 # pop the plot in the list 
                 survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
+                # save the dataframe 
+                setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+                write.csv(current_survival_df, (paste0('beh_loop_surv_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                
                 
           
           # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
@@ -2012,6 +2018,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   xlim(0, timesteps_awake)
                 # put plot in the list 
                 stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+                # save dataframe 
+                write.csv(df_for_chart, (paste0('beh_loop_beh_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                
                 
           # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
               # create a df
@@ -2048,6 +2057,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 ylim(0,5)
               # put plot in the list
               fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
+              # save dataframe 
+              write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
               
               # for ease of use 
               print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
@@ -2832,6 +2843,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
       setwd(paste0(mainDir, '/4-opt_loop//'))
       # save the big images 
       dev.print(pdf, (paste0('Sim_1_3_opt_loop_days=', days, '_N=', N,'sc1min', th_sc1_min, '_sc1max', th_sc1_max, '_sc2min', th_sc2_min, '_sc2max', th_sc2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
+      # save the matrix with optimal values in a dataframe 
+      write.csv(mat_max_survival_th_sc, (paste0('opt_loop_max_surv_sc_1_3_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       
       
     } # end mod 1.3 opt_loop function 
@@ -2896,6 +2909,10 @@ set_up_env<-function(days,N, env_type, daylight_h){
               annotate("text", x=1500, y=90, label= paste("th_sc1=", round(current_opt_th_sc1, digits = 2), ' & th_sc2=', round(current_opt_th_sc2, digits = 2))) 
             # pop the plot in the list 
             survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
+            # save the dataframe 
+            setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+            write.csv(current_survival_df, (paste0('beh_loop_surv_1_3_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+            
         
         
         # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
@@ -2949,6 +2966,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
               #annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2))  
               # put plot in the list 
               stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+              # save dataframe 
+              write.csv(df_for_chart, (paste0('beh_loop_beh_1_3_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+              
         
         # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
             # create a df
@@ -2985,6 +3005,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
               ylim(0,5)
             # put plot in the list
             fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
+            # save dataframe 
+            write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_3_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
             
             # for ease of use 
             print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
@@ -3761,75 +3783,82 @@ set_up_env<-function(days,N, env_type, daylight_h){
               
               
               # GRAPHS TO SHOW SUVIVAL TRAJECTORIES 
-                  # For the graphs that display the survival trajectories throughout 30 days in each env 
-                  # create temporary dataframe for ggplot 
-                  current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
-                  # make percentages
-                  current_survival_df$perc_survival<<-((current_survival_df$V1/N)*100)
-                  # plot it 
-                  current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=perc_survival))+
-                    geom_line(size = 1)+
-                    labs(
-                      title = paste('% survival 1.4 - Env=', cur_env_type), 
-                      y='% Alive', 
-                      x='Timestep')+
-                    ylim(0,100)+
-                    annotate("text", x=1500, y=90, label= paste("th_fr1=", round(current_opt_th_fr1, digits = 2), ' & th_fr2=', round(current_opt_th_fr2, digits = 2))) 
-                  # pop the plot in the list 
-                  survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
+                      # For the graphs that display the survival trajectories throughout 30 days in each env 
+                      # create temporary dataframe for ggplot 
+                      current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
+                      # make percentages
+                      current_survival_df$perc_survival<<-((current_survival_df$V1/N)*100)
+                      # plot it 
+                      current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=perc_survival))+
+                        geom_line(size = 1)+
+                        labs(
+                          title = paste('% survival 1.4 - Env=', cur_env_type), 
+                          y='% Alive', 
+                          x='Timestep')+
+                        ylim(0,100)+
+                        annotate("text", x=1500, y=90, label= paste("th_fr1=", round(current_opt_th_fr1, digits = 2), ' & th_fr2=', round(current_opt_th_fr2, digits = 2))) 
+                      # pop the plot in the list 
+                      survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
+                      # save the dataframe 
+                      setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+                      write.csv(current_survival_df, (paste0('beh_loop_surv_1_4_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                      
+                      
                   
-              
               # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
-                  # Once you have hte matrices, calculate this for every timestep 
-                  for (j in (1:TS)){
-                    # The percentage resting 
-                    mat_cur_perc_rest[j,1]<<-((total_rest[1,j]/total_alive[1,j])*100)
-                    # The percentage foraging 
-                    mat_cur_perc_for[j,1]<<-((total_forage[1,j]/total_alive[1,j])*100)
-                    # the percentage sleeping 
-                    mat_cur_perc_sleep[j,1]<<-((total_sleep[1,j]/total_alive[1,j])*100)
-                  }
-                  # Add column with numbers 
-                  timesteps<<-1:TS
-                  # put them on a daily scale 
-                  timesteps_dayscale<<-timesteps%%72
-                  # Attach matrices 
-                  mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, timesteps_dayscale)
-                  # turn to df 
-                  df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
-                  # set names 
-                  colnames(df_perc_cur_env)[1]<<-'rest'
-                  colnames(df_perc_cur_env)[2]<<-'forage'
-                  colnames(df_perc_cur_env)[3]<<-'sleep'
-                  # now start grouping 
-                  rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
-                  forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
-                  sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
-                  # add group
-                  rest_perc$beh<<-rep('rest')
-                  forage_perc$beh<<-rep('forage')
-                  sleep_perc$beh<<-rep('sleep')
-                  # make new dataframe 
-                  df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc)
-                  # Ideally, I'd store this in some sort of list so I can access it afterwards 
-                  stacked_chart_data_list<<-append(stacked_chart_data_list, list(df_for_chart))
-                  # I want to plot only the time that the birds are awake (they all go to sleep at night anyway)
-                  # calculate the # of timesteps that birds are awake and put this in the xlim of the graphs 
-                  timesteps_awake<<-daylight_h*3
-                  # Now make the chart 
-                  cur_stacked_plot<<-ggplot(df_for_chart, aes(x=timesteps_dayscale, y=m, fill=beh))+
-                    geom_area(alpha=0.8, size=0.5, colour='white')+
-                    scale_fill_viridis(discrete = T)+
-                    #theme_ipsum()+
-                    #ggtitle('Percentage of Birds per Behaviour')
-                    labs(
-                      title = paste('Mod 1.4 -Env.', i, " th_fr1=", round(current_opt_th_fr1, digits = 2), ' & th_fr2=', round(current_opt_th_fr2, digits = 2)), 
-                      x='Timestep in a 24 day (20 min increments)', 
-                      y='Mean % of Alive birds')+
-                    xlim(0, timesteps_awake)
-                    #annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2))  
-                    # put plot in the list 
-                    stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+                      # Once you have hte matrices, calculate this for every timestep 
+                      for (j in (1:TS)){
+                        # The percentage resting 
+                        mat_cur_perc_rest[j,1]<<-((total_rest[1,j]/total_alive[1,j])*100)
+                        # The percentage foraging 
+                        mat_cur_perc_for[j,1]<<-((total_forage[1,j]/total_alive[1,j])*100)
+                        # the percentage sleeping 
+                        mat_cur_perc_sleep[j,1]<<-((total_sleep[1,j]/total_alive[1,j])*100)
+                      }
+                      # Add column with numbers 
+                      timesteps<<-1:TS
+                      # put them on a daily scale 
+                      timesteps_dayscale<<-timesteps%%72
+                      # Attach matrices 
+                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, timesteps_dayscale)
+                      # turn to df 
+                      df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
+                      # set names 
+                      colnames(df_perc_cur_env)[1]<<-'rest'
+                      colnames(df_perc_cur_env)[2]<<-'forage'
+                      colnames(df_perc_cur_env)[3]<<-'sleep'
+                      # now start grouping 
+                      rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
+                      forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
+                      sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
+                      # add group
+                      rest_perc$beh<<-rep('rest')
+                      forage_perc$beh<<-rep('forage')
+                      sleep_perc$beh<<-rep('sleep')
+                      # make new dataframe 
+                      df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc)
+                      # Ideally, I'd store this in some sort of list so I can access it afterwards 
+                      stacked_chart_data_list<<-append(stacked_chart_data_list, list(df_for_chart))
+                      # I want to plot only the time that the birds are awake (they all go to sleep at night anyway)
+                      # calculate the # of timesteps that birds are awake and put this in the xlim of the graphs 
+                      timesteps_awake<<-daylight_h*3
+                      # Now make the chart 
+                      cur_stacked_plot<<-ggplot(df_for_chart, aes(x=timesteps_dayscale, y=m, fill=beh))+
+                        geom_area(alpha=0.8, size=0.5, colour='white')+
+                        scale_fill_viridis(discrete = T)+
+                        #theme_ipsum()+
+                        #ggtitle('Percentage of Birds per Behaviour')
+                        labs(
+                          title = paste('Mod 1.4 -Env.', i, " th_fr1=", round(current_opt_th_fr1, digits = 2), ' & th_fr2=', round(current_opt_th_fr2, digits = 2)), 
+                          x='Timestep in a 24 day (20 min increments)', 
+                          y='Mean % of Alive birds')+
+                        xlim(0, timesteps_awake)
+                        #annotate("text", x=1500, y=90, label= paste("th_sc1=", current_opt_th_sc1, ' & th_sc2=', current_opt_th_sc2))  
+                        # put plot in the list 
+                        stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
+                        # save dataframe 
+                        write.csv(df_for_chart, (paste0('beh_loop_beh_1_4_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                        
               
               # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
                   # create a df
@@ -3866,6 +3895,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                     ylim(0,5)
                   # put plot in the list
                   fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
+                  # save dataframe 
+                  write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_4_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
                   
                   # for ease of use 
                   print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
