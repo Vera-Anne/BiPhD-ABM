@@ -1935,7 +1935,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       setwd(paste0(mainDir_1_2, '/4-opt_loop//')) # set current wd 
       dev.print(pdf, (paste0('MOD_1_2_opt_loop_Days=', days, '_N=', N, '_th-sc=', th_forage_sc, 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
       # save the matrix with optimal values in a dataframe 
-      write.csv(mat_max_survival_th_sc, (paste0('opt_loop_max_surv_sc_1_2_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+      write.csv(mat_max_survival_th_fr, (paste0('opt_loop_max_surv_fr_1_2_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       
       
     } # End of the optimization loop MOD 1.2 function 
@@ -1945,7 +1945,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         # with the right outlines 
         par(mfrow=c(6,3))
         # Now run it 
-        MOD_1_2_opt_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, th_fr_min = 0, th_fr_max = 4, daylight_h = 8, sim_type = 'opt_loop')
+        MOD_1_2_opt_loop_func(days = 30, N = 10, th_forage_sc = 0.2, th_fr_min = 0, th_fr_max = 4, daylight_h = 8, sim_type = 'opt_loop')
         
     ###########################################
     #       Behaviour loop - SC-TH 1.2        # 
