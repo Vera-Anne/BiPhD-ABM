@@ -1166,7 +1166,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         # Now run the model 1.1 with this value 
         MOD_1_1_func(days= days, N= N, env_type=cur_env_type, th_forage_sc=current_opt_sc_th, th_forage_fr=th_forage_fr, daylight_h= daylight_h, sim_type = sim_type)
         
-        # GRAPHS TO SHOW SUVIVAL TRAJECTORIES 
+        # 1.  GRAPHS TO SHOW SUVIVAL TRAJECTORIES 
               # For the graphs that display the survival trajectories throughout 30 days in each env 
               # create temporary dataframe for ggplot 
               current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
@@ -1196,7 +1196,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   survival_df_1_1<<-rbind(survival_df_1_1, current_survival_df)
                 }
         
-        # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
+        #  2. GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
               # Once you have hte matrices, calculate this for every timestep 
               for (j in (1:TS)){
                 # The percentage resting 
@@ -1259,7 +1259,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               
               #write.csv(df_for_chart, (paste0('beh_loop_beh_1_1_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
         
-        # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
+        # 3. GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
               # create a df
               fr_sc_graph<<-rbind(fr_mean, sc_mean, timesteps_dayscale)
               fr_sc_graph<<-t(fr_sc_graph)
@@ -1978,14 +1978,20 @@ set_up_env<-function(days,N, env_type, daylight_h){
           MOD_1_2_func(days= days, N= N, env_type=cur_env_type, th_forage_sc=th_forage_sc, th_forage_fr=current_opt_fr_th, daylight_h= daylight_h, sim_type = sim_type)
           
           
-          # GRAPHS TO SHOW SUVIVAL TRAJECTORIES 
+          # 1. GRAPHS TO SHOW SUVIVAL TRAJECTORIES 
                 # For the graphs that display the survival trajectories throughout 30 days in each env 
                 # create temporary dataframe for ggplot 
                 current_survival_df<<-as.data.frame(t(rbind(total_alive, (1:TS))))
                 # make percentages
                 current_survival_df$perc_survival<<-((current_survival_df$V1/N)*100)
+                # add column with the environment number 
+                current_survival_df$env<<-rep(i, times=(nrow(current_survival_df)))
+                # rename for clarity 
+                names(current_survival_df)[1]<<-'num_alive'
+                names(current_survival_df)[2]<<-'timestep'
+                
                 # plot it 
-                current_survival_plot<<-ggplot(current_survival_df, aes(x=V2, y=perc_survival))+
+                current_survival_plot<<-ggplot(current_survival_df, aes(x=timestep, y=perc_survival))+
                   geom_line(size=1)+
                   labs(
                     title = paste('Survival (%alive)- Env =', cur_env_type, 'th-fr=', round(current_opt_fr_th, digits = 2)), 
@@ -1995,12 +2001,17 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 # pop the plot in the list 
                 survival_plot_list<<-append(survival_plot_list, list(current_survival_plot))
                 # save the dataframe 
-                setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
-                write.csv(current_survival_df, (paste0('beh_loop_surv_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                #setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+                #write.csv(current_survival_df, (paste0('beh_loop_surv_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
                 
-                
+                # append to the dataframe 
+                if (i==1){
+                  survival_df_1_2<<-current_survival_df
+                } else {
+                  survival_df_1_2<<-rbind(survival_df_1_2, current_survival_df)
+                }
           
-          # GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
+          # 2. GRAPHS TO SHOW THE BEHAVIOUR TRAJECTORIES   
                 # Once you have hte matrices, calculate this for every timestep 
                 for (j in (1:TS)){
                   # The percentage resting 
@@ -2032,6 +2043,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 sleep_perc$beh<<-rep('sleep')
                 # make new dataframe 
                 df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc)
+                # add column with the environment number 
+                df_for_chart$env<<-rep(i, times=(nrow(df_for_chart)))
                 # Ideally, I'd store this in some sort of list so I can access it afterwards 
                 stacked_chart_data_list<<-append(stacked_chart_data_list, list(df_for_chart))
                 # I want to plot only the time that the birds are awake (they all go to sleep at night anyway)
@@ -2051,10 +2064,18 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 # put plot in the list 
                 stacked_chart_plot_list<<-append(stacked_chart_plot_list, list(cur_stacked_plot))
                 # save dataframe 
-                write.csv(df_for_chart, (paste0('beh_loop_beh_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                #write.csv(df_for_chart, (paste0('beh_loop_beh_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
                 
                 
-          # GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
+                # append to the dataframe 
+                if (i==1){
+                  beh_df_1_2<<-df_for_chart
+                } else {
+                  beh_df_1_2<<-rbind(beh_df_1_2, df_for_chart)
+                }
+                
+                
+          # 3. GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
               # create a df
               fr_sc_graph<<-rbind(fr_mean, sc_mean, timesteps_dayscale)
               fr_sc_graph<<-t(fr_sc_graph)
@@ -2073,6 +2094,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
               #sleep_perc$beh<-rep('sleep')
               # make new dataframe
               df_for_sc_fr_chart<<-rbind(fr_grouped, sc_grouped)
+              # add column with the environment number 
+              df_for_sc_fr_chart$env<<-rep(i, times=(nrow(df_for_sc_fr_chart)))
               # graph
               # Now make the chart
               cur_fr_sc_plot<<-ggplot(df_for_sc_fr_chart, aes(x=timesteps_dayscale, y=m, col=type))+
@@ -2090,13 +2113,25 @@ set_up_env<-function(days,N, env_type, daylight_h){
               # put plot in the list
               fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
               # save dataframe 
-              write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
-              
+              #write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+              # append to the dataframe 
+              if (i==1){
+                sc_fr_df_1_1<<-df_for_sc_fr_chart
+              } else {
+                sc_fr_df_1_1<<-rbind(sc_fr_df_1_1, df_for_sc_fr_chart)
+              }
               # for ease of use 
               print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
               
         } # END FOR LOOP ENVIRONTMENTS 
         
+      # save the dataframes 
+      setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+      # save the total dataframe for survival:
+      write.csv(survival_df_1_2, (paste0('beh_loop_surv_1_2_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+      write.csv(beh_df_1_2, (paste0('beh_loop_beh_1_2_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+      write.csv(sc_fr_df_1_2, (paste0('beh_loop_sc_fr_1_2_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+      
         
       } # end function MOD 1.2 behaviour loop 
       
