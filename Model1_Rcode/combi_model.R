@@ -1913,7 +1913,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         # with the right outlines 
         par(mfrow=c(6,3))
         # Now run it 
-        MOD_1_2_opt_loop_func(days = 30, N = 10, th_forage_sc = 0.2, th_fr_min = 0, th_fr_max = 4, daylight_h = 8, sim_type = 'opt_loop')
+        MOD_1_2_opt_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, th_fr_min = 0, th_fr_max = 4, daylight_h = 8, sim_type = 'opt_loop')
         
     ###########################################
     #       Behaviour loop - SC-TH 1.2        # 
@@ -2069,9 +2069,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
       } # end function MOD 1.2 behaviour loop 
       
         # Run it 
-        MOD_1_2_beh_loop_func(days = 30, N = 10, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
+        MOD_1_2_beh_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
       
-        
         # Plot all 3 the graph panels
         setwd(paste0(mainDir_1_2, '/5-beh_loop//')) # set current wd 
           # dev.new()
@@ -2633,8 +2632,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
       print(paste0('Optimizing MOD 1.3 for sc-th1 and sc-th2' ))
       
       # creates 100 values between min and max, evenly spaced 
-      th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=50)
-      th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=50)
+      th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=100)
+      th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=100)
       
       # now create a space to save the survival for each different value fo th_forage_sc1 and th_forage_sc2 
       survival_end<<-matrix(NA, length(th_forage_sc1), length(th_forage_sc2))
@@ -2721,7 +2720,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end of optimization function for hoarding bird th-sc1 and th-sc2
     
         # run it 
-        MOD_1_3_opt_thsc1_thsc2(days=30, N=10, env_type=8, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'run_opt')
+        MOD_1_3_opt_thsc1_thsc2(days=30, N=100, env_type=8, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'run_opt')
         
     ###############################
     #    Environments loop  1.3   # 
@@ -2774,7 +2773,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end of 1.3 environment loop 
     
     # Run it 
-    MOD_1_3_env_loop_func(days = 30, N= 10, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, th_forage_fr = 1, daylight_h = 8, sim_type = 'env_loop')
+    MOD_1_3_env_loop_func(days = 30, N= 1000, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, th_forage_fr = 1, daylight_h = 8, sim_type = 'env_loop')
     
     
     ###########################################
