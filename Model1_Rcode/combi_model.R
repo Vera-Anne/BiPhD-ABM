@@ -3678,8 +3678,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
         print(paste0('Optimizing MOD 1.4 for fr-th1 and fr-th2' ))
         
         # creates 100 values between min and max, evenly spaced 
-        th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=5)
-        th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=5)
+        th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=100)
+        th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=100)
         
         # now create a space to save the survival for each different value fo th_forage_fr1 and th_forage_fr2 
         survival_end<<-matrix(NA, length(th_forage_fr1), length(th_forage_fr2))
@@ -3830,6 +3830,11 @@ set_up_env<-function(days,N, env_type, daylight_h){
           
         } # end of the loop for each environment
         
+        mat_max_survival_th_fr1_fr2<<-as.data.frame(mat_max_survival_th_fr1_fr2)
+        # set names 
+        names(mat_max_survival_th_fr1_fr2)[1]<<-'th_fr1'
+        names(mat_max_survival_th_fr1_fr2)[2]<<-'th_fr2'
+        
         # Save the whole thing 
         # Set the wd 
         setwd(paste0(mainDir_1_4, '/4-opt_loop//'))
@@ -3846,7 +3851,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # with the right outlines
           par(mfrow=c(6,3))
           # Run it 
-          MOD_1_4_opt_loop_func(days = 30, N = 1, th_fr1_min=0, th_fr1_max=4, th_fr2_min=0, th_fr2_max=4, daylight_h=8, sim_type = 'opt_loop')
+          MOD_1_4_opt_loop_func(days = 30, N = 100, th_fr1_min=0, th_fr1_max=4, th_fr2_min=0, th_fr2_max=4, daylight_h=8, sim_type = 'opt_loop')
           
     ############################################
     #      Behaviour loop - FR-TH 1.4          # 
