@@ -2902,7 +2902,14 @@ set_up_env<-function(days,N, env_type, daylight_h){
         mat_max_survival_th_sc1_sc2[i, 2]<<-cur_opt_th_sc2
         
         
+        
+        
       } # end of the loop for each environment
+      
+      mat_max_survival_th_sc1_sc2<<-as.data.frame(mat_max_survival_th_sc1_sc2)
+      # set names 
+      names(mat_max_survival_th_sc1_sc2)[1]<<-'th_sc1'
+      names(mat_max_survival_th_sc1_sc2)[2]<<-'th_sc2'
       
       # Save the whole thing 
       # Set the wd 
@@ -2910,7 +2917,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       # save the big images 
       dev.print(pdf, (paste0('Sim_1_3_opt_loop_days=', days, '_N=', N,'sc1min', th_sc1_min, '_sc1max', th_sc1_max, '_sc2min', th_sc2_min, '_sc2max', th_sc2_max,  '_', 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
       # save the matrix with optimal values in a dataframe 
-      write.csv(mat_max_survival_th_sc, (paste0('opt_loop_max_surv_sc_1_3_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+      write.csv(mat_max_survival_th_sc1_sc2, (paste0('opt_loop_max_surv_sc1_sc2_1_3_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       
       
     } # end mod 1.3 opt_loop function 
