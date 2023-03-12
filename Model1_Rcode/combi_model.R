@@ -1945,7 +1945,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         # with the right outlines 
         par(mfrow=c(6,3))
         # Now run it 
-        MOD_1_2_opt_loop_func(days = 30, N = 10, th_forage_sc = 0.2, th_fr_min = 0, th_fr_max = 4, daylight_h = 8, sim_type = 'opt_loop')
+        MOD_1_2_opt_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, th_fr_min = 0, th_fr_max = 4, daylight_h = 8, sim_type = 'opt_loop')
         
     ###########################################
     #       Behaviour loop - SC-TH 1.2        # 
@@ -2116,9 +2116,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
               #write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_2_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
               # append to the dataframe 
               if (i==1){
-                sc_fr_df_1_1<<-df_for_sc_fr_chart
+                sc_fr_df_1_2<<-df_for_sc_fr_chart
               } else {
-                sc_fr_df_1_1<<-rbind(sc_fr_df_1_1, df_for_sc_fr_chart)
+                sc_fr_df_1_2<<-rbind(sc_fr_df_1_2, df_for_sc_fr_chart)
               }
               # for ease of use 
               print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
@@ -2126,7 +2126,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         } # END FOR LOOP ENVIRONTMENTS 
         
       # save the dataframes 
-      setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+      setwd(paste0(mainDir_1_2, '/5-beh_loop//')) # set current wd 
       # save the total dataframe for survival:
       write.csv(survival_df_1_2, (paste0('beh_loop_surv_1_2_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       write.csv(beh_df_1_2, (paste0('beh_loop_beh_1_2_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
@@ -3671,8 +3671,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
         print(paste0('Optimizing MOD 1.4 for fr-th1 and fr-th2' ))
         
         # creates 100 values between min and max, evenly spaced 
-        th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=25)
-        th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=25)
+        th_forage_fr1<<-linspace(th_fr1_min, th_fr1_max, n=5)
+        th_forage_fr2<<-linspace(th_fr2_min, th_fr2_max, n=5)
         
         # now create a space to save the survival for each different value fo th_forage_fr1 and th_forage_fr2 
         survival_end<<-matrix(NA, length(th_forage_fr1), length(th_forage_fr2))
@@ -3839,7 +3839,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
           # with the right outlines
           par(mfrow=c(6,3))
           # Run it 
-          MOD_1_4_opt_loop_func(days = 30, N = 50, th_fr1_min=0, th_fr1_max=4, th_fr2_min=0, th_fr2_max=4, daylight_h=8, sim_type = 'opt_loop')
+          MOD_1_4_opt_loop_func(days = 30, N = 1, th_fr1_min=0, th_fr1_max=4, th_fr2_min=0, th_fr2_max=4, daylight_h=8, sim_type = 'opt_loop')
           
     ############################################
     #      Behaviour loop - FR-TH 1.4          # 
