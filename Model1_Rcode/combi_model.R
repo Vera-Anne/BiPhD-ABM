@@ -3896,6 +3896,10 @@ set_up_env<-function(days,N, env_type, daylight_h){
               mat_cur_perc_rest<<-matrix(data=NA, nrow= (days*72), ncol=1)
               mat_cur_perc_for<<-matrix(NA, TS, 1)
               mat_cur_perc_sleep<<-matrix(NA, TS, 1)
+              mat_cur_eat_hoard<<-matrix(NA, TS, 1)
+              mat_cur_retrieve<<-matrix(NA, TS, 1)
+              
+              
               # indicate the current environment
               cur_env_type<<-i
               
@@ -3950,29 +3954,40 @@ set_up_env<-function(days,N, env_type, daylight_h){
                         mat_cur_perc_for[j,1]<<-((total_forage[1,j]/total_alive[1,j])*100)
                         # the percentage sleeping 
                         mat_cur_perc_sleep[j,1]<<-((total_sleep[1,j]/total_alive[1,j])*100)
+                        # eat hoard percentage 
+                        mat_cur_eat_hoard[j,1]<<-((total_eat_hoard[1,j]/total_alive[1,j])*100)
+                        # retrieving percentage 
+                        mat_cur_retrieve[j,1]<<-((total_retrieve[1,j]/total_alive[1,j])*100)
                       }
                       # Add column with numbers 
                       timesteps<<-1:TS
                       # put them on a daily scale 
                       timesteps_dayscale<<-timesteps%%72
                       # Attach matrices 
-                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, timesteps_dayscale)
+                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, timesteps_dayscale)
                       # turn to df 
                       df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
                       # set names 
                       colnames(df_perc_cur_env)[1]<<-'rest'
                       colnames(df_perc_cur_env)[2]<<-'forage'
                       colnames(df_perc_cur_env)[3]<<-'sleep'
+                      colnames(df_perc_cur_env)[4]<<-'eat_hoard'
+                      colnames(df_perc_cur_env)[5]<<-'retrieve'
                       # now start grouping 
                       rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
                       forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
                       sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
+                      eat_hoard_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(eat_hoard))
+                      retrieve_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(retrieve))
+                      
                       # add group
                       rest_perc$beh<<-rep('rest')
                       forage_perc$beh<<-rep('forage')
                       sleep_perc$beh<<-rep('sleep')
+                      eat_hoard_perc$beh<<-rep('eat_hoard')
+                      retrieve_perc$beh<<-rep('retrieve')
                       # make new dataframe 
-                      df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc)
+                      df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc, eat_hoard_perc, retrieve_perc)
                       # add column with the environment number 
                       df_for_chart$env<<-rep(i, times=(nrow(df_for_chart)))
                       # Ideally, I'd store this in some sort of list so I can access it afterwards 
