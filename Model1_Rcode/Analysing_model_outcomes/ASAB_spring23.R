@@ -26,7 +26,7 @@ sc_fr_1_2<-read.csv('beh_loop_sc_fr_1_2_df_2023-03-12_12_25_32.csv')
 setwd(paste0(mainDir, '/MOD_1_3/5-beh_loop//')) 
 survival_1_3<-read.csv('beh_loop_surv_1_3_df_2023-03-13_08_58_36.csv') # survival data 
 beh_1_3<-read.csv('beh_loop_beh_1_3_df_2023-03-13_08_58_37.csv')
-# sc_fr_1_2<-read.csv('beh_loop_sc_fr_1_2_df_2023-03-12_12_25_32.csv')
+sc_fr_1_3<-read.csv('beh_loop_sc_fr_1_3_df_2023-03-13_15_09_01.csv')
 
 
 # MODEL 1.4 IS TBC --> RUN FIRST 
@@ -54,14 +54,12 @@ for (i in 1:18){
     cur_subset<<-survival_all[ which (survival_all$env==(paste(i))),]
     # plot
     surv_plot<<-ggplot(cur_subset, aes(x=timestep, y=perc_survival))+
-      geom_line(aes(color=model))+
+      geom_line(aes(color=model), lwd=1.5)+
       ggtitle(paste('Survival for environment ', i))+
       ylim(0,100)
     
     # add plot to list 
     plot_list_survival<<-append(plot_list_survival, list(surv_plot))
-    
-
     
 } # end of loop for environments 
 
@@ -76,12 +74,12 @@ do.call('grid.arrange', c(plot_list_survival, ncol=3))
 #####################################################
 
 # Add columns with model marker 
-sc_fr_1_1$model<-rep('11', times=length(sc_fr_1_1))
-sc_fr_1_2$model<-rep('12', times=length(sc_fr_1_2))
-#sc_fr_1_3$model<-rep('13', times=length(sc_fr_1_3))
+sc_fr_1_1$model<-rep('11', times=nrow(sc_fr_1_1))
+sc_fr_1_2$model<-rep('12', times=nrow(sc_fr_1_2))
+sc_fr_1_3$model<-rep('13', times=nrow(sc_fr_1_3))
 
 # Bind together
-sc_fr_all<-rbind(sc_fr_1_1, sc_fr_1_2) #, sc_fr_1_3)
+sc_fr_all<-rbind(sc_fr_1_1, sc_fr_1_2, sc_fr_1_3)
 
 # koop through environments and make a plot 
 for (i in 1:18){
@@ -92,7 +90,7 @@ for (i in 1:18){
   cur_subset<<-sc_fr_all[ which (sc_fr_all$env==(paste(i)) & sc_fr_all$type=='fr'),]
   # plot
   fat_plot<<-ggplot(cur_subset, aes(x=timesteps_dayscale, y=m))+
-    geom_line(aes(color=model), lwd=1.5)+
+    geom_line(aes(color=model), lwd=1)+
     ggtitle(paste('FR for environment ', i))+
     ylim(0,5)
   

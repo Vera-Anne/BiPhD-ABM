@@ -3099,8 +3099,14 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 # put plot in the list
                 fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
                 # save dataframe 
-                write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_3_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
-                
+                #write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_3_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+     
+                # append to the dataframe 
+                if (i==1){
+                  sc_fr_df_1_3<<-df_for_sc_fr_chart
+                } else {
+                  sc_fr_df_1_3<<-rbind(sc_fr_df_1_3, df_for_sc_fr_chart)
+                }
                 # for ease of use 
                 print(paste('Code for the stacked area graphs/sc-fr graphs is done for env=', cur_env_type))
                 
@@ -3117,13 +3123,13 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end function MOD 1.3 behaviour loop 
     
         # Run it 
-        MOD_1_3_beh_loop_func(days = 30, N = 100, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
+        MOD_1_3_beh_loop_func(days = 30, N = 1000, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
         
         
         # Plot all 3 the graph panels
         setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
-        #dev.new()
-        #par(mfrow=c(6,3))
+        dev.new()
+        par(mfrow=c(6,3))
         do.call('grid.arrange', c(survival_plot_list, ncol=3))
         dev.print(pdf, (paste0('beh_loop_surv_1_3',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
         # beh
