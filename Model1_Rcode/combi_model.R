@@ -3091,7 +3091,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   #theme_ipsum()+
                   #ggtitle('Percentage of Birds per Behaviour')
                   labs(
-                    title = paste('Env.', i, " th_sc1=", round(current_opt_th_fr1, digits = 2), ' & th_sc2=', round(current_opt_th_fr2, digits = 2)),
+                    title = paste('Env.', i, " th_sc1=", round(current_opt_th_sc1, digits = 2), ' & th_sc2=', round(current_opt_th_sc2, digits = 2)),
                     x='Timestep in a 24 day (20 min increments)',
                     y='FR and SC (gram)')+
                   xlim(0, timesteps_awake)+
