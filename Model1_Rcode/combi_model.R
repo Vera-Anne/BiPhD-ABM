@@ -3138,7 +3138,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end function MOD 1.3 behaviour loop 
     
         # Run it 
-        MOD_1_3_beh_loop_func(days = 30, N = 10, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
+        MOD_1_3_beh_loop_func(days = 30, N = 1000, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
         
         
         # Plot all 3 the graph panels

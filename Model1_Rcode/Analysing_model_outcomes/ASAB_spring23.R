@@ -25,12 +25,12 @@ sc_fr_1_2<-read.csv('beh_loop_sc_fr_1_2_df_2023-03-12_12_25_32.csv')
 # get survival - behaviour and fr/sc from model 1.3 (hoarding - sc )
 setwd(paste0(mainDir, '/MOD_1_3/5-beh_loop//')) 
 survival_1_3<-read.csv('beh_loop_surv_1_3_df_2023-03-13_08_58_36.csv') # survival data 
-beh_1_3<-read.csv('beh_loop_beh_1_3_df_2023-03-13_08_58_37.csv')
+beh_1_3<-read.csv('beh_loop_beh_1_3_df_2023-03-13_17_24_25.csv')
 sc_fr_1_3<-read.csv('beh_loop_sc_fr_1_3_df_2023-03-13_15_09_01.csv')
 
 
 # MODEL 1.4 IS TBC --> RUN FIRST 
-# MODEL 1.3 FR/SC NEEDS TO BE REDONE AS WELL 
+
 
 
 #####################################################
@@ -92,7 +92,8 @@ for (i in 1:18){
   fat_plot<<-ggplot(cur_subset, aes(x=timesteps_dayscale, y=m))+
     geom_line(aes(color=model), lwd=1)+
     ggtitle(paste('FR for environment ', i))+
-    ylim(0,5)
+    ylim(0,5)+
+    xlim(0, 24) # only daylight hours (assuming 8 hour days)
   
   # add plot to list 
   plot_list_sc_fr<<-append(plot_list_sc_fr, list(fat_plot))
@@ -105,19 +106,100 @@ do.call('grid.arrange', c(plot_list_sc_fr, ncol=3))
 
 
 
+# same but for stomach content 
+# koop through environments and make a plot 
+for (i in 1:18){
+  if (i==1){
+    plot_list_sc<<-list()
+  }
+  # subset an environment 
+  cur_subset<<-sc_fr_all[ which (sc_fr_all$env==(paste(i)) & sc_fr_all$type=='sc'),]
+  # plot
+  sc_plot<<-ggplot(cur_subset, aes(x=timesteps_dayscale, y=m))+
+    geom_line(aes(color=model), lwd=1)+
+    ggtitle(paste('SC for environment ', i))+
+    ylim(0,0.5)+
+    xlim(0,24)# only daylight hours (assuming 8 hour days)
+  
+  # add plot to list 
+  plot_list_sc<<-append(plot_list_sc, list(sc_plot))
+  
+} # end of loop for environments 
+
+#ggarrange(plot_list_survival)
+dev.new()
+do.call('grid.arrange', c(plot_list_sc, ncol=3))
+
+
+
+#####################################################
+#   graph comparing behaviour trajectories 1-2-3-4   #
+#####################################################
+
+# To start with, I need a graph that shows the proportion of birds foraging 
+# For hoarding birds this includes eat-hoard and retrieving 
+# for non-hoarders this includes just eating 
+
+# Add columns with model marker 
+beh_1_1$model<-rep('11', times=nrow(beh_1_1))
+beh_1_2$model<-rep('12', times=nrow(beh_1_2))
+beh_1_3$model<-rep('13', times=nrow(beh_1_3))
+
+
+# Bind together
+beh_all<-rbind(beh_1_1, beh_1_2, beh_1_3)
+
+
+# loop through environments and make a plot 
+for (i in 1:18){
+  if (i==1){
+    plot_list_beh<<-list()
+  }
+  # subset an environment 
+  cur_subset<<-beh_all[ which (beh_all$env==(paste(i)) & beh_all$beh=='forage'),]
+  # plot
+  beh_plot<<-ggplot(cur_subset, aes(x=timesteps_dayscale, y=m))+
+    geom_line(aes(color=model), lwd=1.25)+
+    ggtitle(paste('BEH for environment ', i))+
+    ylim(-1,101)+
+    xlim(0, 24) # only daylight hours (assuming 8 hour days)
+  
+  # add plot to list 
+  plot_list_beh<<-append(plot_list_beh, list(beh_plot))
+  
+} # end of loop for environments 
+
+#ggarrange(plot_list_survival)
+dev.new()
+do.call('grid.arrange', c(plot_list_beh, ncol=3))
+
+
+# Next there needs to be a split between the hoarding and retrieving
+# this needs to be corrected in the bheaviour-loop first
 
 
 
 
+# loop through environments and make a plot 
+for (i in 1:18){
+  if (i==1){
+    plot_list_behH<<-list()
+  }
+  # subset an environment 
+  cur_subset<<-beh_all[ which (beh_all$env==(paste(i)) & beh_all$beh=='forage'),]
+  # plot
+  beh_plot<<-ggplot(cur_subset, aes(x=timesteps_dayscale, y=m))+
+    geom_line(aes(color=model), lwd=1.25)+
+    ggtitle(paste('BEH for environment ', i))+
+    ylim(-1,101)+
+    xlim(0, 24) # only daylight hours (assuming 8 hour days)
+  
+  # add plot to list 
+  plot_list_beh<<-append(plot_list_beh, list(beh_plot))
+  
+} # end of loop for environments 
 
+#ggarrange(plot_list_survival)
+dev.new()
+do.call('grid.arrange', c(plot_list_beh, ncol=3))
 
-
-
-
-
-
-
-# Read in the file from model 1.1 
-# set wd 
-
-# read in the file 
