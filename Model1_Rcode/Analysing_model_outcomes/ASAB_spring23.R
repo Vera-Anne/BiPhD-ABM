@@ -183,15 +183,15 @@ do.call('grid.arrange', c(plot_list_beh, ncol=3))
 # loop through environments and make a plot 
 for (i in 1:18){
   if (i==1){
-    plot_list_behH<<-list()
+    plot_list_beh<<-list()
   }
   # subset an environment 
-  cur_subset<<-beh_all[ which (beh_all$env==(paste(i)) & beh_all$beh=='forage'),]
+  cur_subset<<-beh_all[ which (beh_all$model=='13' & beh_all$env==(paste(i)) & (beh_all$beh=='eat_hoard' | beh_all$beh=='retrieve')),]
   # plot
   beh_plot<<-ggplot(cur_subset, aes(x=timesteps_dayscale, y=m))+
-    geom_line(aes(color=model), lwd=1.25)+
+    geom_line(aes(color=beh, lty=model), lwd=1.25)+
     ggtitle(paste('BEH for environment ', i))+
-    ylim(-1,101)+
+    ylim(-1,99)+
     xlim(0, 24) # only daylight hours (assuming 8 hour days)
   
   # add plot to list 
