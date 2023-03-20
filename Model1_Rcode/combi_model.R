@@ -4070,7 +4070,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
             } # END FOR LOOP ENVIRONTMENTS 
             
             # save the dataframes 
-            setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+            setwd(paste0(mainDir_1_4, '/5-beh_loop//')) # set current wd 
             # save the total dataframe for survival:
             write.csv(survival_df_1_4, (paste0('beh_loop_surv_1_4_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
             write.csv(beh_df_1_4, (paste0('beh_loop_beh_1_4_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
@@ -4080,7 +4080,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
           } # end function MOD 1.4 behaviour loop 
           
               # Run it 
-              MOD_1_4_beh_loop_func(days = 30, N = 50, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
+              MOD_1_4_beh_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
               
               
               # Plot all 3 the graph panels
