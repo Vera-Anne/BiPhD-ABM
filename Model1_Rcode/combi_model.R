@@ -512,8 +512,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
     ################################
       # Set up the main directory for where you want the figures saved 
       # This can be replaced by any folder you have on your computer (just make sure you have continuous connection if its a webfolder)
-      mainDir<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_1'
-      setwd(mainDir)
+      mainDir_1_1<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_1'
+      setwd(mainDir_1_1)
       # Run the following if doing this for the first time on devide: 
       # create list of folders that we want present 
       folders<-c('1-run_model', '2-run_opt', '3-env_loop', '4-opt_loop', '5-beh_loop')
@@ -1111,7 +1111,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
   #dev.new() # new window
   do.call('grid.arrange', c(optimization_1_1_plot_list, ncol=3)) # aggregate the plots 
   # Save the plots in the directories made above   
-  setwd(paste0(mainDir, '/4-opt_loop//')) # set current wd 
+  setwd(paste0(mainDir_1_1, '/4-opt_loop//')) # set current wd 
   dev.print(pdf, (paste0('MOD_1_1_opt_loop_Days=', days, '_N=', N, '_th-fr=', th_forage_fr, 'Daylight_h=', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
   # save the matrix with optimal values in a dataframe 
   write.csv(mat_max_survival_th_sc, (paste0('opt_loop_max_surv_sc_1_1_df',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
@@ -1135,6 +1135,10 @@ set_up_env<-function(days,N, env_type, daylight_h){
     # Run the model 1.1 with it 
     # Take those matrices and make the graph with the bheaviours
     # Also make a graph with the stomach content and fat reserves in it 
+        
+    #upload the latest opt_loop if needed
+        setwd( "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_1/4-opt_loop")
+        mat_max_survival_th_sc<-read.csv("opt_loop_max_surv_sc_1_1_df2023-03-10_11_45_37.csv")
     
     # Loop for environments 
     dev.new() # new image thingey if needed 
@@ -1951,6 +1955,11 @@ set_up_env<-function(days,N, env_type, daylight_h){
     #       Behaviour loop - SC-TH 1.2        # 
     ###########################################
   
+        
+        #upload the latest opt_loop if needed
+        setwd( "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_2/4-opt_loop")
+        mat_max_survival_th_fr<-read.csv("opt_loop_max_surv_fr_1_2_df2023-03-11_05_11_01.csv")
+        
     # Write the function 
     MOD_1_2_beh_loop_func<<-function(days, N, th_forage_sc, daylight_h, sim_type){
         # Open a new plotting area 
@@ -2935,6 +2944,11 @@ set_up_env<-function(days,N, env_type, daylight_h){
     #      Behaviour loop - SC-TH 1.3          # 
     ############################################
     
+    #upload the latest opt_loop if needed
+    setwd( "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_3/4-opt_loop")
+    mat_max_survival_th_sc1_sc2<-read.csv("opt_loop_max_surv_sc1_sc2_1_3_df2023-03-12_15_25_02.csv")
+    
+    
     # Write the function 
     MOD_1_3_beh_loop_func<<-function(days, N, th_forage_fr, daylight_h, sim_type){
       # Open a new plotting area 
@@ -3882,6 +3896,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
     ############################################
     #      Behaviour loop - FR-TH 1.4          # 
     ############################################
+          #upload the latest opt_loop if needed
+          setwd( "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_4/4-opt_loop")
+          mat_max_survival_th_fr1_fr2<-read.csv("max_surv_matrix_1_4_2023-03-16_18_39_23.csv")
           
           # Write the function 
           MOD_1_4_beh_loop_func<<-function(days, N, th_forage_sc, daylight_h, sim_type){
