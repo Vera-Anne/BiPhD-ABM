@@ -2164,8 +2164,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
     ################################
     # Set up the main directory for where you want the figures saved 
     # This can be replaced by any folder you have on your computer (just make sure you have continuous connection if its a webfolder)
-    mainDir<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_3'
-    setwd(mainDir)
+    mainDir_1_3<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_3'
+    setwd(mainDir_1_3)
     # Run the following if doing this for the first time on devide: 
     # create list of folders that we want present 
     folders<-c('1-run_model', '2-run_opt', '3-env_loop', '4-opt_loop', '5-beh_loop')
@@ -2955,7 +2955,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
         mat_cur_perc_sleep<<-matrix(NA, TS, 1)
         mat_cur_eat_hoard<<-matrix(NA, TS, 1)
         mat_cur_retrieve<<-matrix(NA, TS, 1)
-        
+        mat_cur_eat<<-matrix(NA, TS, 1)
         # indicate the current environment
         cur_env_type<<-i
         
@@ -3014,13 +3014,15 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   mat_cur_eat_hoard[j,1]<<-((total_eat_hoard[1,j]/total_alive[1,j])*100)
                   # retrieving 
                   mat_cur_retrieve[j,1]<<-((total_retrieve[1,j]/total_alive[1,j])*100)
+                  # eating
+                  mat_cur_eat[j,1]<<-((total_eat[1,j]/total_alive[1,j])*100)
                 }
                 # Add column with numbers 
                 timesteps<<-1:TS
                 # put them on a daily scale 
                 timesteps_dayscale<<-timesteps%%72
                 # Attach matrices 
-                mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, timesteps_dayscale)
+                mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, mat_cur_eat, timesteps_dayscale)
                 # turn to df 
                 df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
                 # set names 
@@ -3029,12 +3031,14 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 colnames(df_perc_cur_env)[3]<<-'sleep'
                 colnames(df_perc_cur_env)[4]<<-'eat_hoard'
                 colnames(df_perc_cur_env)[5]<<-'retrieve'
+                colnames(df_perc_cur_env)[6]<<-'eat'
                 # now start grouping 
-                rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
-                forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
-                sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
-                eat_hoard_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(eat_hoard))
-                retrieve_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(retrieve))
+                rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(rest))) NA_real_ else mean(rest, na.rm = T))
+                forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(forage))) NA_real_ else mean(forage, na.rm = T))
+                sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(sleep))) NA_real_ else mean(sleep, na.rm = T))
+                eat_hoard_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(eat_hoard))) NA_real_ else mean(eat_hoard, na.rm = T))
+                retrieve_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(retrieve))) NA_real_ else mean(retrieve, na.rm = T))
+                eat_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(eat))) NA_real_ else mean(eat, na.rm = T))
                 
                 # add group
                 rest_perc$beh<<-rep('rest')
@@ -3042,9 +3046,10 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 sleep_perc$beh<<-rep('sleep')
                 eat_hoard_perc$beh<<-rep('eat_hoard')
                 retrieve_perc$beh<<-rep('retrieve')
+                eat_perc$beh<<-rep('eat')
                 
                 # make new dataframe 
-                df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc, eat_hoard_perc, retrieve_perc)
+                df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc, eat_hoard_perc, retrieve_perc, eat_perc)
                 # add column with the environment number 
                 df_for_chart$env<<-rep(i, times=(nrow(df_for_chart)))
                 # Ideally, I'd store this in some sort of list so I can access it afterwards 
@@ -3087,8 +3092,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 colnames(fr_sc_graph)[2]<<-'sc'
                 # start grouping
                 # now start grouping
-                fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(fr))
-                sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(sc))
+                fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(fr))) NA_real_ else mean(fr, na.rm = T))
+                sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(sc))) NA_real_ else mean(sc, na.rm = T))
                 # add group
                 fr_grouped$type<<-rep('fr')
                 sc_grouped$type<<-rep('sc')
@@ -3127,7 +3132,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 
       } # END FOR LOOP ENVIRONTMENTS 
       # save the dataframes 
-      setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+      setwd(paste0(mainDir_1_3, '/5-beh_loop//')) # set current wd 
       # save the total dataframe for survival:
       write.csv(survival_df_1_3, (paste0('beh_loop_surv_1_3_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       write.csv(beh_df_1_3, (paste0('beh_loop_beh_1_3_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
@@ -3898,6 +3903,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
               mat_cur_perc_sleep<<-matrix(NA, TS, 1)
               mat_cur_eat_hoard<<-matrix(NA, TS, 1)
               mat_cur_retrieve<<-matrix(NA, TS, 1)
+              mat_cur_eat<<-matrix(NA, TS,1)
+          
               
               
               # indicate the current environment
@@ -3958,13 +3965,15 @@ set_up_env<-function(days,N, env_type, daylight_h){
                         mat_cur_eat_hoard[j,1]<<-((total_eat_hoard[1,j]/total_alive[1,j])*100)
                         # retrieving percentage 
                         mat_cur_retrieve[j,1]<<-((total_retrieve[1,j]/total_alive[1,j])*100)
+                        # just eating percentage 
+                        mat_cur_eat[j,1]<<-((total_eat[1,j]/total_alive[1,j]*100))
                       }
                       # Add column with numbers 
                       timesteps<<-1:TS
                       # put them on a daily scale 
                       timesteps_dayscale<<-timesteps%%72
                       # Attach matrices 
-                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, timesteps_dayscale)
+                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, mat_cur_eat, timesteps_dayscale)
                       # turn to df 
                       df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
                       # set names 
@@ -3973,12 +3982,15 @@ set_up_env<-function(days,N, env_type, daylight_h){
                       colnames(df_perc_cur_env)[3]<<-'sleep'
                       colnames(df_perc_cur_env)[4]<<-'eat_hoard'
                       colnames(df_perc_cur_env)[5]<<-'retrieve'
+                      colnames(df_perc_cur_env)[6]<<-'eat'
                       # now start grouping 
-                      rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
-                      forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
-                      sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
-                      eat_hoard_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(eat_hoard))
-                      retrieve_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(retrieve))
+                      rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(rest))) NA_real_ else mean(rest, na.rm = T))
+                      forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(forage))) NA_real_ else mean(forage, na.rm = T))
+                      sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(sleep))) NA_real_ else mean(sleep, na.rm = T))
+                      eat_hoard_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(eat_hoard))) NA_real_ else mean(eat_hoard, na.rm = T))
+                      retrieve_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(retrieve))) NA_real_ else mean(retrieve, na.rm = T))
+                      eat_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(eat))) NA_real_ else mean(eat, na.rm = T))
+                      
                       
                       # add group
                       rest_perc$beh<<-rep('rest')
@@ -3986,8 +3998,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
                       sleep_perc$beh<<-rep('sleep')
                       eat_hoard_perc$beh<<-rep('eat_hoard')
                       retrieve_perc$beh<<-rep('retrieve')
+                      eat_perc$beh<<-rep('eat')
                       # make new dataframe 
-                      df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc, eat_hoard_perc, retrieve_perc)
+                      df_for_chart<<-rbind(rest_perc, forage_perc, sleep_perc, eat_hoard_perc, retrieve_perc, eat_perc)
                       # add column with the environment number 
                       df_for_chart$env<<-rep(i, times=(nrow(df_for_chart)))
                       # Ideally, I'd store this in some sort of list so I can access it afterwards 
@@ -4030,8 +4043,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   colnames(fr_sc_graph)[2]<<-'sc'
                   # start grouping
                   # now start grouping
-                  fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(fr))
-                  sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(sc))
+                  fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(fr))) NA_real_ else mean(fr, na.rm = T))
+                  sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(sc))) NA_real_ else mean(sc, na.rm = T))
                   # add group
                   fr_grouped$type<<-rep('fr')
                   sc_grouped$type<<-rep('sc')
@@ -4078,6 +4091,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
             
             
           } # end function MOD 1.4 behaviour loop 
+          
+          # load in the latest op loop
+          #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Figures/5-combi_model/MOD_1_3/5-beh_loop")
           
               # Run it 
               MOD_1_4_beh_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
