@@ -1220,9 +1220,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
               colnames(df_perc_cur_env)[3]<<-'sleep'
          
               # now start grouping 
-              rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
-              forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
-              sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
+              rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(rest))) NA_real_ else mean(rest, na.rm = T))
+              forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(forage))) NA_real_ else mean(forage, na.rm = T))
+              sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(sleep))) NA_real_ else mean(sleep, na.rm = T))
               # add group
               rest_perc$beh<<-rep('rest')
               forage_perc$beh<<-rep('forage')
@@ -1270,8 +1270,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
               colnames(fr_sc_graph)[2]<<-'sc'
               # start grouping
               # now start grouping
-              fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(fr))
-              sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(sc))
+              fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(fr))) NA_real_ else mean(fr, na.rm = T))
+              sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(sc))) NA_real_ else mean(sc, na.rm = T))
               # add group
               fr_grouped$type<<-rep('fr')
               sc_grouped$type<<-rep('sc')
@@ -2034,9 +2034,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
                 colnames(df_perc_cur_env)[2]<<-'forage'
                 colnames(df_perc_cur_env)[3]<<-'sleep'
                 # now start grouping 
-                rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(rest))
-                forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(forage))
-                sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m=mean(sleep))
+                rest_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(rest))) NA_real_ else mean(rest, na.rm = T))
+                forage_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(forage))) NA_real_ else mean(forage, na.rm = T))
+                sleep_perc<<-group_by(df_perc_cur_env, timesteps_dayscale) %>% summarize (m= if(all(is.na(sleep))) NA_real_ else mean(sleep, na.rm = T))
                 # add group
                 rest_perc$beh<<-rep('rest')
                 forage_perc$beh<<-rep('forage')
@@ -2086,8 +2086,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
               colnames(fr_sc_graph)[2]<<-'sc'
               # start grouping
               # now start grouping
-              fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(fr))
-              sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m=mean(sc))
+              fr_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(fr))) NA_real_ else mean(fr, na.rm = T))
+              sc_grouped<<-group_by(fr_sc_graph, timesteps_dayscale) %>% summarize (m= if(all(is.na(sc))) NA_real_ else mean(sc, na.rm = T))
               # add group
               fr_grouped$type<<-rep('fr')
               sc_grouped$type<<-rep('sc')
