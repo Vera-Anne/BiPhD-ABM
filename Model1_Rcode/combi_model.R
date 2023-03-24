@@ -285,7 +285,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
 # Quick test of the function 
 ######
 # This code was used to check if the means are correct and if the distributions look like what they're supposed to. 
-    # 
+
     # for (l in 1:1000){
     #   if (l==1){
     #     big_list<<-list()
@@ -295,7 +295,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     #         if (k==1){
     #           forage_list_temp<<-list()
     #         }
-    #         forage_function(num_food_mean = 3, prob_b_forage = 0.5, b_size = 24)
+    #         forage_function(num_food_mean = 3, prob_b_forage = 0, b_size = 24)
     #         forage_list_temp<<-append(forage_list_temp, food_item_found)
     # 
     #       }
@@ -310,7 +310,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     #       forage_hist<<- ggplot(forage_table) +
     #         geom_bar(aes(x=items, y=Freq, fill=TRUE), stat="identity")+
     #         scale_fill_brewer(palette='Set3')+
-    #         ylim (0, 400)+
+    #         ylim (0, 500)+
     #         ggtitle(label = paste('Frequency of Number of Items found (1000 samples), mean = ', cur_mean ))
     #       forage_hist
     #       big_list<<-append(big_list, cur_mean)
@@ -323,7 +323,7 @@ forage_function<-function(num_food_mean, prob_b_forage, b_size){
     # big_list<<-t(big_list)
     # mean<-mean(big_list)
     # print(paste('The mean for 1000 runs of 1000 samples = ', mean))
-
+    # 
 
 ##################################
 #  set-up environment function   #
@@ -335,7 +335,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
   # PLOTTING PARAMETERS 
   # Want to plot some initial value graphs? 
   # 1 for yes, 0 for no 
-  plot_init_value<<-0
+  plot_init_value<<-1
   plot_interval<<-100   # every x timestep a dot on the graph is added 
   # Sets you up for a 6 hour day 
   
@@ -1312,9 +1312,9 @@ set_up_env<-function(days,N, env_type, daylight_h){
       } # END FOR LOOP ENVIRONTMENTS 
       
       # save the dataframes 
-      setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
+      setwd(paste0(mainDir_1_1, '/5-beh_loop//')) # set current wd 
       # save the total dataframe for survival:
-      write.csv(survival_df_1_1, (paste0('beh_loop_surv_1_1_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+      write.csv(survival_df_1_1, (paste0('beh_loop_surv_1_1_df_N', N, 'D', days,'_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       write.csv(beh_df_1_1, (paste0('beh_loop_beh_1_1_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       write.csv(sc_fr_df_1_1, (paste0('beh_loop_sc_fr_1_1_df_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
       
@@ -1322,7 +1322,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end function MOD 1.1 behaviour loop 
     
         # Run it 
-        MOD_1_1_beh_loop_func(days = 30, N = 1000, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
+        MOD_1_1_beh_loop_func(days = 3, N = 1000, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
         
         
         # Plot all 3 the graph panels
@@ -2145,7 +2145,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
       } # end function MOD 1.2 behaviour loop 
       
         # Run it 
-        MOD_1_2_beh_loop_func(days = 30, N = 1000, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
+        MOD_1_2_beh_loop_func(days = 3, N = 1000, th_forage_sc = 0.2, daylight_h = 8, sim_type = 'beh_loop')
       
         # Plot all 3 the graph panels
         setwd(paste0(mainDir_1_2, '/5-beh_loop//')) # set current wd 
@@ -2693,7 +2693,11 @@ set_up_env<-function(days,N, env_type, daylight_h){
     
         # Run it
         dev.new()
-        MOD_1_3_func(days=30, N=100, env_type=8, th_forage_sc1=0.3, th_forage_sc2=0.1, th_forage_fr=1,  daylight_h=8, sim_type = 'run_model')
+        MOD_1_3_func(days=30, N=100, env_type=6, th_forage_sc1=0.0202020202020202, th_forage_sc2=0.0202020202020202, th_forage_fr=1,  daylight_h=8, sim_type = 'run_model')
+        
+        
+        
+        
         
     # Write function for optimisation 
     MOD_1_3_opt_thsc1_thsc2<-function(days, N, env_type, th_sc1_min, th_sc1_max, th_sc2_min, th_sc2_max, daylight_h, sim_type){
@@ -2707,6 +2711,8 @@ set_up_env<-function(days,N, env_type, daylight_h){
       # show that optimizatio started 
       print(paste0('Optimizing MOD 1.3 for sc-th1 and sc-th2' ))
       
+      
+      # use linspace and random.seed to fix this here 
       # creates 100 values between min and max, evenly spaced 
       th_forage_sc1<<-linspace(th_sc1_min, th_sc1_max, n=100)
       th_forage_sc2<<-linspace(th_sc2_min, th_sc2_max, n=100)
@@ -2796,7 +2802,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
     } # end of optimization function for hoarding bird th-sc1 and th-sc2
     
         # run it 
-        MOD_1_3_opt_thsc1_thsc2(days=30, N=100, env_type=8, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'run_opt')
+        MOD_1_3_opt_thsc1_thsc2(days=30, N=100, env_type=13, th_sc1_min=0, th_sc1_max=0.4, th_sc2_min=0, th_sc2_max=0.4, daylight_h=8, sim_type = 'run_opt')
         
     ###############################
     #    Environments loop  1.3   # 
@@ -3158,7 +3164,6 @@ set_up_env<-function(days,N, env_type, daylight_h){
     
         # Run it 
         MOD_1_3_beh_loop_func(days = 30, N = 1000, th_forage_fr = 1, daylight_h = 8, sim_type = 'beh_loop')
-        
         
         # Plot all 3 the graph panels
         setwd(paste0(mainDir, '/5-beh_loop//')) # set current wd 
@@ -3985,12 +3990,13 @@ set_up_env<-function(days,N, env_type, daylight_h){
                         # just eating percentage 
                         mat_cur_eat[j,1]<<-((total_eat[1,j]/total_alive[1,j]*100))
                       }
+                      
                       # Add column with numbers 
                       timesteps<<-1:TS
                       # put them on a daily scale 
                       timesteps_dayscale<<-timesteps%%72
                       # Attach matrices 
-                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, mat_cur_eat, timesteps_dayscale)
+                      mat_perc_cur_env<<-cbind(mat_cur_perc_rest, mat_cur_perc_for, mat_cur_perc_sleep, mat_cur_eat_hoard, mat_cur_retrieve, mat_cur_eat, timesteps_dayscale, timesteps)
                       # turn to df 
                       df_perc_cur_env<<-as.data.frame(mat_perc_cur_env)
                       # set names 
@@ -4051,7 +4057,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
               
               # 3. GRAPHS TO SHOW THE FR AND SC TRAJECTORIES 
                   # create a df
-                  fr_sc_graph<<-rbind(fr_mean, sc_mean, timesteps_dayscale)
+                  fr_sc_graph<<-rbind(fr_mean, sc_mean, timesteps_dayscale, timesteps)
                   fr_sc_graph<<-t(fr_sc_graph)
                   # turn to df
                   fr_sc_graph<<-as.data.frame(fr_sc_graph)
@@ -4088,6 +4094,24 @@ set_up_env<-function(days,N, env_type, daylight_h){
                   fr_sc_plot_list<<-append(fr_sc_plot_list, list(cur_fr_sc_plot))
                   # save dataframe 
                   #write.csv(df_for_sc_fr_chart, (paste0('beh_loop_sc_fr_1_4_df_env', i, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv')), row.names=FALSE)
+                  
+                  
+                  # Now have a look at the last 10 days
+                  # should only run if the number of days is high enough
+                  # 
+                  # if (days >=10){
+                  #   # Take the original dataframe, that now has the timesteps (not dayscale) on it
+                  #   # select the last 10 days 
+                  #   
+                  #   # calculate what they are first 
+                  #   lastDays<-subset(fr_sc_graph, fr_sc_graph$timesteps>=)
+                  # }
+                  # 
+                  
+                  
+                  
+                  
+                  
                   # append to the dataframe 
                   if (i==1){
                     sc_fr_df_1_4<<-df_for_sc_fr_chart
@@ -4120,7 +4144,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
             
               # set wd
               setwd(paste0(mainDir_1_4, '/5-beh_loop//')) # set current wd 
-              #dev.new()
+              dev.new()
               #par(mfrow=c(6,3))
               do.call('grid.arrange', c(survival_plot_list, ncol=3))
               dev.print(pdf, (paste0('beh_loop_surv_1_4',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.pdf')))
