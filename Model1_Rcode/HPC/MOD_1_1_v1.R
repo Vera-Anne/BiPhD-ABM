@@ -49,6 +49,10 @@ args<-commandArgs(trailingOnly=TRUE)
   th_forage_fr <-as.numeric(args[5])
   # Number of hours of daylight 
   daylight_h <- as.numeric(args[6])
+  # array number
+  ar_num<- as.numeric(args[7])
+  # OUTPUT DIR
+  out_dir<-args[8]
 
 #############################
 #    MODEL 1: 1 VARIABLE    # 
@@ -357,33 +361,37 @@ args<-commandArgs(trailingOnly=TRUE)
   
 # All timesteps have passed
 # Now  it is time to save the matrices as csvs 
+      
   
-  #setwd('C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Bin/')
+  # Code if you are not running in a loop 
+      #setwd('C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Bin/')
+      
+      # current date and time 
+      #cur_date<-format(Sys.time(), "%Y-%m-%d_%H_%M_%S") 
+      # dir.create(paste0('R_mat_', cur_date))
+      # setwd(paste0('R_mat_', cur_date))
   
-  # current date and time 
-  cur_date<-format(Sys.time(), "%Y-%m-%d_%H_%M_%S") 
-  dir.create(paste0('R_mat_', cur_date))
-  setwd(paste0('R_mat_', cur_date))
+  setwd(out_dir)
   
   # behaviours 
-  write.csv((as.data.frame(forage_count)), file=(paste0('mat_forage_', cur_date, '.csv')))
-  write.csv((as.data.frame(rest_count)), file=(paste0('mat_rest_', cur_date, '.csv')))
-  write.csv((as.data.frame(retrieve_count)), file=(paste0('mat_retrieved_', cur_date, '.csv')))
-  write.csv((as.data.frame(eat_hoard_count)), file=(paste0('mat_eat_hoard_', cur_date,'.csv')))
-  write.csv((as.data.frame(eat_count)), file=(paste0('mat_eat_', cur_date, '.csv')))
-  write.csv((as.data.frame(predation_count)), file=(paste0('mat_predated_', cur_date, '.csv')))
-  write.csv((as.data.frame(sleep_count)), file=(paste0('mat_sleep_', cur_date,'.csv')))
+  write.table(forage_count, file=(paste0('mat_forage', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(rest_count, file=(paste0('mat_rest', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(retrieve_count, file=(paste0('mat_retrieved', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(eat_hoard_count, file=(paste0('mat_eat_hoard', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(eat_count, file=(paste0('mat_eat', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(predation_count, file=(paste0('mat_predated', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(sleep_count, file=(paste0('mat_sleep', ar_num,'.csv')), col.names = FALSE, sep=",")
   
-  # agent owned variables 
-  write.csv((as.data.frame(mat_fr)), file=(paste0('mat_fat_reserve_', cur_date, '.csv')))
-  write.csv((as.data.frame(mat_sc)), file=(paste0('mat_stomach_content_', cur_date, '.csv')))
-  write.csv((as.data.frame(mat_mass)), file=(paste0('mat_mass_',cur_date,'.csv')))
-  write.csv((as.data.frame(mat_caches)), file=(paste0('mat_caches_', cur_date, '.csv')))
-  write.csv((as.data.frame(mat_alive)), file=(paste0('mat_alive_', cur_date, '.csv')))
-  write.csv((as.data.frame(mat_Pkill)), file=(paste0('mat_predRisk_', cur_date, '.csv')))
-  write.csv((as.data.frame(mat_find_food)), file=(paste0('mat_findFood_', cur_date, '.csv')))
-  
-  
+  # # agent owned variables 
+  write.table(mat_fr, file=(paste0('mat_fat_reserve', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(mat_sc, file=(paste0('mat_stomach_content', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(mat_mass, file=(paste0('mat_mass', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(mat_caches, file=(paste0('mat_caches', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(mat_alive, file=(paste0('mat_alive', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(mat_Pkill, file=(paste0('mat_predRisk', ar_num,'.csv')), col.names = FALSE, sep=",")
+  write.table(mat_find_food, file=(paste0('mat_findFood', ar_num,'.csv')), col.names = FALSE, sep=",")
+
+
   
   print(paste('The R script did run at', Sys.time()))
   
