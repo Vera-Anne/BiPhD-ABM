@@ -54,15 +54,10 @@ ar_num<- as.numeric(args[7])
 # OUTPUT DIR
 out_dir<-args[8]
 
-#############################
-#    MODEL 1: 1 VARIABLE    # 
-#############################
 
 #################################################################
-##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
+##     Model 1.2: Hoarding bird, Access to Stomach Content     ##
 #################################################################
-
-# Start the model 
 
 # Set up the environment 
 set_up_env(days,N, env_type, daylight_h)
@@ -75,12 +70,11 @@ set_up_env(days,N, env_type, daylight_h)
 for (t in 1:TS){
   
   # Set the current temperature 
-  temp_cur<-total_temp_profile[t]
-  
+  temp_cur<<-total_temp_profile[t]
   # Check if it is night or day 
   if ((t%%72)<= n_daylight_timestep){
     dayOrNight<-1                       # this means it is day 
-  } else {
+  } else{
     dayOrNight<-0                       # this means it is night 
     
   }
@@ -92,20 +86,20 @@ for (t in 1:TS){
   # now start a loop for every individual 
   for (i in (1:N)){
     
-    
     # Check if individual is alive? 
+    
     # in step 1 all birds are alive 
     if (t==1){
-      mat_alive[i,t]<- 1
-    } else if (mat_alive[i,(t-1)]==0){
+      mat_alive[i,t]<-1
+    }else if (mat_alive[i,(t-1)]==0){
       # if not step 1, check if bird was previously dead
       # if previously dead, it needs to be dead now 
       mat_alive[i,t]<-0
-    } else if (mat_fr[i,t]==0){
+    }else if (mat_fr[i,t]==0){
       # if not step 1 and not previously dead 
       # check if the bird should die now 
       mat_alive[i,t]<-0
-    } else {
+    }else{
       # in all other cases the bird is alive 
       mat_alive[i,t]<-1
     }
@@ -147,9 +141,6 @@ for (t in 1:TS){
         #   SLEEPING   # 
         ################
         
-        # code checking 
-        #print('a bird sleeps')
-        
         # set the sleeping matrix to 1 
         sleep_count[i,t]<-1
         # set the forage to 0
@@ -172,22 +163,28 @@ for (t in 1:TS){
         # Into the fat reserves 
         # and be burned depending on BMR-multi
         # in the ' Everyone '  part of the code below
+        
         # end of birds that are asleep   
-      } else {
+      } else{
         
         # NON SLEEPING BIRDS START HERE : >>>>>>>>>
         # set the sleeping matrix to 0 
         sleep_count[i,t]<-0
         
         # Check what behavior the bird should do if it is day 
-        # CHECK IF BIRD IS HUNGRY AND NEEDS FOOOD 
+        # CHECK IF BIRD IS HUNGRY AND NEEDS FOOD
+        # This is done for all hoarding and non-hoarding birds 
         
         # Time to forage: 
         
+        
         # Only access to stomach-content 
-        if ((mat_sc[i,t]) < th_forage_sc){
+        # The lowest threshold determines if the bird will retrieve 
+        # The hightes threshold determines if the bird will rest 
+        
+        if ((mat_sc[i,t]) <= th_forage_sc2){
           # If this is the case, the bird is hungry and needs to forage for food 
-          # Now, different things will happen for hoarding vs. non-hoarding birds 
+          # Resting is not an option here 
           
           #################
           #     FORAGE    # 
@@ -208,45 +205,136 @@ for (t in 1:TS){
           # Note: this is currently the same for all types of foraging
           Patt_cur<-Patt_for
           
-          # The non-hoarding birds can only 'eat' food they find. 
           
-          # Run the forage function 
-          # The outcome here is 'food_item_found'
-          forage_function(num_food_mean, prob_b_forage, b_size)
+          # START IF STATEMENT FOR HOARDING BIRDS           
           
-          # Pop this in the matrix (this is in number of items found)
-          mat_find_food[i,t]<-food_item_found
-          # convert to grams
-          food_item_found_gram<-(food_item_found*food_item)
+          # WHAT KIND OF FORAGING IS HAPPENING?
+          # 3 kinds of foraging are possible:
+          #       1. Retrieve stored item
+          #       2. Find new item and eat it (done after this)
+          #       3. Find new item and eat it till full, hoard after this
           
-          # Now, increase the stomach content
-          mat_sc[i,(t)]<-(mat_sc[i,t])+(food_item_found_gram)
-          # now check if this doesn't exceed the stomach size
-          # if so, set the stomach content to stomach size 
-          if (mat_sc[i,(t)]>stom_size){
-            mat_sc[i,(t)]<-stom_size
-          }
-          # Set the BMR to the right level: cost of foraging
-          # BMR-multi is not a global variable: stays local with the agent
-          BMR_multi<-8
-          #set the predation risk 
-          Patt_cur<-Patt_for
           
-          # update the eating-matrix 
-          # update the global counters 
-          eat_hoard_count[i,t]<-0
-          retrieve_count[i,t]<-0
-          eat_count[i,t]<-1
+          ####################
+          ##   RETRIEVING   ## 
+          ####################
           
-          # Stomach content is already updated 
-          # Update BMR multi
-          #BMR_multi<<-8
-          # ends the foraging for non hoarding birds statement 
-          # ends the foraging statement   
+          # retrieving happens when the stomach content is below the lowest threshold (sc-th1)
+          # The bird also needs to have the minimum number of caches to allow retrieval 
+          if ((mat_sc[i,t]<=th_forage_sc1) && (mat_caches[i,t]>retrieve_min)){
+            
+            # You can retrieve now 
+            # note that birds that have a sc too high will forage
+            # The same goes for birds that don't have enough caches to go and retrieve 
+            
+            # The bird will retrieve: update global counters
+            retrieve_count[i, t]<-1
+            eat_count[i,t]<-0
+            eat_hoard_count[i,t]<-0
+            
+            # determine how many caches are retrieved
+            cur_stomach_space<-(stom_size-mat_sc[i,t])                     # What is the space left in the stomach?
+            cur_caches_retrieved<-((round(cur_stomach_space/food_item)))   # how many caches to fill this back up
+            mat_caches[i,t]<-(mat_caches[i, (t)]-cur_caches_retrieved)     # update the number of cahches that are left
+            
+            # update the stomach content
+            food_g_retrieved<-cur_caches_retrieved*food_item               # retrieved food in grams
+            mat_sc[i,t]<-((mat_sc[i,t])+food_g_retrieved)                  # Add the food to the stomach content
+            
+            
+            # set 'food_cur' to correct value in grams
+            # set new BMR multi for retriaval behaviour
+            # I need to check if this should be depending on the number of caches that are retrieved
+            BMR_multi<-8
+            
+          } else{
+            
+            #######################
+            #   NORMAL FORAGING   #
+            #######################
+            
+            # If the bird is foraging, but not retrieving, it will eat-hoard or eat the food
+            # Either way, it will need to find food first
+            
+            # code checking
+            #print(paste('bird ', N, 'is foraging not retrieving'))
+            
+            # update the global counting variable
+            retrieve_count[i,t]<-0
+            
+            # Run the forage function and decide what number of items is found
+            # The outcoem here is 'food_item_found'
+            forage_function(num_food_mean, prob_b_forage, b_size)
+            
+            # Pop this in the matrix (this is in number of items found)
+            mat_find_food[i,t]<-food_item_found
+            # convert to grams
+            food_item_found_gram<-(food_item_found*food_item)
+            
+            # Update agent-owned variables:
+            # First, increase the stomach content with whatever food is found
+            mat_sc[i,(t)]<-(mat_sc[i,t])+(food_item_found_gram)
+            
+            # now check if this exceeds the stomach size
+            if (mat_sc[i,(t)]>stom_size){
+              # This means the bird found more than it can eat
+              # It will hoard the surpluss
+              
+              ######################
+              #    EAT-HOARD       #
+              ######################
+              
+              # code checking
+              #print(paste0('bird ', i, ' is eat-hoarding'))
+              
+              # update the global counters
+              eat_hoard_count[i,t]<-1
+              eat_count[i,t]<-0
+              
+              # update agent-owned variables
+              hoard_surplus<-floor((mat_sc[i,(t)]-stom_size)/food_item)  # Determine The surplus available in whole food items
+              mat_sc[i,(t)]<-stom_size                                   # The stomach is set to the stomach size (full)
+              mat_caches[i,t]<-(mat_caches[i,t])+hoard_surplus
+              
+              # update BMR multi
+              BMR_multi<-8
+              
+              # end of eat-hoard if-statement  
+            } else{
+              # This means the food eaten does not exceed teh stomach size
+              # no hoarding required, the bird will just eat
+              
+              #############
+              #   EAT     #
+              #############
+              
+              # code cdhecking
+              #print(paste0('bird ', i, ' is eating'))
+              # update the global counters
+              eat_hoard_count[i,t]<-0
+              eat_count[i,t]<-1
+              
+              # Stomach content is already updated
+              
+              # Update BMR multi
+              BMR_multi<-8
+              
+            } # end of the eat statement
+            
+          } # end of forage but not retrieving statement
+          
+          # ends the if hoard_on == 1 statement (fOR ALL BIRDS IN MODEL 1.3 TRUE)
+          
+          # NOW THE SECTION FOR THE NON-HOARDING BIRDS 
+          # Don't forget to change the matrix names here: forage should be 'eat' now. 
+          
+          # ends the foraging code (below the sc-th2) 
         } else {
           ##################
           #    RESTING     # 
           ##################
+          # All birds of which the th-sc is above th2 should go rest 
+          
           # testing code 
           #print(paste('bird', i, ' is resting'))
           # SET COUNTING MATRICES 
@@ -267,7 +355,8 @@ for (t in 1:TS){
           Patt_cur<-Patt_rest
           
         } # end resting statement 
-      } # end of 'Time of day = day ' statement 
+        
+      } # end of 'Time of day = day ' statement (non-sleeping birds )
       
       
       ###################
@@ -287,7 +376,7 @@ for (t in 1:TS){
         mat_alive[i,t]<-0                                                # Set the matrix to 'dead' 
         predation_count[i,t]<-1
         #print(paste0('a bird ', 'i=', i , ' got eaten at t=', t))
-      } else {
+      } else{
         # Surviving birds should update their values: 
         predation_count[i,t]<-0
         
@@ -300,8 +389,8 @@ for (t in 1:TS){
           mat_sc[i,(t)]<-(mat_sc[i,(t)]-stom_to_fat)
           # the new fat reserve has not been determined yet
           mat_fr[i,(t)]<-(mat_fr[i,t]+stom_to_fat)
-        } else {
-          mat_fr[i,t]<-(mat_fr[i,t]+mat_sc[i,t])   # move whatever is left in the stomach to fat 
+        }else{
+          mat_fr[i,t]<-(mat_fr[i,t]+mat_sc[i,t])    # move whatever is left in the stomach to fat 
           mat_sc[i,t]<-0                           # set the stomach content to 0 
         }
         
@@ -351,10 +440,8 @@ for (t in 1:TS){
     
   } # end of loop for each individual 
   
-  
-} # end timestep loop
-
-
+ 
+} # end of big timestep loop 
 
 
 ##################################
@@ -396,10 +483,4 @@ write.table(mat_find_food, file=(paste0('mat_findFood', ar_num,'.csv')), col.nam
 
 
 print(paste('The R script did run at', Sys.time()))
-
-
-
-
-
-
 
