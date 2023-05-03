@@ -336,15 +336,15 @@ set_up_env<-function(days,N, env_type, daylight_h){
   
   
   # total number of birds doing behaviours (Global)
-  total_forage<<-matrix(NA, 1, TS)                  # total number of birds foraging each timestep
-  total_rest<<-matrix(NA,1, TS)                     # total number of birds resting each timestep 
-  total_alive<<-matrix(NA,1,TS)                     # total number of birds alive each timestep 
-  total_retrieve<<-matrix(NA, 1, TS)                # total number of birds retrieving each timestep
-  total_eat_hoard<<-matrix(NA, 1, TS)              # total number of birds eat-hoarding in each timestep
-  total_eat<<-matrix(NA, 1, TS)                    # total number of birds eating in each timestep 
-  total_predated<<-matrix(NA, 1, TS)
-  total_sleep<<-matrix(NA,1,TS)
-  
+  # total_forage<<-matrix(NA, 1, TS)                  # total number of birds foraging each timestep
+  # total_rest<<-matrix(NA,1, TS)                     # total number of birds resting each timestep 
+  # total_alive<<-matrix(NA,1,TS)                     # total number of birds alive each timestep 
+  # total_retrieve<<-matrix(NA, 1, TS)                # total number of birds retrieving each timestep
+  # total_eat_hoard<<-matrix(NA, 1, TS)              # total number of birds eat-hoarding in each timestep
+  # total_eat<<-matrix(NA, 1, TS)                    # total number of birds eating in each timestep 
+  # total_predated<<-matrix(NA, 1, TS)
+  # total_sleep<<-matrix(NA,1,TS)
+  # 
 } # end set-up function 
 
 #################################
@@ -533,6 +533,108 @@ rest_func<-function(t,i){
   eat_hoard_count[i,t]<<-0
   eat_count[i,t]<<-0
 } # end of the resting function 
+
+####################
+##   RETRIEVING   ## 
+####################
+
+retrieve_func<-function(t,i){
+  # retrieving happens when the stomach content is below the lowest threshold (sc-th1)
+  # The bird also needs to have the minimum number of caches to allow retrieval 
+
+  # determine how many caches are retrieved
+  cur_stomach_space<<-(stom_size-mat_sc[i,t])                     # What is the space left in the stomach?
+  cur_caches_retrieved<<-((round(cur_stomach_space/food_item)))   # how many caches to fill this back up
+  mat_caches[i,t]<<-(mat_caches[i, (t)]-cur_caches_retrieved)     # update the number of cahches that are left
+  
+  # update the stomach content
+  food_g_retrieved<<-cur_caches_retrieved*food_item               # retrieved food in grams
+  mat_sc[i,t]<<-((mat_sc[i,t])+food_g_retrieved)                  # Add the food to the stomach content
+  
+  # set new BMR multi for retrieval behaviour
+  BMR_multi<<-8
+  
+  # Set the predation risk 
+  Patt_cur<<-Patt_for
+  
+  # Update the retrieving matrix 
+  retrieve_count[i,t]<<-1
+  # Update the other matrices 
+  forage_count[i,t]<<-0
+  rest_count[i,t]<<-0
+  eat_count[i,t]<<-0
+  eat_hoard_count[i,t]<<-0
+  
+  
+} # End of retrieving function 
+
+#############################
+#  LEFTOVER HOARD FUNCTION  #
+#############################
+
+eat_hoard_func<-function(t,i){
+  
+  # Fill the stomach with whatever food items are found 
+  mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
+  
+  # now check if this exceeds the stomach size
+  if (mat_sc[i,(t)]>stom_size){
+    # This means the bird found more than it can eat
+    # It will hoard the surplus
+    
+    ######################
+    #    EAT-HOARD       #
+    ######################
+    
+    # update agent-owned variables
+    hoard_surplus<<-floor((mat_sc[i,(t)]-stom_size)/food_item)  # Determine The surplus available in whole food items
+    mat_sc[i,(t)]<<-stom_size                                   # The stomach is set to the stomach size (full)
+    mat_caches[i,t]<<-(mat_caches[i,t])+hoard_surplus
+    
+    # update BMR multi
+    BMR_multi<<-8
+    
+    # Set the predation risk 
+    Patt_cur<<-Patt_for
+    
+    # update the eat-hoard matrix 
+    eat_hoard_count[i,t]<<-1
+    
+    # update the global counters
+    eat_count[i,t]<<-0
+    rest_count[i,t]<<-0
+    eat_count[i,t]<<-0
+    retrieve_count[i,t]<<-0
+  } else {
+    
+    ################
+    #  EAT NORMAL  # 
+    ################
+    
+    # The food is already in the stomach 
+    # update BMR multi
+    BMR_multi<<-8
+    
+    # Set the predation risk 
+    Patt_cur<<-Patt_for
+    
+    # update the eat  matrix 
+    eat_count[i,t]<<-1 
+    
+    # update the global counters
+    eat_hoard_count[i,t]<<-0
+    rest_count[i,t]<<-0
+    eat_count[i,t]<<-0
+    retrieve_count[i,t]<<-0
+    
+  }
+    
+
+
+    
+  
+  
+} # end of the eat-hoard function 
 
 ##########################
 #   PREDATION FUNCTION   # 
