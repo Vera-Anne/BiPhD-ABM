@@ -50,8 +50,8 @@ N <- as.numeric(args[2])
 # Type of environment (there are 18)
 env_type <- as.numeric(args[3])
 # Threshold stomach-content below which you forage 
-th_forage_sc1 <- as.numeric(args[4])   # Threshold 1 = above this you will rest 
-th_forage_sc2<- as.numeric(args[5])    # Threshold 2 = below this you will retrieve 
+th_forage_sc1 <- as.numeric(args[4])   # Threshold 1 = below this you will retrieve 
+th_forage_sc2<- as.numeric(args[5])    # Threshold 2 = above this you will rest 
 # Threshold fat-reserve below which you forage  (not relevant in model 1.1)
 th_forage_fr <-as.numeric(args[6])
 # Number of hours of daylight 
