@@ -333,6 +333,7 @@ set_up_env<-function(days,N, env_type, daylight_h){
   eat_hoard_count<<-matrix(NA, N, TS)
   eat_count<<-matrix(NA, N, TS)
   predation_count<<-matrix(NA, N,TS)                               # Keep track of how many birds have actually been killed by predation
+  hoard_count<<-matrix(NA, N, TS)
   
   
   # total number of birds doing behaviours (Global)
@@ -438,6 +439,8 @@ sleep_func<-function(t, i){
         eat_hoard_count[i,t]<<-0
         # set the eating matrix to 0 
         eat_count[i,t]<<-0
+        # set the direct hoarding matrix to 0
+        hoard_count[i,t]<<-0
         
         # set the BMR-multi
         BMR_multi<<-1
@@ -510,6 +513,7 @@ eat_func<-function(t ,i){
   eat_hoard_count[i,t]<<-0
   retrieve_count[i,t]<<-0
   rest_count[i,t]<<-0
+  hoard_count[i,t]<<-0
   
 } # end of eating function 
   
@@ -532,6 +536,7 @@ rest_func<-function(t,i){
   retrieve_count[i,t]<<-0
   eat_hoard_count[i,t]<<-0
   eat_count[i,t]<<-0
+  hoard_count[i,t]<<-0
 } # end of the resting function 
 
 ####################
@@ -564,6 +569,7 @@ retrieve_func<-function(t,i){
   rest_count[i,t]<<-0
   eat_count[i,t]<<-0
   eat_hoard_count[i,t]<<-0
+  hoard_count[i,t]<<-0
   
   
 } # End of retrieving function 
@@ -605,6 +611,7 @@ eat_hoard_func<-function(t,i){
     rest_count[i,t]<<-0
     eat_count[i,t]<<-0
     retrieve_count[i,t]<<-0
+    hoard_count[i,t]<<-0
   } else {
     
     ################
@@ -626,15 +633,18 @@ eat_hoard_func<-function(t,i){
     rest_count[i,t]<<-0
     eat_count[i,t]<<-0
     retrieve_count[i,t]<<-0
+    hoard_count[i,t]<<-0
     
   }
     
-
-
-    
-  
-  
 } # end of the eat-hoard function 
+
+#############################
+#   DIRECT HOARD FUNCTION   #
+#############################
+
+
+
 
 ##########################
 #   PREDATION FUNCTION   # 
