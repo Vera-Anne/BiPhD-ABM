@@ -221,6 +221,7 @@ write.table(eat_hoard_count, file=(paste0('mat_eat_hoard', ar_num,'.csv')), col.
 write.table(eat_count, file=(paste0('mat_eat', ar_num,'.csv')), col.names = FALSE, sep=",")
 write.table(predation_count, file=(paste0('mat_predated', ar_num,'.csv')), col.names = FALSE, sep=",")
 write.table(sleep_count, file=(paste0('mat_sleep', ar_num,'.csv')), col.names = FALSE, sep=",")
+write.table(hoard_count, file=(paste0('mat_dir_hoard', ar_num,'.csv')), col.names = FALSE, sep=",")
 
 # # agent owned variables 
 write.table(mat_fr, file=(paste0('mat_fat_reserve', ar_num,'.csv')), col.names = FALSE, sep=",")
