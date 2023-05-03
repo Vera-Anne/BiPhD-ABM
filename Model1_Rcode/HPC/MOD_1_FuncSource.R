@@ -643,7 +643,27 @@ eat_hoard_func<-function(t,i){
 #   DIRECT HOARD FUNCTION   #
 #############################
 
-
+dir_hoard_func<-function(t,i){
+  # Just add the number of food items that were found to the matrix with caches in 
+  mat_caches[i,t]<<-((mat_caches[i,t])+food_item_found)
+  
+  # update BMR multi
+  BMR_multi<<-8
+  
+  # Set the predation risk 
+  Patt_cur<<-Patt_for
+  
+  # update the eat-hoard matrix 
+  hoard_count[i,t]<<-1
+  
+  # update the global counters
+  eat_count[i,t]<<-0
+  rest_count[i,t]<<-0
+  eat_count[i,t]<<-0
+  retrieve_count[i,t]<<-0
+  eat_hoard_count[i,t]<<-0
+  
+} # end of the direct hoarding function 
 
 
 ##########################
