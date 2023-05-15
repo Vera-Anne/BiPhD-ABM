@@ -30,6 +30,8 @@ library(viridis)
 library(foreach)
 library(doParallel)
 library(purrr)
+library(beepr)
+library(tidyr)
 
 # link to the function file 
 setwd("C:/Local_R/BiPhD-ABM/Model1_Rcode/")
@@ -76,7 +78,7 @@ set_up_func_general(days, env_type, daylight_h)
 # The individual loops need to start now
 # These should be parallelised 
 
-test_outcome_1_1<- foreach(icount(N), .packages = "truncnorm") %do% {
+outcome_1_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
   
   # Do a setup for the individual bird
   # This includes the individual temperature pattern 
@@ -187,97 +189,130 @@ test_outcome_1_1<- foreach(icount(N), .packages = "truncnorm") %do% {
   
 } # end timestep loop
   
-  
-  
-  
-  # I don't think this is good, as the tasks run parallel, I should only bind things togehter once everything is done running 
-  
-        
-        # tot_eat_count<-rbind(tot_eat_count, eat_count)
-        # tot_eat_hoard_count<-rbind(tot_eat_hoard_count, eat_hoard_count)
-        # tot_forage_count<-rbind(tot_forage_count, forage_count)
-        # tot_hoard_count<-rbind(tot_hoard_count, hoard_count)
-        # tot_mat_alive<-rbind(tot_mat_alive, mat_alive)
-        # tot_mat_caches<-rbind(tot_mat_caches, mat_caches)
-        # tot_mat_find_food<-rbind(tot_mat_find_food, mat_find_food)
-        # tot_mat_fr<-rbind(tot_mat_fr, mat_fr)
-        # tot_mat_mass<-rbind(tot_mat_mass, mat_mass)
-        # tot_mat_sc<-rbind(tot_mat_sc, mat_sc)
-        # tot_mat_Pkill<-rbind(tot_mat_Pkill, mat_Pkill)
-        # tot_predation_count<-rbind(tot_predation_count, predation_count)
-  
-  
+
   # Alternatively, I could try to create lists with the output 
-  list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, mat_sc, mat_Pkill, predation_count)
+  list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, mat_Pkill, predation_count)
         
 } # end of the foreach loop (individuals) 
 
-
-
-
 # clean up cluster 
-#stopImplicitCluster()
+stopImplicitCluster()
 
 }) # ending system.time 
 
 
- for (j in 1:13) {
-   
-   if (j==1){
-     total_per_var<-data.frame()
-     list_of_df<-list()
-   }
-   
-   for (k in 1:N){
-     
-     total_per_var<-rbind(total_per_var, test_outcome_1_1[[k]][[j]])
-   }
-   
-   list_of_df<-append(list_of_df, list(total_per_var))
-   
- }
+#################################
+#  CONCATENATE THE DATAFRAMES   # 
+#################################
+
+# For each of teh 12 variables that we want the matrices off 
+system.time({
+for (k in 1:12){
+  if (k==1){
+    # create a clean list in the first round 
+    list_outcome_vars<-list()
+  }
+  # Create a dataframe from the first column of the total matrix 
+  cur_df<-as.data.frame(do.call(rbind, outcome_1_1[1:N, k]))
+  # add this to the empty list created 
+  list_outcome_vars<-append(list_outcome_vars, list(cur_df))
+}
+  
+  # Now name them correctly 
+  df_eat<-list_outcome_vars[[1]]
+  df_eat_hoard<-list_outcome_vars[[2]]
+  df_forage<-list_outcome_vars[[3]]
+  df_hoard<-list_outcome_vars[[4]]
+  df_alive<-list_outcome_vars[[5]]
+  df_caches<-list_outcome_vars[[6]]
+  df_find_food<-list_outcome_vars[[7]]
+  df_fr<-list_outcome_vars[[8]]
+  df_sc<-list_outcome_vars[[9]]
+  df_mass<-list_outcome_vars[[10]]
+  df_Pkill<-list_outcome_vars[[11]]
+  df_predation<-list_outcome_vars[[12]]
+
+}) # end of system time 
 
 
-
-
-
-test<-rbind(test_outcome_1_1[[1]][[1]], test_outcome_1_1[[2]][[1]])
-
-
-test<-lapply(seq_along(test_outcome_1_1))
-
-# create a list of dataframes
-#my_list <- list(data.frame(a = 1:3, b = 4:6), data.frame(a = 7:9, b = 10:12), data.frame(a = 13:15, b = 16:18))
-
-# concatenate the dataframes within each sub-list
-concatenated_list <- lapply(seq_along(test_outcome_1_1[[1]]), function(i) do.call(rbind, lapply(my_list, "[[", i)))
-
-# print the concatenated list
-print(concatenated_list)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-test<-test_outcome_1_1 %>%
-  bind_rows()
+# 
+# 
+# 
+# 
+# # This code might work, but it is way too slow 
+# system.time({
+# 
+# 
+#  for (j in 1:13) {
+#    
+#    if (j==1){
+#      
+#      list_of_df<-list()
+#    }
+#    
+#    for (k in 1:N){
+#      if (k==1){
+#        total_per_var<-data.frame()
+#      }
+#      
+#      total_per_var<-rbind(total_per_var, test_outcome_1_1[[k]][[j]])
+#    }
+#    
+#    list_of_df<-append(list_of_df, list(total_per_var))
+#    
+#  }
+# 
+#   
+# }) 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# #beep()
+# 
+# 
+# 
+# test<-rbind(test_outcome_1_1[[1]][[1]], test_outcome_1_1[[2]][[1]])
+# 
+# 
+# test<-lapply(seq_along(test_outcome_1_1))
+# 
+# # create a list of dataframes
+# #my_list <- list(data.frame(a = 1:3, b = 4:6), data.frame(a = 7:9, b = 10:12), data.frame(a = 13:15, b = 16:18))
+# 
+# # concatenate the dataframes within each sub-list
+# concatenated_list <- lapply(seq_along(test_outcome_1_1[[1]]), function(i) do.call(rbind, lapply(my_list, "[[", i)))
+# 
+# # print the concatenated list
+# print(concatenated_list)
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# test<-test_outcome_1_1 %>%
+#   bind_rows()
