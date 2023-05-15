@@ -917,4 +917,76 @@ ts_prep_func<-function(t,i, TS){
   
 } # end of preparing for next timestep function 
 
+#######################################
+#  SETTING UP DIRECTORIES FOR SAVING  # 
+#######################################
 
+direct_func<-function(modelType){
+  # Set up the main directory for where you want the figures saved 
+  # This can be replaced by any folder you have on your computer (just make sure you have continuous connection if its a webfolder)
+  mainDir<<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/'
+  setwd(mainDir)
+  
+  # Run the following if doing this for the first time on devide: 
+  # create list of folders that we want present 
+  folders<-c('MOD_1_1', 'MOD_1_2', 'MOD_1_3', 'MOD_2_1', 'MOD_2_2', 'MOD_2_3')
+  # Check if they exist and if not, create them 
+  # Note that this code will warn you if it already existed 
+  for (folder in folders){
+    dir.create(file.path(mainDir, folder ), showWarnings = TRUE)
+  }
+  
+  # Now set to the correct folder 
+  setwd(paste0(mainDir, modelType))
+  
+}
+
+#######################################
+#    GO TO DIRECTORY FOR ANALYSIS     # 
+#######################################
+
+retrieve_output_func<-function(modelType, fileName){
+  
+  # set main directory for retrieving data 
+  mainDir<<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/'
+  # Now set to the correct folder 
+  setwd(paste0(mainDir, modelType))
+
+}
+
+
+######################################
+#  SPLIT DATAFRAMES AND NAME THEM    # 
+######################################
+
+create_df_func<-function(outputFile, modelType){
+  N<-nrow(outputFile)
+  
+  for (k in 1:12){
+    if (k==1){
+      # create a clean list in the first round 
+      list_outcome_vars<-list()
+    }
+    # Create a dataframe from the first column of the total matrix 
+    cur_df<-as.data.frame(do.call(rbind, outputFile[1:N, k]))
+    # add this to the empty list created 
+    list_outcome_vars<-append(list_outcome_vars, list(cur_df))
+  }
+  
+  # Now name them correctly 
+  assign(paste('df_eat', modelType, sep=''),list_outcome_vars[[1]])
+  assign(paste('df_eat_hoard', modelType, sep=''),list_outcome_vars[[2]])
+  assign(paste('df_forage', modelType, sep=''), list_outcome_vars[[3]])
+  assign(paste('df_dir_hoard', modelType, sep=''),list_outcome_vars[[4]])
+  assign(paste('df_alive', modelType, sep=''), list_outcome_vars[[5]])
+  assign(paste('df_caches', modelType, sep=''), list_outcome_vars[[6]])
+  assign(paste('df_find_food', modelType, sep = ''), list_outcome_vars[[7]])
+  assign(paste('df_fr', modelType, sep=''), list_outcome_vars[[8]])
+  assign(paste('df_sc', modelType, sep=''), list_outcome_vars[[9]])
+  assign(paste('df_mass', modelType, sep=''), list_outcome_vars[[10]])
+  assign(paste('df_Pkill', modelType, sep=''), list_outcome_vars[[11]])
+  assign(paste('df_predation', modelType, sep=''), list_outcome_vars[[12]])
+  
+  
+}
+  

@@ -55,7 +55,7 @@ env_type <- 8
 # Threshold stomach-content below which you forage 
 th_forage_sc <- 0.2
 # Threshold fat-reserve below which you forage  (not relevant in model 1.1)
-th_forage_fr <-2.0
+#th_forage_fr <-2.0
 # Number of hours of daylight 
 daylight_h <- 8
 
@@ -201,37 +201,19 @@ stopImplicitCluster()
 }) # ending system.time 
 
 
-#################################
-#  CONCATENATE THE DATAFRAMES   # 
-#################################
+############################# 
+#   SAVE THE RESULTS        # 
+#############################
 
-# For each of teh 12 variables that we want the matrices off 
-system.time({
-for (k in 1:12){
-  if (k==1){
-    # create a clean list in the first round 
-    list_outcome_vars<-list()
-  }
-  # Create a dataframe from the first column of the total matrix 
-  cur_df<-as.data.frame(do.call(rbind, outcome_1_1[1:N, k]))
-  # add this to the empty list created 
-  list_outcome_vars<-append(list_outcome_vars, list(cur_df))
-}
-  
-  # Now name them correctly 
-  df_eat<-list_outcome_vars[[1]]
-  df_eat_hoard<-list_outcome_vars[[2]]
-  df_forage<-list_outcome_vars[[3]]
-  df_dir_hoard<-list_outcome_vars[[4]]
-  df_alive<-list_outcome_vars[[5]]
-  df_caches<-list_outcome_vars[[6]]
-  df_find_food<-list_outcome_vars[[7]]
-  df_fr<-list_outcome_vars[[8]]
-  df_sc<-list_outcome_vars[[9]]
-  df_mass<-list_outcome_vars[[10]]
-  df_Pkill<-list_outcome_vars[[11]]
-  df_predation<-list_outcome_vars[[12]]
+# Make sure all the folders are there and set to the correct working directory 
+direct_func(modelType = 'MOD_1_1')
+# save it 
+save(outcome_1_1, file=paste0('MOD_1_1_out_D',days, '_N', N, '_eType', env_type, '_th_sc', th_forage_sc, '_DL', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S")))
 
-}) # end of system time 
+
+
+
+
+
 
 
