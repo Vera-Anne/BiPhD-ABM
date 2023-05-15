@@ -222,7 +222,7 @@ for (k in 1:12){
   df_eat<-list_outcome_vars[[1]]
   df_eat_hoard<-list_outcome_vars[[2]]
   df_forage<-list_outcome_vars[[3]]
-  df_hoard<-list_outcome_vars[[4]]
+  df_dir_hoard<-list_outcome_vars[[4]]
   df_alive<-list_outcome_vars[[5]]
   df_caches<-list_outcome_vars[[6]]
   df_find_food<-list_outcome_vars[[7]]
@@ -235,84 +235,3 @@ for (k in 1:12){
 }) # end of system time 
 
 
-# 
-# 
-# 
-# 
-# # This code might work, but it is way too slow 
-# system.time({
-# 
-# 
-#  for (j in 1:13) {
-#    
-#    if (j==1){
-#      
-#      list_of_df<-list()
-#    }
-#    
-#    for (k in 1:N){
-#      if (k==1){
-#        total_per_var<-data.frame()
-#      }
-#      
-#      total_per_var<-rbind(total_per_var, test_outcome_1_1[[k]][[j]])
-#    }
-#    
-#    list_of_df<-append(list_of_df, list(total_per_var))
-#    
-#  }
-# 
-#   
-# }) 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# #beep()
-# 
-# 
-# 
-# test<-rbind(test_outcome_1_1[[1]][[1]], test_outcome_1_1[[2]][[1]])
-# 
-# 
-# test<-lapply(seq_along(test_outcome_1_1))
-# 
-# # create a list of dataframes
-# #my_list <- list(data.frame(a = 1:3, b = 4:6), data.frame(a = 7:9, b = 10:12), data.frame(a = 13:15, b = 16:18))
-# 
-# # concatenate the dataframes within each sub-list
-# concatenated_list <- lapply(seq_along(test_outcome_1_1[[1]]), function(i) do.call(rbind, lapply(my_list, "[[", i)))
-# 
-# # print the concatenated list
-# print(concatenated_list)
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# test<-test_outcome_1_1 %>%
-#   bind_rows()

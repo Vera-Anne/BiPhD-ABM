@@ -2,7 +2,7 @@
 # Small bird in winter - ABM 
 # Start date: 15/05/2023
 # Vera Vinken 
-# Model 1_2 parallelized locally 
+# Model 2_1 parallelized locally 
 #################################
 
 ##############################
@@ -52,19 +52,16 @@ registerDoParallel(numCores)
   N <- 1000
   # Type of environment (there are 18)
   env_type <- 8
-  # Threshold stomach-content below which you forage (not relevant in model 1.2)
-  #th_forage_sc <- 0.2
-  # Threshold fat-reserve below which you forage  (not relevant in model 1.2)
-  #th_forage_fr <-2.0
-  # Threshold stomach-content below which you forage 
-  th_forage_sc1 <- 0.1  # Threshold 1 = below this you will retrieve 
-  th_forage_sc2<- 0.3   # Threshold 2 = above this you will rest 
+  # Threshold stomach-content below which you forage (not relevant in model 1.1)
+  # th_forage_sc <- 0.2
+  # Threshold fat-reserve below which you forage  
+  th_forage_fr <-2.0
   # Number of hours of daylight 
   daylight_h <- 8
-
-######################################################################
-##   Model 1.2: leftover-hoarding bird, Access to Stomach Content   ##
-######################################################################
+  
+#################################################################
+##    Model 2.1: Non-hoarding bird, Access to Fat-reserves     ##
+#################################################################
 
 # Start the model 
 system.time({
@@ -81,7 +78,7 @@ system.time({
   # The individual loops need to start now
   # These should be parallelised 
   
-  outcome_1_2<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
+  outcome_2_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
@@ -128,35 +125,11 @@ system.time({
         
         if (sleep_count[i,t]==0){
           
-          # RULE SPECIFIC FOR MODEL 1_2 
+          # RULE SPECIFIC FOR MODEL 2_1 
           
-          # Only access to stomach-content, birds need to retrieve if the stomach content is below the lowest threshold 
-          # There also needs to be a minimum number of caches available 
-          if ((mat_sc[i,t]<=th_forage_sc1) && (mat_caches[i,t]>retrieve_min)){
-            
-            ####################
-            ##   RETRIEVING   ## 
-            #################### 
-            
-            # The bird will retrieve food items 
-            retrieve_func(t,i)
-            # End of retrieving statement 
-            
-            # RULE SPECIFIC FOR MODEL 1_2 
-            
-          } else if ((mat_sc[i,t]) >= th_forage_sc2){
-            
-            ##################
-            #    RESTING     # 
-            ##################
-            
-            # If the bird has a SC above the second threshold, it is not hungry at all and can go rest        
-            rest_func(t,i)
-            
-            # RULE SPECIFIC FOR MODEL 1_2 
-            
-          } else {
-            # If the SC is not lower than Th1 and not higher then TH2, the bird needs to find a new food item 
+          # Only access to fat-reserve & forage under threshold 
+          if ((mat_fr[i,t]) < th_forage_fr){
+            # If this is the case, the bird is hungry and needs to forage for food 
             
             #################
             #     FORAGE    # 
@@ -165,14 +138,22 @@ system.time({
             # At this point, foraging means to go out and find a NEW food item 
             forage_function(t,i)
             
-            # RULE SPECIFIC TO MODEL 1_2
+            # RULE SPECIFIC TO MODEL 2_1
             
-            # In model 1.2 the bird will eat and then hoard the leftovers 
-            # The eat-haord function will count the behaviour as 'eat' if there is no leftover food. 
-            # 'eat-hoard' matrix is used if there is leftover food and the bird hoards this (successful or not)
-            eat_hoard_func(t,i)
+            # This means that we have a non-hoarding bird that forages under the fr-threshold 
+            # It can only eat or rest. Eat-hoarding and hoarding are not possible 
+            eat_func(t,i)
             
-          } # ends the foraging statement 
+          } else {
+            
+            ##################
+            #    RESTING     # 
+            ##################
+            
+            # If the bird is not foraging and eating, it will be resting (model 2.1)           
+            rest_func(t,i)
+            
+          } # end resting statement 
           
         } # End of the statement for awake birds 
         
@@ -232,7 +213,7 @@ system.time({
       list_outcome_vars<-list()
     }
     # Create a dataframe from the first column of the total matrix 
-    cur_df<-as.data.frame(do.call(rbind, outcome_1_2[1:N, k]))
+    cur_df<-as.data.frame(do.call(rbind, outcome_2_1[1:N, k]))
     # add this to the empty list created 
     list_outcome_vars<-append(list_outcome_vars, list(cur_df))
   }

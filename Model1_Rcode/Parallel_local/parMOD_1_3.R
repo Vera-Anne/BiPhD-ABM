@@ -63,9 +63,9 @@ th_forage_sc3<-0.3    # Threshold 3 = below this you rest and above this you for
 # Number of hours of daylight 
 daylight_h <- 8
 
-#################################################################
-##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
-#################################################################
+####################################################################
+##   Model 1.3: Direct-hoarding bird, Access to Stomach Content   ##
+####################################################################
 
 # Start the model 
 system.time({
@@ -261,7 +261,7 @@ system.time({
   df_eat<-list_outcome_vars[[1]]
   df_eat_hoard<-list_outcome_vars[[2]]
   df_forage<-list_outcome_vars[[3]]
-  df_hoard<-list_outcome_vars[[4]]
+  df_dir_hoard<-list_outcome_vars[[4]]
   df_alive<-list_outcome_vars[[5]]
   df_caches<-list_outcome_vars[[6]]
   df_find_food<-list_outcome_vars[[7]]

@@ -2,7 +2,7 @@
 # Small bird in winter - ABM 
 # Start date: 15/05/2023
 # Vera Vinken 
-# Model 1_2 parallelized locally 
+# Model 2_2 parallelized locally 
 #################################
 
 ##############################
@@ -46,24 +46,24 @@ registerDoParallel(numCores)
 ###############################
 
 # Input variables 
-  # Number of days in the simulation 
-  days <- 30
-  # Number of agents in the simulation 
-  N <- 1000
-  # Type of environment (there are 18)
-  env_type <- 8
-  # Threshold stomach-content below which you forage (not relevant in model 1.2)
-  #th_forage_sc <- 0.2
-  # Threshold fat-reserve below which you forage  (not relevant in model 1.2)
-  #th_forage_fr <-2.0
-  # Threshold stomach-content below which you forage 
-  th_forage_sc1 <- 0.1  # Threshold 1 = below this you will retrieve 
-  th_forage_sc2<- 0.3   # Threshold 2 = above this you will rest 
-  # Number of hours of daylight 
-  daylight_h <- 8
+# Number of days in the simulation 
+days <- 30
+# Number of agents in the simulation 
+N <- 1000
+# Type of environment (there are 18)
+env_type <- 8
+# Threshold stomach-content below which you forage (not relevant in model 2.2)
+#th_forage_sc <- 0.2
+# Threshold fat-reserve below which you forage  (not relevant in model 2.2)
+#th_forage_fr <-2.0
+# Threshold stomach-content below which you forage 
+th_forage_fr1 <- 1.0  # Threshold 1 = below this you will retrieve 
+th_forage_fr2<- 3.0   # Threshold 2 = above this you will rest 
+# Number of hours of daylight 
+daylight_h <- 8
 
 ######################################################################
-##   Model 1.2: leftover-hoarding bird, Access to Stomach Content   ##
+##    Model 2.2: leftover-hoarding bird, Access to Fat-reserves     ##
 ######################################################################
 
 # Start the model 
@@ -81,7 +81,7 @@ system.time({
   # The individual loops need to start now
   # These should be parallelised 
   
-  outcome_1_2<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
+  outcome_2_2<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
@@ -128,11 +128,11 @@ system.time({
         
         if (sleep_count[i,t]==0){
           
-          # RULE SPECIFIC FOR MODEL 1_2 
+          # RULE SPECIFIC FOR MODEL 2_2 
           
           # Only access to stomach-content, birds need to retrieve if the stomach content is below the lowest threshold 
           # There also needs to be a minimum number of caches available 
-          if ((mat_sc[i,t]<=th_forage_sc1) && (mat_caches[i,t]>retrieve_min)){
+          if ((mat_fr[i,t]<=th_forage_fr1) && (mat_caches[i,t]>retrieve_min)){
             
             ####################
             ##   RETRIEVING   ## 
@@ -144,7 +144,7 @@ system.time({
             
             # RULE SPECIFIC FOR MODEL 1_2 
             
-          } else if ((mat_sc[i,t]) >= th_forage_sc2){
+          } else if ((mat_fr[i,t]) >= th_forage_fr2){
             
             ##################
             #    RESTING     # 
@@ -232,7 +232,7 @@ system.time({
       list_outcome_vars<-list()
     }
     # Create a dataframe from the first column of the total matrix 
-    cur_df<-as.data.frame(do.call(rbind, outcome_1_2[1:N, k]))
+    cur_df<-as.data.frame(do.call(rbind, outcome_2_2[1:N, k]))
     # add this to the empty list created 
     list_outcome_vars<-append(list_outcome_vars, list(cur_df))
   }
