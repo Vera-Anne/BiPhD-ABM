@@ -8,33 +8,33 @@
 ##############################
 #      load packages         #
 ##############################
-library(usethis)
-library(devtools)
-library(truncnorm)
-library(pracma)
-library(ggplot2)
-library(plotly) # for 3D surface plot 
-library(rgl)
-library(plot3D)
-library(htmlwidgets)
-library(webshot)
-library(withr)
-library('plyr')
-library('gridExtra')
-library(grid)
-library(lattice)
-library(dplyr)
-library(data.table)
-library(tidyverse)
-library(viridis)
+# library(usethis)
+# library(devtools)
+# library(truncnorm)
+# library(pracma)
+# library(ggplot2)
+# library(plotly) # for 3D surface plot 
+# library(rgl)
+# library(plot3D)
+# library(htmlwidgets)
+# library(webshot)
+# library(withr)
+# library('plyr')
+# library('gridExtra')
+# library(grid)
+# library(lattice)
+# library(dplyr)
+# library(data.table)
+# library(tidyverse)
+# library(viridis)
 library(foreach)
 library(doParallel)
-library(purrr)
-library(beepr)
-library(tidyr)
+#library(purrr)
+#library(beepr)
+#library(tidyr)
 
 # link to the function file 
-setwd("C:/Local_R/BiPhD-ABM/Model1_Rcode/")
+setwd("C:/Local_R/BiPhD-ABM/")
 source('MOD_1_FuncSource.R')
 
 # set the number of cores 
@@ -253,4 +253,20 @@ system.time({
   
 }) # end of system time 
 
+  
+  ############################# 
+  #   SAVE THE RESULTS        # 
+  #############################
+  
+  # Make sure all the folders are there and set to the correct working directory 
+  direct_func(modelType = 'MOD_1_2')
+  # save it 
+  save(outcome_1_2, file=paste0('MOD_1_2_out_D',days, '_N', N, '_eType', env_type, '_th_sc1', th_forage_sc1, '_th_sc2', th_forage_sc2, '_DL', daylight_h, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S")))
+  
+  
+  
+  
+  
+  
+  
 

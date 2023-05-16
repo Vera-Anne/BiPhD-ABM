@@ -974,19 +974,89 @@ create_df_func<-function(outputFile, modelType){
   }
   
   # Now name them correctly 
-  assign(paste('df_eat', modelType, sep=''),list_outcome_vars[[1]])
-  assign(paste('df_eat_hoard', modelType, sep=''),list_outcome_vars[[2]])
-  assign(paste('df_forage', modelType, sep=''), list_outcome_vars[[3]])
-  assign(paste('df_dir_hoard', modelType, sep=''),list_outcome_vars[[4]])
-  assign(paste('df_alive', modelType, sep=''), list_outcome_vars[[5]])
-  assign(paste('df_caches', modelType, sep=''), list_outcome_vars[[6]])
-  assign(paste('df_find_food', modelType, sep = ''), list_outcome_vars[[7]])
-  assign(paste('df_fr', modelType, sep=''), list_outcome_vars[[8]])
-  assign(paste('df_sc', modelType, sep=''), list_outcome_vars[[9]])
-  assign(paste('df_mass', modelType, sep=''), list_outcome_vars[[10]])
-  assign(paste('df_Pkill', modelType, sep=''), list_outcome_vars[[11]])
-  assign(paste('df_predation', modelType, sep=''), list_outcome_vars[[12]])
+  assign(paste('df_eat', modelType, sep=''),list_outcome_vars[[1]], envir=.GlobalEnv)
+  assign(paste('df_eat_hoard', modelType, sep=''),list_outcome_vars[[2]], envir=.GlobalEnv)
+  assign(paste('df_forage', modelType, sep=''), list_outcome_vars[[3]], envir=.GlobalEnv)
+  assign(paste('df_dir_hoard', modelType, sep=''),list_outcome_vars[[4]], envir=.GlobalEnv)
+  assign(paste('df_alive', modelType, sep=''), list_outcome_vars[[5]], envir=.GlobalEnv)
+  assign(paste('df_caches', modelType, sep=''), list_outcome_vars[[6]], envir=.GlobalEnv)
+  assign(paste('df_find_food', modelType, sep = ''), list_outcome_vars[[7]], envir=.GlobalEnv)
+  assign(paste('df_fr', modelType, sep=''), list_outcome_vars[[8]], envir=.GlobalEnv)
+  assign(paste('df_sc',modelType,  sep=''), list_outcome_vars[[9]], envir=.GlobalEnv)
+  assign(paste('df_mass',modelType, sep=''), list_outcome_vars[[10]], envir=.GlobalEnv)
+  assign(paste('df_Pkill', modelType, sep=''), list_outcome_vars[[11]], envir=.GlobalEnv)
+  assign(paste('df_predation',modelType,  sep=''), list_outcome_vars[[12]], envir=.GlobalEnv)
+
+  # create a list of teh raw dataframes 
+  y<-assign(paste0('output_df_list_raw',modelType),list_outcome_vars, envir=.GlobalEnv)
   
+  mean_dfs<-lapply(y, colMeans, na.rm=TRUE)
+  #mean_dfs<<-lapply(mean_dfs, t)
+  mean_dfs<-lapply(mean_dfs, as.data.frame)
+  mean_dfs<-lapply(mean_dfs, function(x){
+    cbind(x, "timestep"=1:nrow(x))
+  })
+  
+  names<-c('value', 'timestep')
+  mean_dfs<-lapply(mean_dfs, setNames, nm=names)
+  
+  # Now give the dataframes a name 
+  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'mass', 'p_kill', 'predation')
+  names(mean_dfs)<-variable_names
+  
+  # export the mean_dfs as a specific name 
+  assign(paste('output_means_list',modelType,sep=''), mean_dfs, envir=.GlobalEnv)
+  # Now put them all together in a dataframe with an id 
+  total_vars_df<-map_df(mean_dfs, ~as.data.frame(.x), .id = 'id')
+  # same for the total dataframe 
+  assign(paste('total_vars_df',modelType,sep=''), total_vars_df, envir=.GlobalEnv)
+
   
 }
+
+
+######################################
+#      12 PLOT VISUALISATION         #
+######################################
+
+plots_12_func<-function(inputdata, modelType){
+  plot<-ggplot(inputdata, aes(x=timestep, y=value)) + 
+    geom_line() +
+    facet_wrap(.~id, scales='free_y', nrow=4)+
+    ggtitle(paste('output model', modelType))
   
+# Then assign this some useful name 
+  assign(paste0('plot_12_', modelType), plot, envir=.GlobalEnv)
+  
+  
+  # In future I want to change the scales for easier comparison 
+  # this code could help: 
+  # dat[group == "a",y_min := 0]
+  # dat[group == "a",y_max := 30]
+  # dat[group == "b",y_min := 0]
+  # dat[group == "b",y_max := 3000]
+  # 
+  # ggplot(dat, aes(x = x, y = y)) + 
+  #   geom_point() + 
+  #   geom_line() + 
+  #   facet_wrap(~group, ncol = 1, scales = "free_y") +
+  #   geom_blank(aes(y = y_min)) +
+  #   geom_blank(aes(y = y_max))
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
