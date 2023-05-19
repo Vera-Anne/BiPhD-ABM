@@ -105,6 +105,6 @@ source('ModelSource.R')
     plot_12_132
     
     # rUN IT FOR THE 18 ENVIRONMENTS 
-    env_func_1_3_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
+    env_func_1_3_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 132)
     
     
