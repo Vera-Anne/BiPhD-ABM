@@ -272,23 +272,27 @@ set_up_func_general<-function(days, env_type, daylight_h){
   Patt_rest<<-0
   
   # test this 
-  tot_eat_count<<-data.frame()
-  tot_eat_hoard_count<<-data.frame()
-  tot_forage_count<<-data.frame()
-  tot_hoard_count<<-data.frame()
-  tot_mat_alive<<-data.frame()
-  tot_mat_caches<<-data.frame()
-  tot_mat_find_food<<-data.frame()
-  tot_mat_fr<<-data.frame()
-  tot_mat_mass<<-data.frame()
-  tot_mat_sc<<-data.frame()
-  tot_mat_Pkill<<-data.frame()
-  tot_predation_count<<-data.frame()
+  # tot_eat_count<<-data.frame()
+  # tot_eat_hoard_count<<-data.frame()
+  # tot_forage_count<<-data.frame()
+  # tot_hoard_count<<-data.frame()
+  # tot_mat_alive<<-data.frame()
+  # tot_mat_caches<<-data.frame()
+  # tot_mat_find_food<<-data.frame()
+  # tot_mat_fr<<-data.frame()
+  # tot_mat_mass<<-data.frame()
+  # tot_mat_sc<<-data.frame()
+  # tot_mat_Pkill<<-data.frame()
+  # tot_predation_count<<-data.frame()
   
 } # end set up general function 
 
 
 set_up_func_indiv<-function(days, env_type, daylight_h){
+  #print('here')
+  # # link to the function file 
+  # setwd("C:/Local_R/BiPhD-ABM/")
+  # source('MOD_1_FuncSource.R')
   
   # Run hte temperature function 
   # Running this seperately for each individual brings in some desired stochasticity 
@@ -572,9 +576,6 @@ if (t==1){
 } # end of dead_or_alive function 
 
 
-
-
-
 ####################
 #     SLEEPING     #
 ####################
@@ -602,6 +603,8 @@ sleep_func<-function(t, i){
         eat_count[i,t]<<-0
         # set the direct hoarding matrix to 0
         hoard_count[i,t]<<-0
+        # find food matrix
+        mat_find_food[i,t]<<-NA
         
         # set the BMR-multi
         BMR_multi<<-1
@@ -698,6 +701,9 @@ rest_func<-function(t,i){
   eat_hoard_count[i,t]<<-0
   eat_count[i,t]<<-0
   hoard_count[i,t]<<-0
+  # find food matrix
+  mat_find_food[i,t]<<-NA
+  
 } # end of the resting function 
 
 ####################
@@ -731,6 +737,9 @@ retrieve_func<-function(t,i){
   eat_count[i,t]<<-0
   eat_hoard_count[i,t]<<-0
   hoard_count[i,t]<<-0
+  # find food matrix
+  mat_find_food[i,t]<<-NA
+  
   
   
 } # End of retrieving function 
@@ -959,7 +968,7 @@ retrieve_output_func<-function(modelType, fileName){
 #  SPLIT DATAFRAMES AND NAME THEM    # 
 ######################################
 
-create_df_func<-function(outputFile, modelType){
+create_df_func<-function(outputFile, modelType, env_type){
   N<-nrow(outputFile)
   
   for (k in 1:12){
@@ -974,38 +983,39 @@ create_df_func<-function(outputFile, modelType){
   }
   
   # Now name them correctly 
-  assign(paste('df_eat', modelType, sep=''),list_outcome_vars[[1]], envir=.GlobalEnv)
-  assign(paste('df_eat_hoard', modelType, sep=''),list_outcome_vars[[2]], envir=.GlobalEnv)
-  assign(paste('df_forage', modelType, sep=''), list_outcome_vars[[3]], envir=.GlobalEnv)
-  assign(paste('df_dir_hoard', modelType, sep=''),list_outcome_vars[[4]], envir=.GlobalEnv)
-  assign(paste('df_alive', modelType, sep=''), list_outcome_vars[[5]], envir=.GlobalEnv)
-  assign(paste('df_caches', modelType, sep=''), list_outcome_vars[[6]], envir=.GlobalEnv)
-  assign(paste('df_find_food', modelType, sep = ''), list_outcome_vars[[7]], envir=.GlobalEnv)
-  assign(paste('df_fr', modelType, sep=''), list_outcome_vars[[8]], envir=.GlobalEnv)
-  assign(paste('df_sc',modelType,  sep=''), list_outcome_vars[[9]], envir=.GlobalEnv)
-  assign(paste('df_mass',modelType, sep=''), list_outcome_vars[[10]], envir=.GlobalEnv)
-  assign(paste('df_Pkill', modelType, sep=''), list_outcome_vars[[11]], envir=.GlobalEnv)
-  assign(paste('df_predation',modelType,  sep=''), list_outcome_vars[[12]], envir=.GlobalEnv)
+  # assign(paste('df_eat', modelType, sep=''),list_outcome_vars[[1]], envir=.GlobalEnv)
+  # assign(paste('df_eat_hoard', modelType, sep=''),list_outcome_vars[[2]], envir=.GlobalEnv)
+  # assign(paste('df_forage', modelType, sep=''), list_outcome_vars[[3]], envir=.GlobalEnv)
+  # assign(paste('df_dir_hoard', modelType, sep=''),list_outcome_vars[[4]], envir=.GlobalEnv)
+  # assign(paste('df_alive', modelType, sep=''), list_outcome_vars[[5]], envir=.GlobalEnv)
+  # assign(paste('df_caches', modelType, sep=''), list_outcome_vars[[6]], envir=.GlobalEnv)
+  # assign(paste('df_find_food', modelType, sep = ''), list_outcome_vars[[7]], envir=.GlobalEnv)
+  # assign(paste('df_fr', modelType, sep=''), list_outcome_vars[[8]], envir=.GlobalEnv)
+  # assign(paste('df_sc',modelType,  sep=''), list_outcome_vars[[9]], envir=.GlobalEnv)
+  # assign(paste('df_mass',modelType, sep=''), list_outcome_vars[[10]], envir=.GlobalEnv)
+  # assign(paste('df_Pkill', modelType, sep=''), list_outcome_vars[[11]], envir=.GlobalEnv)
+  # assign(paste('df_predation',modelType,  sep=''), list_outcome_vars[[12]], envir=.GlobalEnv)
 
   # create a list of teh raw dataframes 
   y<-assign(paste0('output_df_list_raw',modelType),list_outcome_vars, envir=.GlobalEnv)
   
-  mean_dfs<-lapply(y, colMeans, na.rm=TRUE)
+  mean_dfs<<-lapply(y, colMeans, na.rm=TRUE)
   #mean_dfs<<-lapply(mean_dfs, t)
-  mean_dfs<-lapply(mean_dfs, as.data.frame)
-  mean_dfs<-lapply(mean_dfs, function(x){
+  mean_dfs<<-lapply(mean_dfs, as.data.frame)
+  mean_dfs<<-lapply(mean_dfs, function(x){
     cbind(x, "timestep"=1:nrow(x))
   })
   
   names<-c('value', 'timestep')
-  mean_dfs<-lapply(mean_dfs, setNames, nm=names)
+  mean_dfs<<-lapply(mean_dfs, setNames, nm=names)
   
   # Now give the dataframes a name 
   variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'mass', 'p_kill', 'predation')
-  names(mean_dfs)<-variable_names
+  names(mean_dfs)<<-variable_names
   
   # export the mean_dfs as a specific name 
-  assign(paste('output_means_list',modelType,sep=''), mean_dfs, envir=.GlobalEnv)
+  assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
+  
   # Now put them all together in a dataframe with an id 
   total_vars_df<-map_df(mean_dfs, ~as.data.frame(.x), .id = 'id')
   # same for the total dataframe 
@@ -1020,10 +1030,48 @@ create_df_func<-function(outputFile, modelType){
 ######################################
 
 plots_12_func<-function(inputdata, modelType){
+  
+  inputdata<-data.table(inputdata)
+  
+  inputdata[id == "caches",y_min := 0]
+  inputdata[id == "caches",y_max := 300]
+
+  inputdata[id == "dir_hoard",y_min := 0]
+  inputdata[id == "dir_hoard",y_max := 1]
+
+  inputdata[id == "eat",y_min := 0]
+  inputdata[id == "eat",y_max := 1]
+
+  inputdata[id == "eat_hoard",y_min := 0]
+  inputdata[id == "eat_hoard",y_max := 1]
+
+  inputdata[id == "fat_res",y_min := 0]
+  inputdata[id == "fat_res",y_max := 5]
+
+  inputdata[id == "find_food",y_min := 0]
+  inputdata[id == "find_food",y_max := 10]
+
+  inputdata[id == "forage",y_min := 0]
+  inputdata[id == "forage",y_max := 1]
+
+  inputdata[id == "mass",y_min := 0]
+  inputdata[id == "mass",y_max := 15]
+
+  inputdata[id == "p_kill",y_min := 0]
+  inputdata[id == "p_kill",y_max := 1]
+
+  inputdata[id == "predation",y_min := 0]
+  inputdata[id == "predation",y_max := 1]
+
+  inputdata[id == "stom_con",y_min := 0]
+  inputdata[id == "stom_con",y_max := 0.5]
+
   plot<-ggplot(inputdata, aes(x=timestep, y=value)) + 
     geom_line() +
     facet_wrap(.~id, scales='free_y', nrow=4)+
-    ggtitle(paste('output model', modelType))
+    ggtitle(paste('output model', modelType))+
+    geom_blank(aes(y = y_min)) +
+    geom_blank(aes(y = y_max))
   
 # Then assign this some useful name 
   assign(paste0('plot_12_', modelType), plot, envir=.GlobalEnv)
@@ -1031,17 +1079,8 @@ plots_12_func<-function(inputdata, modelType){
   
   # In future I want to change the scales for easier comparison 
   # this code could help: 
-  # dat[group == "a",y_min := 0]
-  # dat[group == "a",y_max := 30]
-  # dat[group == "b",y_min := 0]
-  # dat[group == "b",y_max := 3000]
-  # 
-  # ggplot(dat, aes(x = x, y = y)) + 
-  #   geom_point() + 
-  #   geom_line() + 
-  #   facet_wrap(~group, ncol = 1, scales = "free_y") +
-  #   geom_blank(aes(y = y_min)) +
-  #   geom_blank(aes(y = y_max))
+
+
   
 }
 

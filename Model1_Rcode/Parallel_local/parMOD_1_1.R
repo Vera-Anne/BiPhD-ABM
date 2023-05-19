@@ -8,65 +8,65 @@
 ##############################
 #      load packages         #
 ##############################
-library(usethis)
-library(devtools)
-library(truncnorm)
-library(pracma)
-library(ggplot2)
-library(plotly) # for 3D surface plot 
-library(rgl)
-library(plot3D)
-library(htmlwidgets)
-library(webshot)
-library(withr)
-library('plyr')
-library('gridExtra')
-library(grid)
-library(lattice)
-library(dplyr)
-library(data.table)
-library(tidyverse)
-library(viridis)
+# library(usethis)
+# library(devtools)
+# library(truncnorm)
+# library(pracma)
+# library(ggplot2)
+# library(plotly) # for 3D surface plot 
+# library(rgl)
+# library(plot3D)
+# library(htmlwidgets)
+# library(webshot)
+# library(withr)
+# library('plyr')
+# library('gridExtra')
+# library(grid)
+# library(lattice)
+# library(dplyr)
+# library(data.table)
+# library(tidyverse)
+# library(viridis)
 library(foreach)
 library(doParallel)
-library(purrr)
-library(beepr)
-library(tidyr)
+# library(purrr)
+# library(beepr)
+# library(tidyr)
 
 # link to the function file 
-setwd("C:/Local_R/BiPhD-ABM/Model1_Rcode/")
+setwd("C:/Local_R/BiPhD-ABM/")
 source('MOD_1_FuncSource.R')
 
-# set the number of cores 
-numCores<-detectCores()
-registerDoParallel(numCores)
+
 
 ###############################
 #    USE WHEN RUNNING LOCAL   # 
 ###############################
 
 # Input variables 
-# Number of days in the simulation 
-days <- 30
-# Number of agents in the simulation 
-N <- 1000
-# Type of environment (there are 18)
-env_type <- 8
-# Threshold stomach-content below which you forage 
-th_forage_sc <- 0.2
-# Threshold fat-reserve below which you forage  (not relevant in model 1.1)
-#th_forage_fr <-2.0
-# Number of hours of daylight 
-daylight_h <- 8
+    # Number of days in the simulation
+    days <- 30
+    # Number of agents in the simulation
+    N <- 1000
+    # Type of environment (there are 18)
+    env_type <- 8
+    # Threshold stomach-content below which you forage
+    th_forage_sc <- 0.2
+    # Threshold fat-reserve below which you forage  (not relevant in model 1.1)
+    #th_forage_fr <-2.0
+    # Number of hours of daylight
+    daylight_h <- 8
 
 #################################################################
 ##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
 #################################################################
 
 # Start the model 
-system.time({
   
-
+  # set the number of cores 
+  numCores<-detectCores()
+  registerDoParallel(numCores)
+  
 # Set up the general environment 
 # This part is the same for each bird 
 set_up_func_general(days, env_type, daylight_h)
@@ -78,7 +78,7 @@ set_up_func_general(days, env_type, daylight_h)
 # The individual loops need to start now
 # These should be parallelised 
 
-outcome_1_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
+outcome_1_1<-foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dopar% {
   
   # Do a setup for the individual bird
   # This includes the individual temperature pattern 
@@ -193,12 +193,12 @@ outcome_1_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %dop
   # Alternatively, I could try to create lists with the output 
   list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, mat_Pkill, predation_count)
         
-} # end of the foreach loop (individuals) 
+  } # end of the foreach loop (individuals) 
 
 # clean up cluster 
 stopImplicitCluster()
 
-}) # ending system.time 
+
 
 
 ############################# 
