@@ -983,7 +983,7 @@
 ##     Model 2.1: Non-hoarding bird, Access to Fat-reserves    ##
 #################################################################
       
-      # model 1.1 
+      # model 2.1 
       mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
         
         # Start the model 
@@ -1006,7 +1006,7 @@
         # The individual loops need to start now
         # These should be parallelised 
         
-        outcome_1_1<-foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+        outcome_2_1<-foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
           
           # link to the function file 
           # setwd("C:/Local_R/BiPhD-ABM/")
@@ -1061,7 +1061,7 @@
                 # RULE SPECIFIC FOR MODEL 1_1 
                 
                 # Only access to stomach-content & forage under threshold 
-                if ((mat_sc[i,t]) < th_forage_sc){
+                if ((mat_fr[i,t]) < th_forage_fr){
                   # If this is the case, the bird is hungry and needs to forage for food 
                   
                   #################
@@ -1128,9 +1128,9 @@
         stopImplicitCluster()
         
         #return(outcome_1_1)
-        assign(paste0('outcome_1_1_env', env_type),outcome_1_1, envir=.GlobalEnv)
+        assign(paste0('outcome_2_1_env', env_type),outcome_2_1, envir=.GlobalEnv)
         
-        create_df_func(outputFile = outcome_1_1, modelType = '11', env_type= env_type)
+        create_df_func(outputFile = outcome_2_1, modelType = '21', env_type= env_type)
         
         #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
         
@@ -1138,17 +1138,15 @@
         
         
         
-      } # end of model 1 function 
+      } # end of model 2.1 function 
       
-      # run it here 
-      #mod_1_1(10, 100, 8, 0.2, 8)
       
       ########################
       #   ENVIRONMENT LOOP   #
       ########################
       
       # The environment loop 
-      env_func_1_1<-function(days, N, th_forage_sc, daylight_h, modelType){
+      env_func_2_1<-function(days, N, th_forage_fr, daylight_h, modelType){
         
         # Loop through the environments 
         for (env in 1:18){
@@ -1156,7 +1154,7 @@
             list_means_envs<-list()
           }
           
-          mod_1_1(days = days, N = N, env_type = env, th_forage_sc = th_forage_sc, daylight_h = daylight_h)
+          mod_2_1(days = days, N = N, env_type = env, th_forage_fr = th_forage_fr, daylight_h = daylight_h)
           
           
           list_means_envs[[env]]<-mean_dfs

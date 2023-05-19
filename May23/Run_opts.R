@@ -15,7 +15,7 @@ library(pracma)         # For the linspace option. Selecting a collection of lin
 library(ggplot2)
 # library(plotly)       # for 3D surface plot 
 # library(rgl)
-library(plot3D)         # for the 3d surface plot (simple basic one)
+library(plot3D)         # for the 3d surface plot (simple basic one) & the 4D one 
 # library(htmlwidgets)
 # library(webshot)
 # library(withr)
@@ -34,7 +34,7 @@ library(purrr)
 # library(tidyr)
 library(reshape2)
 library(hrbrthemes)     # for themes in ggplot 
-
+library(threejs)        # testing this for the 4d plot 
 
 
 ###########################
@@ -59,11 +59,11 @@ system.time({
   # DAYLIGHT HOURS 
     daylight_h<-8
   # set days
-    days<-5
+    days<-15
   # set individuals
     N<-10
   # Set the model type: 
-    modelType<-12
+    modelType<-131
 
 # set the number of cores 
 numCores<-(detectCores()-1)
@@ -205,6 +205,7 @@ if (modelType==11){
       
       # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
       # dev.new()
+      par(mar = c(1, 1, 1, 1))
   
       ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival') #, zlim= c(0, 1))
       
@@ -214,7 +215,7 @@ if (modelType==11){
 } else if (modelType==131){
   
           # Set the number of options for which each trheshold needs to be tested 
-          num_th<-10
+          num_th<-5
           # set the minima 
           min_th_sc1<-0
           min_th_sc2<-0
@@ -224,10 +225,9 @@ if (modelType==11){
           max_th_sc2<-0.4
           max_th_sc3<-0.4
           # create the vectors
-          th1_vec<-runif(n=num_th, min=min_th_sc1, max=max_th_sc1)
-          th2_vec<-runif(n=num_th, min=min_th_sc2, max=max_th_sc2)
-          th3_vec<-runif(n=num_th, min=min_th_sc3, max=max_th_sc3)
-          
+          th1_vec<-linspace(x1=min_th_sc1, x2=max_th_sc1, n=num_th)
+          th2_vec<-linspace(x1=min_th_sc2, x2=max_th_sc2, n=num_th)
+          th3_vec<-linspace(x1=min_th_sc3, x2=max_th_sc3, n=num_th)
           # create a matrix that contains all possible combinations 
           # var 1 = th 1
           # var 2 = th 2 
@@ -257,6 +257,7 @@ if (modelType==11){
             
           } # end of the foreach loop (individuals) 
           
+          # start here if you are not in the entire function 
           # clean up cluster 
           stopImplicitCluster()
           
@@ -265,24 +266,51 @@ if (modelType==11){
           
           outcome_opt_df$threshold1<-th1_th2_th3_comb[,1]
           outcome_opt_df$threshold2<-th1_th2_th3_comb[,2]
-          outcome_opt_df$threshold2<-th1_th2_th3_comb[,3]
+          outcome_opt_df$threshold3<-th1_th2_th3_comb[,3]
           
           # best ES
           ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
           # best HL
           HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
           
-          
-          
-          
-          
-          
-          
-          
           # save the data 
-          setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/Optimization")
-          save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+            setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3/Optimization")
+            save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
           
+          # Try and make the 4D plot 
+            z<-outcome_opt_df$threshold3
+            x<-outcome_opt_df$threshold1
+            y<-outcome_opt_df$threshold2
+            scatterplot3js(x,y,z,color=rainbow(outcome_opt_df$mean_ES_cur_th))
+            
+          # Or try 
+            z<-outcome_opt_df$threshold3
+            x<-outcome_opt_df$threshold1
+            y<-outcome_opt_df$threshold2
+            c<-outcome_opt_df$mean_ES_cur_th
+            c<-cut(c, breaks=100)
+            cols<-rainbow(100)[as.numeric(c)]
+            plot3d(x,y,z,col=cols)
+            
+          # Or try 
+            library(rgl)
+            z<-outcome_opt_df$threshold3
+            x<-outcome_opt_df$threshold1
+            y<-outcome_opt_df$threshold2
+            # scatter
+            scatter3d(threshold3 ~threshold1 + threshold2, groups=as.factor(outcome_opt_df$mean_ES_cur_th), data=outcome_opt_df, surface=F)
+            
+          # Or try 
+            library(plotly)
+            plot_ly(outcome_opt_df, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_ES_cur_th) %>%
+              add_markers() %>%
+              layout(scene = list(xaxis = list(title = 'TH1'),
+                                  yaxis = list(title = 'TH2'),
+                                  zaxis = list(title = 'TH3')))
+            
+            
+            
+            
           # create a matrix with the values for ES 
           ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
           # create a matrix with the values for HL 
@@ -291,13 +319,127 @@ if (modelType==11){
           # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
           # dev.new()
           
-          ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival') #, zlim= c(0, 1))
+          ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival', zlim= c(0, 1))
           
-          HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
-          
-          
+          HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife', zlim= c(0, (days*72)))
           
           
+          
+    } else if (modelType==132){
+            
+            # Set the number of options for which each trheshold needs to be tested 
+            num_th<-4
+            # set the minima 
+            min_th_sc1<-0
+            min_th_sc2<-0
+            min_th_sc3<-0
+            # set the maxima
+            max_th_sc1<-0.4
+            max_th_sc2<-0.4
+            max_th_sc3<-0.4
+            # create the vectors
+            th1_vec<-linspace(x1=min_th_sc1, x2=max_th_sc1, n=num_th)
+            th2_vec<-linspace(x1=min_th_sc2, x2=max_th_sc2, n=num_th)
+            th3_vec<-linspace(x1=min_th_sc3, x2=max_th_sc3, n=num_th)
+            
+            # create a matrix that contains all possible combinations 
+            # var 1 = th 1
+            # var 2 = th 2 
+            # var 3 = th 3
+            th1_th2_th3_comb<-as.matrix(expand.grid(th1_vec, th2_vec, th3_vec))
+            
+            # Now, its time to run the different combinations in parallel 
+            outcome_opt<-foreach(i=1:(nrow(th1_th2_th3_comb)), .packages = c("truncnorm", 'foreach', 'doParallel', 'purrr')) %dopar% {
+              
+              cur_th1<-th1_th2_th3_comb[i,1]
+              cur_th2<-th1_th2_th3_comb[i,2]
+              cur_th3<-th1_th2_th3_comb[i,3]
+              
+              # but only do this in the case that th2 is actually larger than th 1 
+              if ((cur_th1< cur_th2) && (cur_th1< cur_th3) && (cur_th2<cur_th3)){
+                env_func_1_3_2(days = days, N= N, th_forage_sc1 = cur_th1, th_forage_sc2 = cur_th2, th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType=modelType)
+              } else{
+                # Fill the variables wiht 0
+                # generate the average average end-survival for this threshold, across all the environments 
+                mean_ES_cur_th<-0
+                # and now for the average time till halflife 
+                mean_HL_cur_th<-0
+                # do the same for the 
+                output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+                return(output_env_func)
+              }
+              
+            } # end of the foreach loop (individuals) 
+            
+            # start here if you are not in the entire function 
+            # clean up cluster 
+            stopImplicitCluster()
+            
+            # put it in a dataframe 
+            outcome_opt_df<-ldply(outcome_opt, data.frame)
+            
+            outcome_opt_df$threshold1<-th1_th2_th3_comb[,1]
+            outcome_opt_df$threshold2<-th1_th2_th3_comb[,2]
+            outcome_opt_df$threshold3<-th1_th2_th3_comb[,3]
+            
+            # best ES
+            ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+            # best HL
+            HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+            
+            # save the data 
+            setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3/Optimization")
+            save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+            
+            # # Try and make the 4D plot 
+            # z<-outcome_opt_df$threshold3
+            # x<-outcome_opt_df$threshold1
+            # y<-outcome_opt_df$threshold2
+            # scatterplot3js(x,y,z,color=rainbow(outcome_opt_df$mean_ES_cur_th))
+            # 
+            # # Or try 
+            # z<-outcome_opt_df$threshold3
+            # x<-outcome_opt_df$threshold1
+            # y<-outcome_opt_df$threshold2
+            # c<-outcome_opt_df$mean_ES_cur_th
+            # c<-cut(c, breaks=100)
+            # cols<-rainbow(100)[as.numeric(c)]
+            # plot3d(x,y,z,col=cols)
+            # 
+            # # Or try 
+            # library(rgl)
+            # z<-outcome_opt_df$threshold3
+            # x<-outcome_opt_df$threshold1
+            # y<-outcome_opt_df$threshold2
+            # # scatter
+            # scatter3d(threshold3 ~threshold1 + threshold2, groups=as.factor(outcome_opt_df$mean_ES_cur_th), data=outcome_opt_df, surface=F)
+            # 
+            # # Or try 
+            # library(plotly)
+            # plot_ly(outcome_opt_df, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_ES_cur_th) %>%
+            #   add_markers() %>%
+            #   layout(scene = list(xaxis = list(title = 'TH1'),
+            #                       yaxis = list(title = 'TH2'),
+            #                       zaxis = list(title = 'TH3')))
+            # 
+            # 
+            # 
+            # 
+            # # create a matrix with the values for ES 
+            # ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
+            # # create a matrix with the values for HL 
+            # HL_matrix<-matrix(data=outcome_opt_df$mean_HL_cur_th, ncol=length(th2_vec))
+            # 
+            # # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
+            # # dev.new()
+            # 
+            # ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival', zlim= c(0, 1))
+            # 
+            # HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife', zlim= c(0, (days*72)))
+            # 
+            # 
+            # 
+            
           
   }else {
     print('help stop, something is wrong with the modeltype ')
