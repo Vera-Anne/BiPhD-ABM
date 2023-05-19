@@ -492,7 +492,7 @@
         
         output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
         
-        assign(paste0('output_env_function_th', th_forage_sc), output_env_func, envir=.GlobalEnv)
+        assign(paste0('output_env_function_th1=', th_forage_sc1, ' th2=', th_forage_sc2), output_env_func, envir=.GlobalEnv)
         
         return(output_env_func)
         
@@ -880,9 +880,6 @@
       } # end of model 1.3.2 function 
       
       
-      
-      
-      
       ########################
       #   ENVIRONMENT LOOP   #
       ########################
@@ -927,12 +924,278 @@
         
         output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
         
-        assign(paste0('output_env_function_th', th_forage_sc), output_env_func, envir=.GlobalEnv)
+        assign(paste0('output_env_function_th1=', th_forage_sc1, 'th2=', th_forage_sc2, 'th3=', th_forage_sc3), output_env_func, envir=.GlobalEnv)
+        
+        return(output_env_func)
+        
+      } # end environment function loop 
+      
+      env_func_1_3_2<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
+        
+        # Loop through the environments 
+        for (env in 1:18){
+          if (env==1){
+            list_means_envs<-list()
+          }
+          
+          mod_1_3_2(days = days, N = N, env_type = env, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3 = th_forage_sc3, daylight_h = daylight_h)
+          
+          
+          list_means_envs[[env]]<-mean_dfs
+          
+        }
+        
+        # print(environment())
+        #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
+        
+        # now select only the information about survival
+        list_means_envs<-lapply(list_means_envs, function(x){x$alive})
+        # now find the row with the closest value of survival to 0.5 (halflife)
+        halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
+        # Same for the end survival
+        end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==TS]})
+        
+        # now put relevant data in the global environment
+        # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
+        # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
+        # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
+        
+        # generate the average average end-survival for this threshold, across all the environments 
+        mean_ES_cur_th<-mean(unlist(end_survival_per_env))
+        # and now for the average time till halflife 
+        mean_HL_cur_th<-mean(unlist(halflife_per_env))
+        # do the same for the 
+        
+        
+        output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        
+        assign(paste0('output_env_function_th1=', th_forage_sc1, 'th2=', th_forage_sc2, 'th3=', th_forage_sc3), output_env_func, envir=.GlobalEnv)
         
         return(output_env_func)
         
       } # end environment function loop 
       
       
-
+      
+      
+      
+#################################################################
+##     Model 2.1: Non-hoarding bird, Access to Fat-reserves    ##
+#################################################################
+      
+      # model 1.1 
+      mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
+        
+        # Start the model 
+        # link to the function file 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        # set the number of cores 
+        numCores<-(detectCores()-1)
+        registerDoParallel(numCores)
+        
+        # Set up the general environment 
+        # This part is the same for each bird 
+        set_up_func_general(days, env_type, daylight_h)
+        
+        
+        ################################
+        #      individual loops        # 
+        ################################
+        
+        # The individual loops need to start now
+        # These should be parallelised 
+        
+        outcome_1_1<-foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+          
+          # link to the function file 
+          # setwd("C:/Local_R/BiPhD-ABM/")
+          # source('MOD_1_FuncSource.R')
+          
+          # Do a setup for the individual bird
+          # This includes the individual temperature pattern 
+          # And individual matrices 
+          #print('here')
+          set_up_func_indiv(days, env_type, daylight_h)
+          
+          # As we are running this in parallele, there is no 'i' for the number of indivuals 
+          # So we can use the same functions, but just need to make sure i is always set to 1 
+          i<-1
+          
+          ###################################
+          #   start the for loop  timesteps # 
+          ###################################
+          
+          # Start a for loop for each timestep 
+          for (t in 1:TS){
+            
+            # Set the current temperature 
+            temp_cur<<-total_temp_profile[t]
+            # Check if it is night or day 
+            if ((t%%72)<= n_daylight_timestep){
+              dayOrNight<<-1                       # this means it is day 
+            } else {
+              dayOrNight<<-0                       # this means it is night 
+            }
+            
+            ###########################
+            #     DEAD OR ALIVE?      #
+            ###########################
+            # Check which birds are dead or alive 
+            # set some variables for dead birds
+            # set some variables for alive birds 
+            dead_or_alive_func(t,i)
+            # The function above sets matrices of dead birds to 'NA' 
+            # The rest of the code only needs to happen for the alive birds 
+            
+            if(mat_alive[i,t]==1){
+              
+              ####################
+              #     SLEEPING     #
+              ####################
+              
+              sleep_func(t,i)
+              
+              if (sleep_count[i,t]==0){
+                
+                # RULE SPECIFIC FOR MODEL 1_1 
+                
+                # Only access to stomach-content & forage under threshold 
+                if ((mat_sc[i,t]) < th_forage_sc){
+                  # If this is the case, the bird is hungry and needs to forage for food 
+                  
+                  #################
+                  #     FORAGE    # 
+                  #################
+                  
+                  # At this point, foraging means to go out and find a NEW food item 
+                  forage_function(t,i)
+                  
+                  # RULE SPECIFIC TO MODEL 1_1
+                  
+                  # This means that we have a non-hoarding bird that forages under the sc-threshold 
+                  # It can only eat or rest. Eat-hoarding and hoarding are not possible 
+                  eat_func(t,i)
+                  
+                } else {
+                  
+                  ##################
+                  #    RESTING     # 
+                  ##################
+                  
+                  # If the bird is not foraging and eating, it will be resting (model 1.1)           
+                  rest_func(t,i)
+                  
+                } # end resting statement 
+                
+              } # End of the statement for awake birds 
+              
+              
+              ###################
+              #    EVERYONE     # 
+              ###################
+              # All alive birds, no matter if asleep or awake need to update these variables 
+              
+              ####################
+              #    PREDATION     #
+              ####################
+              
+              # Check if the bird is predated upon & caught 
+              predation_func(t,i)
+              
+              ##########################
+              #   ENERGY METABOLISM   # 
+              #########################
+              # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
+              en_metab_func(t,i)
+              
+              ##################################
+              #   PREPARE FOR NEXT TIMESTEP   # 
+              ##################################
+              
+              ts_prep_func(t,i, TS)
+              
+            } # end of loop for alive individuals 
+            
+            
+          } # end timestep loop
+          # Alternatively, I could try to create lists with the output 
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, predation_count, rest_count)
+          
+        } # end of the foreach loop (individuals) 
+        
+        # clean up cluster 
+        stopImplicitCluster()
+        
+        #return(outcome_1_1)
+        assign(paste0('outcome_1_1_env', env_type),outcome_1_1, envir=.GlobalEnv)
+        
+        create_df_func(outputFile = outcome_1_1, modelType = '11', env_type= env_type)
+        
+        #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
+        
+        
+        
+        
+        
+      } # end of model 1 function 
+      
+      # run it here 
+      #mod_1_1(10, 100, 8, 0.2, 8)
+      
+      ########################
+      #   ENVIRONMENT LOOP   #
+      ########################
+      
+      # The environment loop 
+      env_func_1_1<-function(days, N, th_forage_sc, daylight_h, modelType){
+        
+        # Loop through the environments 
+        for (env in 1:18){
+          if (env==1){
+            list_means_envs<-list()
+          }
+          
+          mod_1_1(days = days, N = N, env_type = env, th_forage_sc = th_forage_sc, daylight_h = daylight_h)
+          
+          
+          list_means_envs[[env]]<-mean_dfs
+          
+        }
+        
+        # print(environment())
+        #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
+        
+        # now select only the information about survival
+        list_means_envs<-lapply(list_means_envs, function(x){x$alive})
+        # now find the row with the closest value of survival to 0.5 (halflife)
+        halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
+        # Same for the end survival
+        end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==TS]})
+        
+        # now put relevant data in the global environment
+        # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
+        # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
+        # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
+        
+        # generate the average average end-survival for this threshold, across all the environments 
+        mean_ES_cur_th<-mean(unlist(end_survival_per_env))
+        # and now for the average time till halflife 
+        mean_HL_cur_th<-mean(unlist(halflife_per_env))
+        # do the same for the 
+        
+        
+        output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        
+        assign(paste0('output_env_function_th', th_forage_sc), output_env_func, envir=.GlobalEnv)
+        
+        return(output_env_func)
+        
+        # Set the coefficient for plotting the optimisations 
+        #assign(total_timesteps, (days*72), envir = .GlobalEnv)
+        
+      } # end environment function loop 
+      
+      
+      
 
