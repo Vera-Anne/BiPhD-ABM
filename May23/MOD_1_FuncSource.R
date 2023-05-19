@@ -1010,7 +1010,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   mean_dfs<<-lapply(mean_dfs, setNames, nm=names)
   
   # Now give the dataframes a name 
-  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'mass', 'p_kill', 'predation')
+  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'mass',  'predation', 'rest')
   names(mean_dfs)<<-variable_names
   
   # export the mean_dfs as a specific name 
@@ -1057,14 +1057,14 @@ plots_12_func<-function(inputdata, modelType){
   inputdata[id == "mass",y_min := 0]
   inputdata[id == "mass",y_max := 15]
 
-  inputdata[id == "p_kill",y_min := 0]
-  inputdata[id == "p_kill",y_max := 1]
-
   inputdata[id == "predation",y_min := 0]
   inputdata[id == "predation",y_max := 1]
 
   inputdata[id == "stom_con",y_min := 0]
   inputdata[id == "stom_con",y_max := 0.5]
+  
+  inputdata[id == 'rest', y_min := 0]
+  inputdata[id == 'rest', y_max := 1]
 
   plot<-ggplot(inputdata, aes(x=timestep, y=value)) + 
     geom_line() +

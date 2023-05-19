@@ -24,7 +24,7 @@
 # library(grid)
 # library(lattice)
 # library(dplyr)
-# library(data.table)
+ library(data.table)
 # library(tidyverse)
 # library(viridis)
 # library(foreach)
@@ -62,7 +62,7 @@ source('ModelSource.R')
 ##   Model 1.2: Leftover-hoarding bird, Access to Stomach Content   ##
 ######################################################################
     
-    # Run model 1.1 
+    # Run model 1.2
     mod_1_2(10, 100, 8, 0.1, 0.3, 8)
     
     
@@ -78,23 +78,28 @@ source('ModelSource.R')
     env_func_1_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, daylight_h = 8, modelType = 12)
 
 ######################################################################
-##   Model 1.2: Leftover-hoarding bird, Access to Stomach Content   ##
+##   Model 1.3: Direct hoarding bird, Access to Stomach Content   ##
 ######################################################################
     
-    # Run model 1.1 
-    mod_1_3(10, 100, 8, 0.1, 0.2, 0.3, 8)
+# Run model 1.3.1
+    mod_1_3_1(10, 100, 8, 0.1, 0.2, 0.25, 8)
     
     
     #  CONCATENATE THE DATAFRAMES 
     #create_df_func(outputFile = outcome_1_1_env8, modelType = '11')
     # create plots 
-    plots_12_func(inputdata=total_vars_df13, modelType='13')
+    plots_12_func(inputdata=total_vars_df131, modelType='131')
     # if needed 
-    plot_12_12
+    plot_12_131
     
     
     # rUN IT FOR THE 18 ENVIRONMENTS 
-    env_func_1_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 12)
+    env_func_1_3_1(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
     
     
-    
+# Run model 1.3.2 
+    mod_1_3_2(10, 100, 8, 0.1, 0.2, 0.25, 8)
+    # now plot
+    plots_12_func(inputdata = total_vars_df132, modelType='132')
+    # output
+    plot_12_132
