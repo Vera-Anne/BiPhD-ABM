@@ -34,7 +34,8 @@ library(purrr)
 # library(tidyr)
 library(reshape2)
 library(hrbrthemes)     # for themes in ggplot 
-library(threejs)        # testing this for the 4d plot 
+#library(threejs)        # testing this for the 4d plot 
+library(plotly)         # For the 3D scatterplot 
 
 
 ###########################
@@ -247,9 +248,9 @@ if (modelType==11){
             } else{
               # Fill the variables wiht 0
               # generate the average average end-survival for this threshold, across all the environments 
-              mean_ES_cur_th<-0
+              mean_ES_cur_th<-NA
               # and now for the average time till halflife 
-              mean_HL_cur_th<-0
+              mean_HL_cur_th<-NA
               # do the same for the 
               output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
               return(output_env_func)
@@ -276,42 +277,30 @@ if (modelType==11){
           # save the data 
             setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3/Optimization")
             save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
-          
-          # Try and make the 4D plot 
-            z<-outcome_opt_df$threshold3
-            x<-outcome_opt_df$threshold1
-            y<-outcome_opt_df$threshold2
-            scatterplot3js(x,y,z,color=rainbow(outcome_opt_df$mean_ES_cur_th))
-            
-          # Or try 
-            z<-outcome_opt_df$threshold3
-            x<-outcome_opt_df$threshold1
-            y<-outcome_opt_df$threshold2
-            c<-outcome_opt_df$mean_ES_cur_th
-            c<-cut(c, breaks=100)
-            cols<-rainbow(100)[as.numeric(c)]
-            plot3d(x,y,z,col=cols)
-            
-          # Or try 
-            library(rgl)
-            z<-outcome_opt_df$threshold3
-            x<-outcome_opt_df$threshold1
-            y<-outcome_opt_df$threshold2
-            # scatter
-            scatter3d(threshold3 ~threshold1 + threshold2, groups=as.factor(outcome_opt_df$mean_ES_cur_th), data=outcome_opt_df, surface=F)
-            
-          # Or try 
-            library(plotly)
+          # set margins to normal
+            #par(mar = c(2, 2, 2, 2))
+          # Plot the end survival 
             plot_ly(outcome_opt_df, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_ES_cur_th) %>%
               add_markers() %>%
               layout(scene = list(xaxis = list(title = 'TH1'),
                                   yaxis = list(title = 'TH2'),
-                                  zaxis = list(title = 'TH3')))
+                                  zaxis = list(title = 'TH3')), 
+                     title = list(text='Mean End survival - Mod 1.3.1 - 3 thresholds ', y=0.95))
+          # And the halflife 
+            plot_ly(outcome_opt_df, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_HL_cur_th) %>%
+              add_markers() %>%
+              layout(scene = list(xaxis = list(title = 'TH1'),
+                                  yaxis = list(title = 'TH2'),
+                                  zaxis = list(title = 'TH3')), 
+                     title = list(text='Mean Halflife - Mod 1.3.1 - 3 thresholds ', y=0.95))
+            
+            
+          
+          
             
             
             
-            
-          # create a matrix with the values for ES 
+            # create a matrix with the values for ES 
           ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
           # create a matrix with the values for HL 
           HL_matrix<-matrix(data=outcome_opt_df$mean_HL_cur_th, ncol=length(th2_vec))
