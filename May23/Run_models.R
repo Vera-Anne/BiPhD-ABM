@@ -56,8 +56,15 @@ source('ModelSource.R')
 
     
 # rUN IT FOR THE 18 ENVIRONMENTS 
-    env_func_1_1(days = 3, N= 5, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
-
+    system.time({
+    env_func_1_1(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
+    })
+    
+  # and then parallel 
+    system.time({
+    env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
+    })
+    
 ######################################################################
 ##   Model 1.2: Leftover-hoarding bird, Access to Stomach Content   ##
 ######################################################################
