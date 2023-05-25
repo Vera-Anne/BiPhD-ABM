@@ -339,6 +339,57 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
 
 } # end set-up function for individuals 
 
+set_up_func_indiv2<-function(days, env_type, daylight_h, TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, n_daylight_timestep){
+  #print('here')
+  # # link to the function file 
+  # setwd("C:/Local_R/BiPhD-ABM/")
+  # source('MOD_1_FuncSource.R')
+  
+  # Run hte temperature function 
+  # Running this seperately for each individual brings in some desired stochasticity 
+  temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+  
+  # The output of the temperature function is a variable called 'total_temp_profile', 
+  # This is just a vector with a temperature for each timestep 
+  # This can later be used for the current temp determination 
+  
+  # MATRICES 
+  # create individual matrices (Global)
+  mat_alive<<-matrix(NA, 1, TS)            # matrix to keep track of who's alive 
+  mat_sc<<-matrix(NA, 1, TS)               # matrix to keep track of stomach contents
+  mat_fr<<-matrix(NA, 1, TS)               # matrix to keep track of fat reserves 
+  mat_mass<<-matrix(NA,1,TS)               # matrix to keep track of mass of birds 
+  mat_caches<<-matrix(NA,1,TS)             # matrix to keep track of the number of caches each bird has at each timestep
+  mat_Pkill<<-matrix(NA,1,TS)              # matrix to keep track of what Pkill every bird had at each timestep
+  mat_find_food<<-matrix(NA, 1, TS)         # Keep track of how many food items are found 
+  
+  # fill in some initial values for agent variables  (global)
+  # This also needs to be specific (and stochastic) for the individual
+  mass_init<<-8+(rtruncnorm(1, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
+  sc_init<<-0+(rtruncnorm(1, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
+  fr_init<<-0+(rtruncnorm(1, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
+  alive_init<<-rep(1, 1 )                                                     # all birds are alive at the start 
+  caches_init<<-round(0+(rtruncnorm(1, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
+  
+  # Put these in first column of the matrices  
+  mat_alive[,1]<<-alive_init
+  mat_sc[,1]<<-sc_init
+  mat_fr[,1]<<-fr_init
+  mat_mass[,1]<<-mass_init
+  mat_caches[,1]<<-caches_init
+  
+  # Keep track of what the bird is doing 
+  forage_count<<-matrix(NA, 1, TS)
+  rest_count<<-matrix(NA, 1, TS)
+  sleep_count<<-matrix(NA, 1,TS)
+  retrieve_count<<-matrix(NA, 1, TS)
+  eat_hoard_count<<-matrix(NA, 1, TS)
+  eat_count<<-matrix(NA, 1, TS)
+  predation_count<<-matrix(NA, 1,TS)                               # Keep track of how many birds have actually been killed by predation
+  hoard_count<<-matrix(NA, 1, TS)
+  
+} # end set-up function for individuals 
+
 #################################
 #     Temperature function      #
 #################################
@@ -969,6 +1020,7 @@ retrieve_output_func<-function(modelType, fileName){
 ######################################
 
 create_df_func<-function(outputFile, modelType, env_type){
+  require(purrr)
   N<-nrow(outputFile)
   
   for (k in 1:12){

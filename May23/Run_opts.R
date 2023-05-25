@@ -47,7 +47,7 @@ library(plotly)         # For the 3D scatterplot
     # N<-100
     # th_forage_sc<-0.2
     # daylight_h<-8
-system.time({
+# system.time({
   
   # link to the function file 
   # This contains all the general, smaller funcitons needed for the models 
@@ -60,9 +60,9 @@ system.time({
   # DAYLIGHT HOURS 
     daylight_h<-8
   # set days
-    days<-3
+    days<-30
   # set individuals
-    N<-10
+    N<-100
   # Set the model type: 
     modelType<-12
 
@@ -144,7 +144,7 @@ if (modelType==11){
     # end of if modeltype = 1.1 
 } else if (modelType==12){
     # Set the number of options for which each trheshold needs to be tested 
-      num_th<-
+      num_th<-5
       # set the minima 
       min_th_sc1<-0
       min_th_sc2<-0
@@ -400,7 +400,130 @@ beep()
 
 
 
+# When optimizing on the environment level 
+
+# daylight_h<-8
+system.time({
+  
+  # link to the function file 
+  # This contains all the general, smaller funcitons needed for the models 
+  setwd("C:/Local_R/BiPhD-ABM/May23")
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+  
+  # SET PARAMETERS FOR OPTIMIZATION 
+  
+  # DAYLIGHT HOURS 
+  daylight_h<-8
+  # set days
+  days<-30
+  # set individuals
+  N<-1000
+  # Set the model type: 
+  modelType<-12
+  
+
+  # set up the values for which you want to optimise 
+  # This needs to be different for the different models 
+  if (modelType==11){
     
+    print('model 1.1 ')
+    
+    # end of if modeltype = 1.1 
+  } else if (modelType==12){
+    # Set the number of options for which each trheshold needs to be tested 
+    num_th<-20
+    # set the minima 
+    min_th_sc1<-0
+    min_th_sc2<-0
+    # set the maxima
+    max_th_sc1<-0.4
+    max_th_sc2<-0.4
+    # create the vectors
+    th1_vec<-linspace(x1=min_th_sc1, x2=max_th_sc1, n=num_th)
+    th2_vec<-linspace(x1=min_th_sc2, x2=max_th_sc2, n=num_th)
+    # create a matrix that contains all possible combinations 
+    # var 1 = th 1
+    # var 2 = th 2 
+    th1_th2_comb<-as.matrix(expand.grid(th1_vec, th2_vec))
+    
+    # Now, make a for loop 
+    
+    for (i in 1:nrow(th1_th2_comb)){
+      if (i==1){
+        list_1_2<-list()
+      }
+      
+      cur_th1<-th1_th2_comb[i,1]
+      cur_th2<-th1_th2_comb[i,2]
+      
+      # but only do this in the case that th2 is actually larger than th 1 
+      if (cur_th2>cur_th1){
+        env_func_1_2_par(days = days, N= N, th_forage_sc1 = cur_th1, th_forage_sc2 = cur_th2, daylight_h = daylight_h, modelType=modelType)
+      
+        } else{
+        # Fill the variables wiht 0
+        # generate the average average end-survival for this threshold, across all the environments 
+        mean_ES_cur_th<-0
+        # and now for the average time till half life 
+        mean_HL_cur_th<-0
+        # do the same for the 
+        output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        
+        }
+      
+      list_1_2[[length(list_1_2)+1]]<-output_env_func
+      
+      print(paste('model 1.2 opt par-env combination =', i))
+    }
+    
+    
+    # put it in a dataframe 
+    outcome_opt_df<-ldply(list_1_2, data.frame)
+    
+    outcome_opt_df$threshold1<-th1_th2_comb[,1]
+    outcome_opt_df$threshold2<-th1_th2_comb[,2]
+    
+    # best ES
+    ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+    # best HL
+    HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+    
+    # save the data 
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/Optimization")
+    save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+    
+    # create a matrix with the values for ES
+    ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
+    # create a matrix with the values for HL
+    HL_matrix<-matrix(data=outcome_opt_df$mean_HL_cur_th, ncol=length(th2_vec))
+    
+    # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
+    # dev.new()
+    par(mar = c(1, 1, 1, 1))
+    
+    ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival') #, zlim= c(0, 1))
+    
+    HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
+    
+    
+  } else if (modelType==131){
+    
+   print('131')
+  } else if (modelType==132){
+    
+    print('132')
+    
+  }else {
+    print('help stop, something is wrong with the modeltype ')
+  }
+  beep()
+}) # end the time thingey 
+
+
+
+
+
     
 
 
