@@ -60,11 +60,11 @@ system.time({
   # DAYLIGHT HOURS 
     daylight_h<-8
   # set days
-    days<-15
+    days<-3
   # set individuals
     N<-10
   # Set the model type: 
-    modelType<-132
+    modelType<-12
 
 # set the number of cores 
 numCores<-(detectCores()-1)
@@ -74,7 +74,7 @@ registerDoParallel(numCores)
 # This needs to be different for the different models 
 if (modelType==11){
   # Set the number of thresholds you want to test for
-    num_th<-1000
+    num_th<-100
   # The minimum 
     min_th_val<-0
   # And the maximum 
@@ -144,7 +144,7 @@ if (modelType==11){
     # end of if modeltype = 1.1 
 } else if (modelType==12){
     # Set the number of options for which each trheshold needs to be tested 
-      num_th<-10
+      num_th<-
       # set the minima 
       min_th_sc1<-0
       min_th_sc2<-0
@@ -172,7 +172,7 @@ if (modelType==11){
           # Fill the variables wiht 0
             # generate the average average end-survival for this threshold, across all the environments 
             mean_ES_cur_th<-0
-            # and now for the average time till halflife 
+            # and now for the average time till half life 
             mean_HL_cur_th<-0
             # do the same for the 
             output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
@@ -199,20 +199,20 @@ if (modelType==11){
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/Optimization")
       save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
       
-      # create a matrix with the values for ES 
+      # create a matrix with the values for ES
       ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
-      # create a matrix with the values for HL 
+      # create a matrix with the values for HL
       HL_matrix<-matrix(data=outcome_opt_df$mean_HL_cur_th, ncol=length(th2_vec))
-      
+
       # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
       # dev.new()
       par(mar = c(1, 1, 1, 1))
-  
+
       ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival') #, zlim= c(0, 1))
-      
+
       HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
-      
-      
+
+
 } else if (modelType==131){
   
           # Set the number of options for which each trheshold needs to be tested 
@@ -370,25 +370,26 @@ if (modelType==11){
             # set margins to normal
             #par(mar = c(2, 2, 2, 2))
             # Plot the end survival 
+    # comment this out to make sure everytig works. 
             
-            # Change the dataframe so that 'NA' for both HL and ES are not plotted 
+            # Change the dataframe so that 'NA' for both HL and ES are not plotted
             outcome_opt_df_plot<-subset(outcome_opt_df, (!is.na(outcome_opt_df[,1])) & (!is.na(outcome_opt_df[,2])))
-            
+
             plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_ES_cur_th) %>%
               add_markers(size=~mean_ES_cur_th, marker=list(sizeref=0.02, sizemode='area')) %>%
               layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
                                   yaxis = list(range=c(0, 0.4),title = 'TH2'),
-                                  zaxis = list(range=c(0, 0.4),title = 'TH3')), 
-                     title = list(text='1.3.2 Mean End survival  - 3 thresholds ', y=0.95)) 
-            # And the halflife 
+                                  zaxis = list(range=c(0, 0.4),title = 'TH3')),
+                     title = list(text='1.3.2 Mean End survival  - 3 thresholds ', y=0.95))
+            # And the halflife
             plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_HL_cur_th) %>%
               add_markers(size=~mean_HL_cur_th, marker=list(sizeref=0.02, sizemode='area')) %>%
               layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
                                   yaxis = list(range=c(0, 0.4),title = 'TH2'),
-                                  zaxis = list(range=c(0, 0.4),title = 'TH3')), 
+                                  zaxis = list(range=c(0, 0.4),title = 'TH3')),
                      title = list(text='1.3.2 Mean Halflife - 3 thresholds ', y=0.95))
-            
-          
+
+
   }else {
     print('help stop, something is wrong with the modeltype ')
   }
