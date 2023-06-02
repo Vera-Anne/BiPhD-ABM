@@ -12,7 +12,7 @@
 # library(devtools)
 # library(truncnorm)
 # library(pracma)
-# library(ggplot2)
+library(ggplot2)
 # library(plotly) # for 3D surface plot 
 # library(rgl)
 # library(plot3D)
@@ -27,10 +27,10 @@
  library(data.table)
 # library(tidyverse)
 # library(viridis)
-# library(foreach)
-# library(doParallel)
+library(foreach)
+library(doParallel)
 # library(purrr)
-# library(beepr)
+library(beepr)
 # library(tidyr)
 
 # link to the function file 
@@ -45,6 +45,7 @@ source('ModelSource.R')
 
 # Run model 1.1 
     mod_1_1(10, 100, 8, 0.2, 8)
+    mod_1_1(days=30, N=1000, env_type = 15, th_forage_sc = 0.2, daylight_h = 8)
 
 
     #  CONCATENATE THE DATAFRAMES 
@@ -70,7 +71,7 @@ source('ModelSource.R')
 ######################################################################
     
     # Run model 1.2
-    mod_1_2(10, 100, 8, 0.1, 0.3, 8)
+    mod_1_2(30, 100, 15, 0.1, 0.3, 8)
     
     
     #  CONCATENATE THE DATAFRAMES 
@@ -96,7 +97,7 @@ source('ModelSource.R')
 ######################################################################
     
 # Run model 1.3.1
-    mod_1_3_1(10, 100, 8, 0.1, 0.2, 0.25, 8)
+    mod_1_3_1(30, 1000, 15, 0.1, 0.2, 0.3, 8)
     
     
     #  CONCATENATE THE DATAFRAMES 
@@ -112,7 +113,7 @@ source('ModelSource.R')
     
     
 # Run model 1.3.2 
-    mod_1_3_2(10, 100, 8, 0.1, 0.2, 0.25, 8)
+    mod_1_3_2(30, 1000, 15, 0.1, 0.2, 0.3, 8)
     # now plot
     plots_12_func(inputdata = total_vars_df132, modelType='132')
     # output

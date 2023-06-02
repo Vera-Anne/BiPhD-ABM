@@ -416,11 +416,11 @@ system.time({
   # DAYLIGHT HOURS 
   daylight_h<-8
   # set days
-  days<-30
+  days<-3
   # set individuals
-  N<-1000
+  N<-10
   # Set the model type: 
-  modelType<-12
+  modelType<-131
   
 
   # set up the values for which you want to optimise 
@@ -581,7 +581,93 @@ system.time({
     
     
   } else if (modelType==131){
-    
+    #Set the number of options for which each trheshold needs to be tested
+              num_th<-5
+              # set the minima
+              min_th_sc1<-0
+              min_th_sc2<-0
+              min_th_sc3<-0
+              # set the maxima
+              max_th_sc1<-0.4
+              max_th_sc2<-0.4
+              max_th_sc3<-0.4
+              # create the vectors
+              th1_vec<-linspace(x1=min_th_sc1, x2=max_th_sc1, n=num_th)
+              th2_vec<-linspace(x1=min_th_sc2, x2=max_th_sc2, n=num_th)
+              th3_vec<-linspace(x1=min_th_sc3, x2=max_th_sc3, n=num_th)
+              # create a matrix that contains all possible combinations
+              # var 1 = th 1
+              # var 2 = th 2
+              # var 3 = th 3
+              th1_th2_th3_comb<-as.matrix(expand.grid(th1_vec, th2_vec, th3_vec))
+
+              # Now, its time to run the different combinations in parallel
+              outcome_opt<-foreach(i=1:(nrow(th1_th2_th3_comb)), .packages = c("truncnorm", 'foreach', 'doParallel', 'purrr')) %dopar% {
+
+                cur_th1<-th1_th2_th3_comb[i,1]
+                cur_th2<-th1_th2_th3_comb[i,2]
+                cur_th3<-th1_th2_th3_comb[i,3]
+
+                # but only do this in the case that th2 is actually larger than th 1
+                if ((cur_th1< cur_th2) && (cur_th1< cur_th3) && (cur_th2<cur_th3)){
+                  env_func_1_3_1(days = days, N= N, th_forage_sc1 = cur_th1, th_forage_sc2 = cur_th2, th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType=modelType)
+                } else{
+                  # Fill the variables wiht 0
+                  # generate the average average end-survival for this threshold, across all the environments
+                  mean_ES_cur_th<-NA
+                  # and now for the average time till halflife
+                  mean_HL_cur_th<-NA
+                  # do the same for the
+                  output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+                  return(output_env_func)
+                }
+
+              } # end of the foreach loop (individuals)
+
+              # start here if you are not in the entire function
+              # clean up cluster
+              stopImplicitCluster()
+
+              # put it in a dataframe
+              outcome_opt_df<-ldply(outcome_opt, data.frame)
+
+              outcome_opt_df$threshold1<-th1_th2_th3_comb[,1]
+              outcome_opt_df$threshold2<-th1_th2_th3_comb[,2]
+              outcome_opt_df$threshold3<-th1_th2_th3_comb[,3]
+
+              # best ES
+              ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+              # best HL
+              HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+
+              # save the data
+                setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3/Optimization")
+                save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+              # set margins to normal
+                #par(mar = c(2, 2, 2, 2))
+              # Plot the end survival
+
+              # Change the dataframe so that 'NA' for both HL and ES are not plotted
+
+
+                outcome_opt_df_plot<-subset(outcome_opt_df, (!is.na(outcome_opt_df[,1])) & (!is.na(outcome_opt_df[,2])))
+
+
+
+                plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_ES_cur_th) %>%
+                  add_markers(size=~mean_ES_cur_th, marker=list(sizeref=0.02, sizemode='area')) %>%
+                  layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
+                                      yaxis = list(range=c(0, 0.4),title = 'TH2'),
+                                      zaxis = list(range=c(0, 0.4),title = 'TH3')),
+                         title = list(text='1.3.1 Mean End survival - Mod 1.3.1 - 3 thresholds ', y=0.95))
+              # And the halflife
+                plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean_HL_cur_th) %>%
+                  add_markers(size=~mean_HL_cur_th, marker=list(sizeref=0.02, sizemode='area')) %>%
+                  layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
+                                      yaxis = list(range=c(0, 0.4),title = 'TH2'),
+                                      zaxis = list(range=c(0, 0.4),title = 'TH3')),
+                         title = list(text='1.3.1 Mean Halflife - Mod 1.3.1 - 3 thresholds ', y=0.95))
+
    print('131')
   } else if (modelType==132){
     
