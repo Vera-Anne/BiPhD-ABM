@@ -148,4 +148,24 @@ source('ModelSource.R')
       system.time({
         env_func_2_1_par(days = 30, N= 100, th_forage_fr = 2, daylight_h = 8, modelType = 21)
       })
+
+      
+  ######################################################################
+  ##   Model 2.2: Leftover-hoarding bird, Access to Fat - Reserves    ##
+  ######################################################################
+      
+      # Run model 2.2
+      mod_2_2(30, 100, 15, 1, 3, 8)
+      
+      # create plots 
+      plots_12_func(inputdata=total_vars_df22, modelType='22')
+      # if needed 
+      plot_12_22
+      
+      
+      # rUN IT FOR THE 18 ENVIRONMENTS 
+      # parallel 
+      system.time({
+        env_func_2_2_par(days = 30, N= 100, th_forage_fr1 = 0.1, th_forage_fr2 = 0.3, daylight_h = 8, modelType = 22)
+      })
       

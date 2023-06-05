@@ -62,7 +62,7 @@ system.time({
   # set individuals
   N<-1000
   # Set the model type: 
-  modelType<-21
+  modelType<-22
   
   print(paste(modelType))
   
@@ -387,6 +387,83 @@ system.time({
       ) +
       ggtitle(paste('Endsurvival and Timestep of Halflife for each threshold value, N=',N, ' days=',days, 'num_th=',num_th))
     opt_plot
+    
+  } else if (modelType==22){
+    print('debug 22 here')
+    # Set the number of options for which each trheshold needs to be tested 
+    num_th<-10
+    # set the minima 
+    min_th_fr1<-0
+    min_th_fr2<-0
+    # set the maxima
+    max_th_fr1<-4
+    max_th_fr2<-4
+    # create the vectors
+    th1_vec<-linspace(x1=min_th_fr1, x2=max_th_fr1, n=num_th)
+    th2_vec<-linspace(x1=min_th_fr2, x2=max_th_fr2, n=num_th)
+    # create a matrix that contains all possible combinations 
+    # var 1 = th 1
+    # var 2 = th 2 
+    th1_th2_comb<-as.matrix(expand.grid(th1_vec, th2_vec))
+    
+    # Now, make a for loop 
+    
+    for (i in 1:nrow(th1_th2_comb)){
+      if (i==1){
+        list_2_2<-list()
+      }
+      
+      cur_th1<-th1_th2_comb[i,1]
+      cur_th2<-th1_th2_comb[i,2]
+      
+      # but only do this in the case that th2 is actually larger than th 1 
+      if (cur_th2>cur_th1){
+        env_func_2_2_par(days = days, N= N, th_forage_fr1 = cur_th1, th_forage_fr2 = cur_th2, daylight_h = daylight_h, modelType=modelType)
+        
+      } else{
+        # Fill the variables wiht 0
+        # generate the average average end-survival for this threshold, across all the environments 
+        mean_ES_cur_th<-0
+        # and now for the average time till half life 
+        mean_HL_cur_th<-0
+        # do the same for the 
+        output_env_func<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        
+      }
+      
+      list_2_2[[length(list_2_2)+1]]<-output_env_func
+      
+      print(paste('model 2.2 opt par-env combination =', i))
+    }
+    
+    
+    # put it in a dataframe 
+    outcome_opt_df<-ldply(list_2_2, data.frame)
+    
+    outcome_opt_df$threshold1<-th1_th2_comb[,1]
+    outcome_opt_df$threshold2<-th1_th2_comb[,2]
+    
+    # best ES
+    ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+    # best HL
+    HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+    
+    # save the data 
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/Optimization")
+    save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+    
+    # create a matrix with the values for ES
+    ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
+    # create a matrix with the values for HL
+    HL_matrix<-matrix(data=outcome_opt_df$mean_HL_cur_th, ncol=length(th2_vec))
+    
+    # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
+    # dev.new()
+    par(mar = c(1, 1, 1, 1))
+    
+    ES_plot<-persp3D(z=ES_matrix, xlab='th_fr1', ylab='th_fr2', zlab='survival', main='Optimal survival for th_fr1 and th_fr2 - End Survival') #, zlim= c(0, 1))
+    
+    HL_plot<-persp3D(z=HL_matrix, xlab='th_fr1', ylab='th_fr2', zlab='Timesteps at 50% alive', main='Optimal survival for th_fr1 and th_fr2 - Halflife') #, zlim= c(0, (days*72)))
     
     
     
