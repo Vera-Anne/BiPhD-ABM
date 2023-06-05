@@ -114,6 +114,8 @@ source('ModelSource.R')
     
     # rUN IT FOR THE 18 ENVIRONMENTS 
     env_func_1_3_1(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
+    # rUN IT FOR THE 18 ENVIRONMENTS 
+    env_func_1_3_1_par(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
     
     
 # Run model 1.3.2 

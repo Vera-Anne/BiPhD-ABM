@@ -624,14 +624,15 @@
       
       # model 1.3.1 
       mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h){
-        
+        require(doParallel)
+        require(foreach)
         # Start the model 
         # link to the function file 
         setwd("C:/Local_R/BiPhD-ABM/May23")
         source('MOD_1_FuncSource.R')
         # set the number of cores 
-        numCores<-(detectCores()-1)
-        registerDoParallel(numCores)
+        #numCores<-(detectCores()-1)
+        #registerDoParallel(numCores)
         
         # Set up the general environment 
         # This part is the same for each bird 
@@ -807,11 +808,12 @@
         
         #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
         
-      } # end of model 1.2 function 
+      } # end of model 1.3.1 function 
       
       # model 1.3.2 
       mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h){
-        
+        require(doParallel)
+        require(foreach)
         # Start the model 
         # link to the function file 
         setwd("C:/Local_R/BiPhD-ABM/May23")
@@ -1046,6 +1048,68 @@
         return(output_env_func)
         
       } # end environment function loop 
+     
+       # the one that runs parallel 
+      env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
+        
+        
+        require(doParallel)
+        require(foreach)
+        
+        numCores<-(detectCores()-1)
+        registerDoParallel(numCores)
+        
+        num_env<-18 
+        
+        outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+          
+          setwd("C:/Local_R/BiPhD-ABM/May23")
+          source('MOD_1_FuncSource.R')
+          source('ModelSource.R')
+          
+          mod_1_3_1(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3= th_forage_sc3, daylight_h = daylight_h)
+          
+          #print('done')
+          
+          
+        }
+        
+        # clean up cluster 
+        stopImplicitCluster()
+        
+        # print(environment())
+        #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
+        
+        # now select only the information about survival
+        list_means_envs<-lapply(outcome_env_1_3_1_par, function(x){subset(x, x$id=='alive')})
+        
+        # now find the row with the closest value of survival to 0.5 (halflife)
+        halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
+        # Same for the end survival
+        end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
+        
+        # now put relevant data in the global environment
+        # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
+        # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
+        # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
+        
+        # generate the average average end-survival for this threshold, across all the environments 
+        mean_ES_cur_th<-mean(unlist(end_survival_per_env))
+        # and now for the average time till halflife 
+        mean_HL_cur_th<-mean(unlist(halflife_per_env))
+        # do the same for the 
+        
+        
+        output_env_func<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        
+        # assign(paste0('output_env_function_th1=', th_forage_sc1, ' th2=', th_forage_sc2), output_env_func, envir=.GlobalEnv)
+        
+        return(output_env_func)
+        
+        
+      } # end environment function loop 
+      
+      
       
       env_func_1_3_2<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
         
