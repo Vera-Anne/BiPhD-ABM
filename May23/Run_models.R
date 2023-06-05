@@ -164,11 +164,7 @@ source('ModelSource.R')
       
       
       # rUN IT FOR THE 18 ENVIRONMENTS 
-      system.time({
-        env_func_2_2(days = 30, N= 100, th_forage_fr1 = 1, th_forage_fr2 = 3, daylight_h = 8, modelType = 22)
-      })
-      
-      # the same but in parallel 
+      # parallel 
       system.time({
         env_func_2_2_par(days = 30, N= 100, th_forage_fr1 = 0.1, th_forage_fr2 = 0.3, daylight_h = 8, modelType = 22)
       })
