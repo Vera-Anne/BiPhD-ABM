@@ -58,9 +58,9 @@ system.time({
   # DAYLIGHT HOURS 
   daylight_h<-8
   # set days
-  days<-3
+  days<-30
   # set individuals
-  N<-10
+  N<-1000
   # Set the model type: 
   modelType<-21
   
@@ -323,7 +323,7 @@ system.time({
     print('debug 21 here')
     
     # Set the number of thresholds you want to test for
-      num_th<-10
+      num_th<-100
     # The minimum 
       min_th_val<-0
     # And the maximum 
