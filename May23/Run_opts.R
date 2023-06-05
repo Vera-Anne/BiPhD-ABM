@@ -420,7 +420,7 @@ system.time({
   # set individuals
   N<-10
   # Set the model type: 
-  modelType<-131
+  modelType<-21
   
 
   # set up the values for which you want to optimise 
@@ -672,6 +672,76 @@ system.time({
   } else if (modelType==132){
     
     print('132')
+    
+  } else if (modeltype==21){
+    
+    # Set the number of thresholds you want to test for
+      num_th<-100
+    # The minimum 
+      min_th_val<-0
+    # And the maximum 
+      max_th_val<-4
+    # create the vector that has the actual threshold values in it 
+      th_vec<-linspace( x1=min_th_val, x2=max_th_val, num_th)
+    # For loop to go through all the combinations 
+      for (i in 1:length(th_vec)){
+      if (i==1){
+        list_1_1<-list()
+      }
+      # Set the current threshold 
+        cur_th<-th_vec[i]
+      # Run the function with this threshold 
+        env_func_2_1_par(days = days, N= N, th_forage_fr = cur_th, daylight_h = daylight_h, modelType=modelType)
+      # Add the output to the outcome list 
+        list_2_1[[length(list_2_1)+1]]<-output_env_func
+      # To keep track when running 
+        print(paste('model 2.1 opt par-env threshold number =', i))
+    }
+    
+    # put it in a dataframe 
+      outcome_opt_df<-ldply(list_2_1, data.frame)
+    # Create a column with the threshold that goes with the outcome
+      outcome_opt_df$threshold<-th_vec
+    # best ES
+      ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+    # best HL
+      HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+    
+    # save the data 
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/Optimization")
+    
+    save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+    
+    coeff<-(days*72)
+    endsurvival_col<-rgb(0.2, 0.6, 0.9, 1)
+    halflife_col<-"#69b3a2"
+    
+    # Make a plot 
+    opt_plot<-ggplot(outcome_opt_df, aes(x=threshold))+
+      geom_line(aes(y=mean_ES_cur_th), size=2, col=endsurvival_col)+
+      geom_line(aes(y=mean_HL_cur_th/coeff), size=2, col=halflife_col) + 
+      scale_y_continuous(
+        
+        # Features of the first axis
+        name = "End survival %",
+        
+        # Add a second axis and specify its features
+        sec.axis = sec_axis(~.*coeff, name=paste("Timestep of halflife with total TS=", coeff))
+      )+ 
+      geom_point(aes(x=ES_best$threshold, y=ES_best$mean_ES_cur_th),colour='red', size=5)+
+      geom_point(aes(x=HL_best$threshold, y=(HL_best$mean_HL_cur_th/coeff)), colour='red', size=5)+
+      
+      #theme_ipsum() +
+      
+      theme(
+        axis.title.y = element_text(color = endsurvival_col, size=13, face='bold'),
+        axis.title.y.right = element_text(color = halflife_col, size=13, face='bold'),
+        axis.title.x=element_text(size=13, face='bold')
+      ) +
+      ggtitle(paste('Endsurvival and Timestep of Halflife for each threshold value, N=',N, ' days=',days, 'num_th=',num_th))
+    opt_plot
+    
+    
     
   }else {
     print('help stop, something is wrong with the modeltype ')

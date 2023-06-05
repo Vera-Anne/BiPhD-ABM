@@ -10,7 +10,7 @@
 ##############################
 # library(usethis)
 # library(devtools)
-# library(truncnorm)
+library(truncnorm)
 # library(pracma)
 library(ggplot2)
 # library(plotly) # for 3D surface plot 
@@ -32,10 +32,14 @@ library(doParallel)
 # library(purrr)
 library(beepr)
 # library(tidyr)
+library(doParallel)         # For runing code parallel with dopar function 
+library(foreach)            # For running code parallel 
+
 
 # link to the function file 
 # This contains all the general, smaller funcitons needed for the models 
-setwd("C:/Local_R/BiPhD-ABM/May23")
+#setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
 source('MOD_1_FuncSource.R')
 source('ModelSource.R')
 
@@ -123,3 +127,23 @@ source('ModelSource.R')
     env_func_1_3_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 132)
     
     
+  #################################################################
+  ##   Model 2.1: Non-hoarding bird, Access to Fat Reserves      ##
+  #################################################################
+    
+    # Run model 2.1 
+      mod_2_1(days=30, N=1000, env_type = 15, th_forage_fr = 2, daylight_h = 8)
+  
+    
+    # create plots 
+      plots_12_func(inputdata=total_vars_df21, modelType='21')
+      # if needed 
+      plot_12_21
+      
+    
+    # Run IT FOR THE 18 ENVIRONMENTS 
+    # parallel 
+      system.time({
+        env_func_2_1_par(days = 30, N= 100, th_forage_fr = 2, daylight_h = 8, modelType = 21)
+      })
+      
