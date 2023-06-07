@@ -1673,4 +1673,390 @@
         
       } # end environment function loop 
       
+  
       
+  ######################################################################
+  ##     Model 2.3: direct-hoarding bird, Access to Fat-reserves      ##
+  ######################################################################
+      
+      # model 2.3.1 
+      mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h){
+        require(doParallel)
+        require(foreach)
+        # Start the model 
+        # link to the function file 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        # set the number of cores 
+        #numCores<-(detectCores()-1)
+        #registerDoParallel(numCores)
+        
+        # Set up the general environment 
+        # This part is the same for each bird 
+        set_up_func_general(days, env_type, daylight_h)
+        
+        ################################
+        #      individual loops        # 
+        ################################
+        
+        # The individual loops need to start now
+        # These should be parallelised 
+        
+        outcome_2_3_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+          
+          # Do a setup for the individual bird
+          # This includes the individual temperature pattern 
+          # And individual matrices 
+          set_up_func_indiv(days, env_type, daylight_h)
+          
+          # As we are running this in parallele, there is no 'i' for the number of indivuals 
+          # So we can use the same functions, but just need to make sure i is always set to 1 
+          i<-1
+          
+          ###################################
+          #   start the for loop  timesteps # 
+          ###################################
+          
+          # Start a for loop for each timestep 
+          for (t in 1:TS){
+            
+            # Set the current temperature 
+            temp_cur<<-total_temp_profile[t]
+            # Check if it is night or day 
+            if ((t%%72)<= n_daylight_timestep){
+              dayOrNight<<-1                       # this means it is day 
+            } else {
+              dayOrNight<<-0                       # this means it is night 
+            }
+            
+            ###########################
+            #     DEAD OR ALIVE?      #
+            ###########################
+            # Check which birds are dead or alive 
+            # set some variables for dead birds
+            # set some variables for alive birds 
+            dead_or_alive_func(t,i)
+            # The function above sets matrices of dead birds to 'NA' 
+            # The rest of the code only needs to happen for the alive birds 
+            
+            if(mat_alive[i,t]==1){
+              
+              ####################
+              #     SLEEPING     #
+              ####################
+              
+              sleep_func(t,i)
+              
+              if (sleep_count[i,t]==0){
+                
+                # RULE SPECIFIC FOR MODEL 2_3 
+                
+                if ((mat_fr[i,t])> th_forage_fr3){
+                  # This is above the third threshold, so the bird will do its direct hoarding, without eating at all 
+                  
+                  ############################
+                  #  FORAGE + HOARD DIRECT   #
+                  ############################
+                  
+                  #print('a bird forages and hoards')
+                  
+                  # At this point, foraging means to go out and find a NEW food item 
+                  forage_function(t,i)
+                  
+                  # Then directly just hoard it
+                  dir_hoard_func(t,i)
+                  
+                  
+                } else if (((mat_fr[i,t])> th_forage_fr2) && ((mat_fr[i,t])<= th_forage_fr3)){
+                  # The bird will be resting 
+                  
+                  ##################
+                  #    RESTING     # 
+                  ##################
+                  #print('a bird rests')
+                  # If the bird has a SC above the second threshold, it is not hungry at all and can go rest        
+                  rest_func(t,i)
+                  
+                } else if (((mat_fr[i,t])<=th_forage_fr1) && ((mat_caches[i,t])>retrieve_min)){
+                  
+                  #print('a bird retrieves')
+                  
+                  ####################
+                  ##   RETRIEVING   ## 
+                  #################### 
+                  
+                  # The bird will retrieve food items 
+                  retrieve_func(t,i)
+                  # End of retrieving statement 
+                  
+                  # RULE SPECIFIC FOR MODEL 1_3 
+                  
+                }else {
+                  
+                  # The the stomach content is larger than TH1 but smaller or equal to TH2, the bird needs to go out to forage and eat 
+                  # Note that the birds that tried to retrieve (low stomach content) but did not have caches are in here 
+                  
+                  ######################
+                  #     FORAGE  + EAT  # 
+                  ######################
+                  if (mat_fr[i,t]<=th_forage_fr1){
+                    #print('bird tried to retrieve but went to forage and eat ')
+                  }
+                  
+                  #print('a bird forage + eats ')
+                  
+                  # At this point, foraging means to go out and find a NEW food item 
+                  forage_function(t,i)
+                  
+                  # The bird can then eat the food item 
+                  # This means that we have a non-hoarding bird that forages under the sc-threshold 
+                  eat_func(t,i)
+                  
+                }
+                
+              } # End of the statement for awake birds 
+              
+              
+              ###################
+              #    EVERYONE     # 
+              ###################
+              # All alive birds, no matter if asleep or awake need to update these variables 
+              
+              ####################
+              #    PREDATION     #
+              ####################
+              
+              # Check if the bird is predated upon & caught 
+              predation_func(t,i)
+              
+              ##########################
+              #   ENERGY METABOLISM   # 
+              #########################
+              # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
+              en_metab_func(t,i)
+              
+              ##################################
+              #   PREPARE FOR NEXT TIMESTEP   # 
+              ##################################
+              
+              ts_prep_func(t,i, TS)
+              
+            } # end of loop for alive individuals 
+            
+            
+            
+            
+          } # end timestep loop
+          
+          
+          # Alternatively, I could try to create lists with the output 
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass,  predation_count, rest_count)
+          
+        } # end of the foreach loop (individuals) 
+        
+        
+        # clean up cluster 
+        stopImplicitCluster()
+        
+        #return(outcome_1_1)
+        assign(paste0('outcome_2_3_1_env', env_type),outcome_2_3_1, envir=.GlobalEnv)
+        
+        create_df_func(outputFile = outcome_2_3_1, modelType = '231', env_type= env_type)
+        
+      } # end of model 2.3.1 function 
+      
+    
+      
+      # model 2.3.2 
+      mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h){
+        require(doParallel)
+        require(foreach)
+        # Start the model 
+        # link to the function file 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        # set the number of cores 
+        numCores<-(detectCores()-1)
+        registerDoParallel(numCores)
+        
+        # Set up the general environment 
+        # This part is the same for each bird 
+        set_up_func_general(days, env_type, daylight_h)
+        
+        ################################
+        #      individual loops        # 
+        ################################
+        
+        # The individual loops need to start now
+        # These should be parallelised 
+        
+        outcome_2_3_2<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+          
+          # Do a setup for the individual bird
+          # This includes the individual temperature pattern 
+          # And individual matrices 
+          set_up_func_indiv(days, env_type, daylight_h)
+          
+          # As we are running this in parallele, there is no 'i' for the number of indivuals 
+          # So we can use the same functions, but just need to make sure i is always set to 1 
+          i<-1
+          
+          ###################################
+          #   start the for loop  timesteps # 
+          ###################################
+          
+          # Start a for loop for each timestep 
+          for (t in 1:TS){
+            
+            # Set the current temperature 
+            temp_cur<<-total_temp_profile[t]
+            # Check if it is night or day 
+            if ((t%%72)<= n_daylight_timestep){
+              dayOrNight<<-1                       # this means it is day 
+            } else {
+              dayOrNight<<-0                       # this means it is night 
+            }
+            
+            ###########################
+            #     DEAD OR ALIVE?      #
+            ###########################
+            # Check which birds are dead or alive 
+            # set some variables for dead birds
+            # set some variables for alive birds 
+            dead_or_alive_func(t,i)
+            # The function above sets matrices of dead birds to 'NA' 
+            # The rest of the code only needs to happen for the alive birds 
+            
+            if(mat_alive[i,t]==1){
+              
+              ####################
+              #     SLEEPING     #
+              ####################
+              
+              sleep_func(t,i)
+              
+              if (sleep_count[i,t]==0){
+                
+                # RULE SPECIFIC FOR MODEL 1_3_2 
+                
+                if ((mat_fr[i,t])> th_forage_fr3){
+                  # The bird will be resting above the 3rd threshold 
+                  
+                  ##################
+                  #    RESTING     # 
+                  ##################
+                  #print('a bird rests')
+                  # If the bird has a SC above the second threshold, it is not hungry at all and can go rest        
+                  rest_func(t,i)
+                  
+                  
+                  
+                } else if (((mat_fr[i,t])> th_forage_fr2) && ((mat_fr[i,t])<= th_forage_fr3)){
+                  # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
+                  
+                  ############################
+                  #  FORAGE + HOARD DIRECT   #
+                  ############################
+                  
+                  #print('a bird forages and hoards')
+                  
+                  # At this point, foraging means to go out and find a NEW food item 
+                  forage_function(t,i)
+                  
+                  # Then directly just hoard it
+                  dir_hoard_func(t,i)
+                  
+                  
+                } else if (((mat_fr[i,t])<=th_forage_fr1) && ((mat_caches[i,t])>retrieve_min)){
+                  
+                  #print('a bird retrieves')
+                  
+                  ####################
+                  ##   RETRIEVING   ## 
+                  #################### 
+                  
+                  # The bird will retrieve food items 
+                  retrieve_func(t,i)
+                  # End of retrieving statement 
+                  
+                  # RULE SPECIFIC FOR MODEL 1_3_2 
+                  
+                }else {
+                  
+                  # The the stomach content is larger than TH1 but smaller or equal to TH2, the bird needs to go out to forage and eat 
+                  # Note that the birds that tried to retrieve (low stomach content) but did not have caches are in here 
+                  
+                  ######################
+                  #     FORAGE  + EAT  # 
+                  ######################
+                  if (mat_fr[i,t]<=th_forage_fr1){
+                    #print('bird tried to retrieve but went to forage and eat ')
+                  }
+                  
+                  #print('a bird forage + eats ')
+                  
+                  # At this point, foraging means to go out and find a NEW food item 
+                  forage_function(t,i)
+                  
+                  # The bird can then eat the food item 
+                  # This means that we have a non-hoarding bird that forages under the sc-threshold 
+                  eat_func(t,i)
+                  
+                }
+                
+              } # End of the statement for awake birds 
+              
+              
+              ###################
+              #    EVERYONE     # 
+              ###################
+              # All alive birds, no matter if asleep or awake need to update these variables 
+              
+              ####################
+              #    PREDATION     #
+              ####################
+              
+              # Check if the bird is predated upon & caught 
+              predation_func(t,i)
+              
+              ##########################
+              #   ENERGY METABOLISM   # 
+              #########################
+              # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
+              en_metab_func(t,i)
+              
+              ##################################
+              #   PREPARE FOR NEXT TIMESTEP   # 
+              ##################################
+              
+              ts_prep_func(t,i, TS)
+              
+            } # end of loop for alive individuals 
+            
+            
+          } # end timestep loop
+          
+          
+          # Alternatively, I could try to create lists with the output 
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, predation_count, rest_count)
+          
+        } # end of the foreach loop (individuals) 
+        
+        
+        # clean up cluster 
+        stopImplicitCluster()
+        
+        #return(outcome_1_1)
+        assign(paste0('outcome_2_3_2_env', env_type),outcome_2_3_2, envir=.GlobalEnv)
+        
+        create_df_func(outputFile = outcome_2_3_2, modelType = '232', env_type= env_type)
+        
+       
+      } # end of model 2.3.2 function 
+      
+      
+    ########################
+    #   ENVIRONMENT LOOP   #
+    ########################
+      
+     
