@@ -155,7 +155,7 @@ source('ModelSource.R')
   ######################################################################
       
       # Run model 2.2
-      mod_2_2(30, 100, 15, 1, 3, 8)
+      mod_2_2(30, 1000, 15, 1, 3, 8)
       
       # create plots 
       plots_12_func(inputdata=total_vars_df22, modelType='22')
@@ -168,4 +168,35 @@ source('ModelSource.R')
       system.time({
         env_func_2_2_par(days = 30, N= 100, th_forage_fr1 = 0.1, th_forage_fr2 = 0.3, daylight_h = 8, modelType = 22)
       })
+      
+      
+  ######################################################################
+  ##    Model 2.3: Direct hoarding bird, Access to Fat - Reserves     ##
+  ######################################################################
+      
+      # Run model 2.3.1
+      mod_2_3_1(30, 1000, 15, 1, 2, 3, 8)
+      
+      # create plots 
+      plots_12_func(inputdata=total_vars_df231, modelType='231')
+      # if needed 
+      plot_12_231
+      
+      
+      # rUN IT FOR THE 18 ENVIRONMENTS 
+        # env_func_1_3_1(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
+      # rUN IT FOR THE 18 ENVIRONMENTS 
+        # env_func_1_3_1_par(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
+      
+      
+      # Run model 1.3.2 
+      mod_2_3_2(30, 1000, 15, 1, 2, 3, 8)
+      # now plot
+      plots_12_func(inputdata = total_vars_df232, modelType='232')
+      # output
+      plot_12_232
+      
+      # rUN IT FOR THE 18 ENVIRONMENTS 
+        # env_func_1_3_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 132)
+      
       

@@ -58,9 +58,9 @@ system.time({
   # DAYLIGHT HOURS 
   daylight_h<-8
   # set days
-  days<-3
+  days<-30
   # set individuals
-  N<-10
+  N<-1000
   # Set the model type: 
   modelType<-22
   
@@ -391,7 +391,7 @@ system.time({
   } else if (modelType==22){
     print('debug 22 here')
     # Set the number of options for which each trheshold needs to be tested 
-    num_th<-10
+    num_th<-100
     # set the minima 
     min_th_fr1<-0
     min_th_fr2<-0
