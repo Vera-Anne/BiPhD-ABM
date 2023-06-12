@@ -34,7 +34,7 @@ library(beepr)
 # library(tidyr)
 library(doParallel)         # For runing code parallel with dopar function 
 library(foreach)            # For running code parallel 
-
+library(ggpubr)             # To arrange plots 
 
 # link to the function file 
 # This contains all the general, smaller funcitons needed for the models 
@@ -48,8 +48,8 @@ source('ModelSource.R')
 #################################################################
 
 # Run model 1.1 
-    mod_1_1(10, 100, 8, 0.2, 8)
-    mod_1_1(days=30, N=1000, env_type = 15, th_forage_sc = 0.2, daylight_h = 8)
+    mod_1_1(30, 1000, 8, 0.2, 8)
+    mod_1_1(days=30, N=100, env_type = 8, th_forage_sc = 0.2, daylight_h = 8)
 
 
     #  CONCATENATE THE DATAFRAMES 
@@ -69,6 +69,10 @@ source('ModelSource.R')
     system.time({
     env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
     })
+    
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
+    
     
 ######################################################################
 ##   Model 1.2: Leftover-hoarding bird, Access to Stomach Content   ##
@@ -95,6 +99,10 @@ source('ModelSource.R')
     system.time({
     env_func_1_2_par(days = 30, N= 100, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, daylight_h = 8, modelType = 12)
     })
+    
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
+    
 
 ######################################################################
 ##   Model 1.3: Direct hoarding bird, Access to Stomach Content   ##
@@ -117,6 +125,8 @@ source('ModelSource.R')
     # rUN IT FOR THE 18 ENVIRONMENTS 
     env_func_1_3_1_par(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
     
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
     
 # Run model 1.3.2 
     mod_1_3_2(30, 1000, 15, 0.1, 0.2, 0.3, 8)
@@ -128,6 +138,8 @@ source('ModelSource.R')
     # rUN IT FOR THE 18 ENVIRONMENTS 
     env_func_1_3_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 132)
     
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
     
   #################################################################
   ##   Model 2.1: Non-hoarding bird, Access to Fat Reserves      ##

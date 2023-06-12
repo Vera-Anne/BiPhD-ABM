@@ -58,11 +58,11 @@ system.time({
   # DAYLIGHT HOURS 
   daylight_h<-8
   # set days
-  days<-30
+  days<-3
   # set individuals
-  N<-1000
+  N<-50
   # Set the model type: 
-  modelType<-22
+  modelType<-11
   
   print(paste(modelType))
   
@@ -70,7 +70,7 @@ system.time({
   # set up the values for which you want to optimise 
   # This needs to be different for the different models 
   if (modelType==11){
-    print('debug here')
+    
     # Set the number of thresholds you want to test for
     num_th<-100
     # The minimum 
@@ -87,12 +87,13 @@ system.time({
       
       cur_th<-th_vec[i]
       
-      # but only do this in the case that th2 is actually larger than th 1 
+      print('debug here  11')
      
-        env_func_1_1_par(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType=modelType)
+      env_func_1_1_par(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType=modelType)
         
       
-      list_1_1[[length(list_1_1)+1]]<-output_env_func
+      list_1_1[[length(list_1_1)+1]]<-output_env_func[[1]]
+      
       
       print(paste('model 1.1 opt par-env threshold number =', i))
     }
@@ -190,7 +191,7 @@ system.time({
         
         }
       
-      list_1_2[[length(list_1_2)+1]]<-output_env_func
+      list_1_2[[length(list_1_2)+1]]<-output_env_func[[1]]
       
       print(paste('model 1.2 opt par-env combination =', i))
     }
@@ -273,7 +274,7 @@ system.time({
                   
                 }
                 
-                list_1_3_1[[length(list_1_3_1)+1]]<-output_env_func
+                list_1_3_1[[length(list_1_3_1)+1]]<-output_env_func[[2]]
                 
                 print(paste('model 1.3.1 opt par-env combination =', i))
               }
@@ -340,7 +341,7 @@ system.time({
       # Run the function with this threshold 
         env_func_2_1_par(days = days, N= N, th_forage_fr = cur_th, daylight_h = daylight_h, modelType = modelType)
       # Add the output to the outcome list 
-        list_2_1[[length(list_2_1)+1]]<-output_env_func
+        list_2_1[[length(list_2_1)+1]]<-output_env_func[[2]]
       # To keep track when running 
         print(paste('model 2.1 opt par-env threshold number =', i))
     }
@@ -431,7 +432,7 @@ system.time({
         
       }
       
-      list_2_2[[length(list_2_2)+1]]<-output_env_func
+      list_2_2[[length(list_2_2)+1]]<-output_env_func[[2]]
       
       print(paste('model 2.2 opt par-env combination =', i))
     }

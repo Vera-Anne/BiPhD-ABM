@@ -1085,6 +1085,9 @@ plots_12_func<-function(inputdata, modelType){
   
   inputdata<-data.table(inputdata)
   
+  inputdata[id == "alive", y_min :=0]
+  inputdata[id == "alive", y_max :=1]
+  
   inputdata[id == "caches",y_min := 0]
   inputdata[id == "caches",y_max := 300]
 
@@ -1140,7 +1143,34 @@ plots_12_func<-function(inputdata, modelType){
 
 
 
+###############################
+#  plots environment function #
+###############################
 
+plot_env_18_surv<-function(output_env_func){
+  # Now do an overview image 
+  survival_graph<-output_env_func[2]
+  for (i in 1:length(survival_graph[[1]])){
+    if(i==1){
+      plot_list<-list()
+    }
+    cur_df<-subset(survival_graph[[1]][[i]], survival_graph[[1]][[i]]$id=="alive")
+    cur_plot<-ggplot(data=cur_df, aes(x=timestep, y=value))+
+      geom_line()+
+      ggtitle(label=paste('env=', i))+
+      ylim(0,1)
+    plot_list[[i]]<-cur_plot
+  }
+  
+  # plot it 
+  #do.call(what = grid.arrange, args=c(plot_list, ncol=3))
+  
+  # Then assign this some useful name 
+  assign(paste0('plot_list_env_'), plot_list, envir=.GlobalEnv)
+  #ggarrange(plot_list, ncol=3)
+  do.call(grid.arrange, c(plot_list, ncol=3))
+  
+}
 
 
 
