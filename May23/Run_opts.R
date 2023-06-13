@@ -63,6 +63,8 @@ system.time({
   N<-50
   # Set the model type: 
   modelType<-11
+  # number of threshold values for each 
+  num_th<-10
   
   print(paste(modelType))
   
@@ -72,7 +74,7 @@ system.time({
   if (modelType==11){
     
     # Set the number of thresholds you want to test for
-    num_th<-100
+    num_th<-num_th
     # The minimum 
     min_th_val<-0
     # And the maximum 
@@ -87,7 +89,7 @@ system.time({
       
       cur_th<-th_vec[i]
       
-      print('debug here  11')
+      # print('debug here  11')
      
       env_func_1_1_par(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType=modelType)
         
@@ -100,49 +102,37 @@ system.time({
 
     # put it in a dataframe 
     outcome_opt_df<-ldply(list_1_1, data.frame)
-    
-    
+    # add the threshold combinations 
     outcome_opt_df$threshold<-th_vec
-    # best ES
-    ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
     
-    # best HL
-    HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
-    # melt them 
-    #outcome_df_melt<-melt(outcome_opt_df, id.vars='threshold')
+    # calculate the best 
+    HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
+    
+    # Old code from when we used end survival and halflife (less accurate)
+        # # best ES
+        # ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+        # # best HL
+        # HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+        # # melt them 
+        # #outcome_df_melt<-melt(outcome_opt_df, id.vars='threshold')
     
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/Optimization")
     
     save(outcome_opt_df, file=paste0('outcome_opt_', modelType, 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
-    
-    coeff<-(days*72)
-    endsurvival_col<-rgb(0.2, 0.6, 0.9, 1)
+
     halflife_col<-"#69b3a2"
     
     # Make a plot 
     opt_plot<-ggplot(outcome_opt_df, aes(x=threshold))+
-      geom_line(aes(y=mean_ES_cur_th), size=2, col=endsurvival_col)+
-      geom_line(aes(y=mean_HL_cur_th/coeff), size=2, col=halflife_col) + 
-      scale_y_continuous(
-        
-        # Features of the first axis
-        name = "End survival %",
-        
-        # Add a second axis and specify its features
-        sec.axis = sec_axis(~.*coeff, name=paste("Timestep of halflife with total TS=", coeff))
-      )+ 
-      geom_point(aes(x=ES_best$threshold, y=ES_best$mean_ES_cur_th),colour='red', size=5)+
-      geom_point(aes(x=HL_best$threshold, y=(HL_best$mean_HL_cur_th/coeff)), colour='red', size=5)+
-      
-      #theme_ipsum() +
-      
+      geom_line(aes(y=mean), size=2, col=halflife_col)+
+      geom_point(aes(x=HL_best$threshold, y=(HL_best$mean)), colour='#ffcc00', size=5)+
+      #geom_ribbon(aes(y = mean, ymin=mean-SD, ymax=mean+SD), color = "#69b3a2", fill = alpha("#69b3a2", .5))+
       theme(
-        axis.title.y = element_text(color = endsurvival_col, size=13, face='bold'),
-        axis.title.y.right = element_text(color = halflife_col, size=13, face='bold'),
+        axis.title.y = element_text(color = 'black', size=13, face='bold'),
         axis.title.x=element_text(size=13, face='bold')
       ) +
-      ggtitle(paste('Endsurvival and Timestep of Halflife for each threshold value, N=',N, ' days=',days, 'num_th=',num_th))
+      ggtitle(paste('Mean timestep where halflife is reached per threshold, N=',N, ' days=',days, 'num_th=',num_th))
     opt_plot
     
       
@@ -324,7 +314,7 @@ system.time({
     print('debug 21 here')
     
     # Set the number of thresholds you want to test for
-      num_th<-100
+      num_th<-10
     # The minimum 
       min_th_val<-0
     # And the maximum 

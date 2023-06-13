@@ -29,7 +29,7 @@ library(ggplot2)
 # library(viridis)
 library(foreach)
 library(doParallel)
-# library(purrr)
+ library(purrr)             # for making lists into dataframes 
 library(beepr)
 # library(tidyr)
 library(doParallel)         # For runing code parallel with dopar function 

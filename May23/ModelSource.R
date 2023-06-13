@@ -305,30 +305,54 @@
         # clean up cluster 
         stopImplicitCluster()
         
-        # print(environment())
-        #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
+        # The result we have at this point is 'outcome_env_1_1_par' 
+        # These will have the same form for each of the models
+        # So I will need to write a function that takes care of this and outputs the t_halflife 
         
-        # now select only the information about survival
-        list_means_envs<-lapply(outcome_env_1_1_par, function(x){subset(x, x$id=='alive')})
+        # load any functions 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        source('ModelSource.R')
         
-        # now find the row with the closest value of survival to 0.5 (halflife)
-        halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
-        # Same for the end survival
-        end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
+        # Create the variable called halflife_input
+        halflife_input<-outcome_env_1_1_par
         
-        # now put relevant data in the global environment
-        # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
-        # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
-        # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
+        # run the t_halflife function 
+        t_halflife_func(halflife_input)
+        # put the output into a dataframe 
+        t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+        t_HL_df$env<-1:18
         
-        # generate the average average end-survival for this threshold, across all the environments 
-        mean_ES_cur_th<-mean(unlist(end_survival_per_env))
-        # and now for the average time till halflife 
-        mean_HL_cur_th<-mean(unlist(halflife_per_env))
-        # do the same for the 
+        # Calculate mean 
+        t_HL_mean<-mean(t_HL_df$V1)
+        t_HL_SD<-std(t_HL_df$V1)
+  
+        
+        #####  OLD CODE FOR THE HL AND END SURVIVAL 
+                # 
+                # 
+                # # now select only the information about survival
+                # list_means_envs<-lapply(outcome_env_1_1_par, function(x){subset(x, x$id=='alive')})
+                # 
+                # # now find the row with the closest value of survival to 0.5 (halflife)
+                # halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
+                # # Same for the end survival
+                # end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
+                # 
+                # # now put relevant data in the global environment
+                # # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
+                # # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
+                # # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
+                # 
+                # # generate the average average end-survival for this threshold, across all the environments 
+                # mean_ES_cur_th<-mean(unlist(end_survival_per_env))
+                # # and now for the average time till halflife 
+                # mean_HL_cur_th<-mean(unlist(halflife_per_env))
+                # # do the same for the 
         
         
-        performance<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        performance<<-cbind(t_HL_mean, t_HL_SD)
+        colnames(performance)<-c('mean', 'SD')
         output_env_func<<-list(performance, outcome_env_1_1_par)
         return(output_env_func)
         

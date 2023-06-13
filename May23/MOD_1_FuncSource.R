@@ -1140,9 +1140,6 @@ plots_12_func<-function(inputdata, modelType){
 }
 
 
-
-
-
 ###############################
 #  plots environment function #
 ###############################
@@ -1173,7 +1170,51 @@ plot_env_18_surv<-function(output_env_func){
 }
 
 
+###############################
+#      HALFLIFE FUNCTION      #
+###############################
 
+t_halflife_func<-function(halflife_input){
+  for (i in 1:length(halflife_input)){
+    if (i==1){
+    # list for the t_HL
+    t_HL_list<<-list()
+    # list for general fit summaries
+    fit_sum_list<-list()
+    } 
+    
+    # Create the dataframe you'll be dealing with 
+    df<-subset(halflife_input[[i]], halflife_input[[i]]$id=='alive')
+    # clean up the dataframe
+    df$timestep<-as.numeric(df$timestep)
+    df<-df[,2:3]
+    colnames(df)<-c('y', 't')
+    
+    # Now fit the model 
+      # I use a basic exponential decay curve 
+      # starting values need to be given 
+      fit<-nls(y ~ a*exp(-b*t), data=df, 
+               start=list(a=1, b=0.1))
+      # pull out hte summary --> this has the estimated values for a an db in it 
+      sum_fit<-summary(fit)
+      # put in the list 
+      fit_sum_list[[i]]<-sum_fit$parameters
+      
+    # Now, where does it cross the x-axis? 
+      # Set the current a & b 
+      cur_a<-fit_sum_list[[i]][1]
+      cur_b<-fit_sum_list[[i]][2]
+      # set the halflife 
+      y_halflife<-0.5
+      # now calculate the timestep at which this will occur 
+      t_halflife<-(-(log(y_halflife/cur_a)/cur_b))
+      # calculate y from there (just to check)
+      #ytest<-(cur_a*exp(-cur_b*t_halflife))
+      # put in the list 
+      t_HL_list[i]<<-t_halflife
+  }
+  return(t_HL_list)
+}
 
 
 
