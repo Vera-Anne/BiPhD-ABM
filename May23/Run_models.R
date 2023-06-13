@@ -49,7 +49,7 @@ source('ModelSource.R')
 
 # Run model 1.1 
     mod_1_1(30, 1000, 8, 0.2, 8)
-    mod_1_1(days=30, N=100, env_type = 8, th_forage_sc = 0.2, daylight_h = 8)
+    mod_1_1(days=3, N=10, env_type = 8, th_forage_sc = 0.2, daylight_h = 8)
 
 
     #  CONCATENATE THE DATAFRAMES 
@@ -61,9 +61,9 @@ source('ModelSource.R')
 
     
 # rUN IT FOR THE 18 ENVIRONMENTS 
-    system.time({
-    env_func_1_1(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
-    })
+    # system.time({
+    # env_func_1_1(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
+    # })
     
   # and then parallel 
     system.time({

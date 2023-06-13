@@ -216,8 +216,9 @@
 
         #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
         
-        
-    
+        # save the data 
+        #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/")
+        #save(outcome_1_1, file=paste0('outcome_1_1','d', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
 
         
       } # end of model 1 function 
@@ -354,6 +355,11 @@
         performance<<-cbind(t_HL_mean, t_HL_SD)
         colnames(performance)<-c('mean', 'SD')
         output_env_func<<-list(performance, outcome_env_1_1_par)
+        # # save the data 
+        # setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/env_par")
+        # save(output_env_func, file=paste0('env_func_out_', 'd', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+        
+        
         return(output_env_func)
         
         
