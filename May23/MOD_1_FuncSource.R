@@ -1191,10 +1191,13 @@ t_halflife_func<-function(halflife_input){
     colnames(df)<-c('y', 't')
     
     # Now fit the model 
+    
+      # To control the interations in NLS I use the following 
+      nls.control(maxiter = 100)
       # I use a basic exponential decay curve 
       # starting values need to be given 
       fit<-nls(y ~ a*exp(-b*t), data=df, 
-               start=list(a=1, b=0.1))
+               start=list(a=1, b=0.0000001))
       # pull out hte summary --> this has the estimated values for a an db in it 
       sum_fit<-summary(fit)
       # put in the list 
