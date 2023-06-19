@@ -52,15 +52,12 @@ source('ModelSource.R')
 
     system.time({
       # Run the model 
-      mod_1_1(days=3, N=10, env_type = 8, th_forage_sc = 0.2, daylight_h = 8)
+      mod_1_1(days=30, N=1000, env_type = 8, th_forage_sc = 0.2, daylight_h = 8)
       #  save the data 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/")
       save(total_vars_df11, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run11', 'd', days, 'N', N,'env_t', env_type, 'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
       
     })
-
-    # save if you want 
-    # I did not automate this, as I don't think it is relevant to save every single model run 
     
   
     # create plots 
@@ -68,15 +65,9 @@ source('ModelSource.R')
     # if needed 
     plot_12_11
 
-    
-# rUN IT FOR THE 18 ENVIRONMENTS 
-    # system.time({
-    # env_func_1_1(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
-    # })
-    
   # and then parallel 
     system.time({
-    env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
+    env_func_1_1_par(days = 30, N= 1000, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
     })
     
     # Now do an overview image 
@@ -183,7 +174,7 @@ source('ModelSource.R')
         mod_2_1(days=30, N=1000, env_type = 15, th_forage_fr = 2, daylight_h = 8)
       # save the results 
         setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/")
-        save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run21', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
+        save(total_vars_df21, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run21', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
       })
     
     # create plots 
@@ -197,6 +188,10 @@ source('ModelSource.R')
         env_func_2_1_par(days = 30, N= 100, th_forage_fr = 2, daylight_h = 8, modelType = 21)
       })
 
+    # Now do an overview image 
+      plot_env_18_surv(output_env_func)
+      
+      
       
 ######################################################################
 ##   Model 2.2: Leftover-hoarding bird, Access to Fat - Reserves    ##
@@ -208,7 +203,7 @@ source('ModelSource.R')
           mod_2_2(days=30, N=1000, env_type=15, th_forage_fr1=1, th_forage_fr2= 3, daylight_h = 8)
         # save the results 
           setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/")
-          save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run22', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'dayh', daylight_h,   '.Rda'))
+          save(total_vars_df22, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run22', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'dayh', daylight_h,   '.Rda'))
         })
       
       # create plots 
@@ -222,6 +217,9 @@ source('ModelSource.R')
           env_func_2_2_par(days = 30, N= 100, th_forage_fr1 = 0.1, th_forage_fr2 = 0.3, daylight_h = 8, modelType = 22)
         })
       
+      # Now do an overview image 
+        plot_env_18_surv(output_env_func)
+        
       
 ####################################################################################
 ##    Model 2.3.1: Direct hoarding bird, Access to Fat - Reserves - hoard top    ##
@@ -233,7 +231,7 @@ source('ModelSource.R')
           mod_2_3_1(days=30, N=1000, env_type=15, th_forage_fr1=1, th_forage_fr2=2, th_forage_fr3=3, daylight_h=8)
           # save the results 
           setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/")
-          save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run231', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
+          save(total_vars_df231, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run231', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
         }) 
       
       # create plots 
@@ -241,12 +239,12 @@ source('ModelSource.R')
         # if needed 
         plot_12_231
       
-      
-      # rUN IT FOR THE 18 ENVIRONMENTS 
-        # env_func_1_3_1(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
      
       # rUN IT FOR THE 18 ENVIRONMENTS 
-        env_func_2_3_1_par(days = 3, N= 5, th_forage_fr1 = 1, th_forage_fr2 = 2, th_forage_fr3 = 3, daylight_h = 8, modelType = 231)
+        env_func_2_3_1_par(days = 30, N= 50, th_forage_fr1 = 1, th_forage_fr2 = 2, th_forage_fr3 = 3, daylight_h = 8, modelType = 231)
+        
+      # Now do an overview image 
+        plot_env_18_surv(output_env_func)
       
 ####################################################################################
 ##    Model 2.3.2: Direct hoarding bird, Access to Fat - Reserves - rest  top    ##
@@ -258,17 +256,17 @@ source('ModelSource.R')
           mod_2_3_2(days=30, N=1000, env_type=15, th_forage_fr1=1, th_forage_fr2=2, th_forage_fr3=3, daylight_h=8)
           # save the results 
           setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/")
-          save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run232', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
+          save(total_vars_df232, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run232', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
         })
           
       # now plot
         plots_12_func(inputdata = total_vars_df232, modelType='232')
         # output
         plot_12_232
-      
-        # rUN IT FOR THE 18 ENVIRONMENTS 
-        # env_func_1_3_2(days = 3, N= 5, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 132)
+
       
       # RUN IT FOR THE 18 ENVIRONMENTS 
-        env_func_2_3_2_par(days = 3, N= 5, th_forage_fr1 = 1, th_forage_fr2 = 2, th_forage_fr3 = 3, daylight_h = 8, modelType = 232)
+        env_func_2_3_2_par(days = 30, N= 50, th_forage_fr1 = 1, th_forage_fr2 = 2, th_forage_fr3 = 3, daylight_h = 8, modelType = 232)
       
+      # Now do an overview image 
+        plot_env_18_surv(output_env_func)

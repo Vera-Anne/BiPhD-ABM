@@ -1717,7 +1717,7 @@
         
         # # save the data 
         setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/env_par")
-        save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'dayh', daylight_h,  '.Rda'))
+        save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th', th_forage_fr,'dayh', daylight_h,  '.Rda'))
         
         return(output_env_func)
       } # end environment function loop 
@@ -1731,7 +1731,16 @@
       
       # model 2.2 
       mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
-
+        
+        # make some of the variables global for saving 
+        days<<-days
+        N<<-N
+        env_type<<-env_type
+        th_forage_fr1<<-th_forage_fr1
+        th_forage_fr2<<-th_forage_fr2
+        daylight_h<<-daylight_h
+        
+        # Voor parralel if needed 
         require(foreach)
         require(doParallel)
         # Start the model 
@@ -1930,32 +1939,71 @@
         # clean up cluster 
         stopImplicitCluster()
         
-        # print(environment())
-        #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
+        # Old code 
+            # # print(environment())
+            # #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
+            # 
+            # # now select only the information about survival
+            # list_means_envs<-lapply(outcome_env_2_2_par, function(x){subset(x, x$id=='alive')})
+            # 
+            # # now find the row with the closest value of survival to 0.5 (halflife)
+            # halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
+            # # Same for the end survival
+            # end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
+            # 
+            # # now put relevant data in the global environment
+            # # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
+            # # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
+            # # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
+            # 
+            # # generate the average average end-survival for this threshold, across all the environments 
+            # mean_ES_cur_th<-mean(unlist(end_survival_per_env))
+            # # and now for the average time till halflife 
+            # mean_HL_cur_th<-mean(unlist(halflife_per_env))
+            # # do the same for the 
+            # 
+            # 
+            # performance<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+            # output_env_func<<-list(performance, outcome_env_2_2_par)
+            # return(output_env_func)
         
-        # now select only the information about survival
-        list_means_envs<-lapply(outcome_env_2_2_par, function(x){subset(x, x$id=='alive')})
-        
-        # now find the row with the closest value of survival to 0.5 (halflife)
-        halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
-        # Same for the end survival
-        end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
-        
-        # now put relevant data in the global environment
-        # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
-        # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
-        # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
-        
-        # generate the average average end-survival for this threshold, across all the environments 
-        mean_ES_cur_th<-mean(unlist(end_survival_per_env))
-        # and now for the average time till halflife 
-        mean_HL_cur_th<-mean(unlist(halflife_per_env))
-        # do the same for the 
         
         
-        performance<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
+        # The result we have at this point is 'outcome_env_2_2_par' 
+        # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
+        # It will go into the halflife function, so we find out at what point in time half of the birds are alive 
+        
+        # load any functions 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        source('ModelSource.R')
+        
+        
+        # Create the variable called halflife_input
+        halflife_input<-outcome_env_2_2_par
+        
+        # run the t_halflife function 
+        t_halflife_func(halflife_input)
+        # put the output into a dataframe 
+        t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+        t_HL_df$env<-1:18
+        
+        # Calculate mean 
+        t_HL_mean<-mean(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
+        
+        
+        # prepare for output of the env_function 
+        performance<<-cbind(t_HL_mean, t_HL_SD)
+        colnames(performance)<-c('mean', 'SD')
         output_env_func<<-list(performance, outcome_env_2_2_par)
+        
+        # # save the data 
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/env_par")
+        save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'dayh', daylight_h,  '.Rda'))
+        
         return(output_env_func)
+        
         
       } # end environment function loop 
       
@@ -1967,6 +2015,16 @@
       
       # model 2.3.1 
       mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h){
+        
+        # make some variables global 
+        days<<-days
+        N<<-N
+        env_type<<-env_type
+        th_forage_fr1<<-th_forage_fr1
+        th_forage_fr2<<-th_forage_fr2
+        th_forage_fr3<<-th_forage_fr3
+        daylight_h<<-daylight_h
+        
         require(doParallel)
         require(foreach)
         # Start the model 
@@ -2155,6 +2213,15 @@
       
       # model 2.3.2 
       mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h){
+        # make some variables global 
+        days<<-days
+        N<<-N
+        env_type<<-env_type
+        th_forage_fr1<<-th_forage_fr1
+        th_forage_fr2<<-th_forage_fr2
+        th_forage_fr3<<-th_forage_fr3
+        daylight_h<<-daylight_h
+        
         require(doParallel)
         require(foreach)
         # Start the model 
@@ -2341,8 +2408,143 @@
       } # end of model 2.3.2 function 
       
       
-    ########################
-    #   ENVIRONMENT LOOP   #
-    ########################
+      ########################
+      #   ENVIRONMENT LOOP   #
+      ########################
+      
+      # the one that runs parallel 
+      env_func_2_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h, modelType){
+        
+        
+        require(doParallel)
+        require(foreach)
+        
+        numCores<-(detectCores()-1)
+        registerDoParallel(numCores)
+        
+        num_env<-18 
+        
+        outcome_env_2_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+          
+          setwd("C:/Local_R/BiPhD-ABM/May23")
+          source('MOD_1_FuncSource.R')
+          source('ModelSource.R')
+          
+          mod_2_3_1(days = days, N = N, env_type = i, th_forage_fr1 = th_forage_fr1, th_forage_fr2 = th_forage_fr2, th_forage_fr3= th_forage_fr3, daylight_h = daylight_h)
+
+        }
+        
+        # clean up cluster 
+        stopImplicitCluster()
+        
+        # The result we have at this point is 'outcome_env_2_3_1_par' 
+        # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
+        # It will go into the halflife function, so we find out at what point in time half of the birds are alive 
+        
+        # load any functions 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        source('ModelSource.R')
+        
+        
+        # Create the variable called halflife_input
+        halflife_input<-outcome_env_2_3_1_par
+        
+        # run the t_halflife function 
+        t_halflife_func(halflife_input)
+        # put the output into a dataframe 
+        t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+        t_HL_df$env<-1:18
+        
+        # Calculate mean 
+        t_HL_mean<-mean(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
+        
+        
+        # prepare for output of the env_function 
+        performance<<-cbind(t_HL_mean, t_HL_SD)
+        colnames(performance)<-c('mean', 'SD')
+        output_env_func<<-list(performance, outcome_env_2_3_1_par)
+        
+        # # save the data 
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/env_par")
+        save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_231', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'th3', th_forage_fr3, 'dayh', daylight_h,  '.Rda'))
+        
+        # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
+        return(output_env_func)
+        
+      
+        
+      } # end environment function loop 
+      
+
+      
+      # The one that runs parallel 
+      env_func_2_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h, modelType){
+        
+        
+        require(doParallel)
+        require(foreach)
+        
+        numCores<-(detectCores()-1)
+        registerDoParallel(numCores)
+        
+        num_env<-18 
+        
+        outcome_env_2_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+          
+          setwd("C:/Local_R/BiPhD-ABM/May23")
+          source('MOD_1_FuncSource.R')
+          source('ModelSource.R')
+          
+          mod_2_3_2(days = days, N = N, env_type = i, th_forage_fr1 = th_forage_fr1, th_forage_fr2 = th_forage_fr2, th_forage_fr3= th_forage_fr3, daylight_h = daylight_h)
+          
+          #print('done')
+          
+          
+        }
+        
+        # clean up cluster 
+        stopImplicitCluster()
+        
+        # The result we have at this point is 'outcome_env_1_3_2_par' 
+        # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
+        # It will go into the halflife function, so we find out at what point in time half of the birds are alive 
+        
+        # load any functions 
+        setwd("C:/Local_R/BiPhD-ABM/May23")
+        source('MOD_1_FuncSource.R')
+        source('ModelSource.R')
+        
+        
+        # Create the variable called halflife_input
+        halflife_input<-outcome_env_2_3_2_par
+        
+        # run the t_halflife function 
+        t_halflife_func(halflife_input)
+        # put the output into a dataframe 
+        t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+        t_HL_df$env<-1:18
+        
+        # Calculate mean 
+        t_HL_mean<-mean(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
+        
+        
+        # prepare for output of the env_function 
+        performance<<-cbind(t_HL_mean, t_HL_SD)
+        colnames(performance)<-c('mean', 'SD')
+        output_env_func<<-list(performance, outcome_env_2_3_2_par)
+        
+        # # save the data 
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/env_par")
+        save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_232', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'th3', th_forage_fr3, 'dayh', daylight_h,  '.Rda'))
+        
+        # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
+        return(output_env_func)
+       
+      } # end environment function loop 
+      
+      
       
      
