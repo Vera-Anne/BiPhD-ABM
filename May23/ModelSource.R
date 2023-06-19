@@ -336,7 +336,7 @@
         
         # Calculate mean 
         t_HL_mean<-mean(t_HL_df$V1)
-        t_HL_SD<-std(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
   
         
         #####  OLD CODE FOR THE HL AND END SURVIVAL 
@@ -657,7 +657,7 @@
         
         # Calculate mean 
         t_HL_mean<-mean(t_HL_df$V1)
-        t_HL_SD<-std(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
         
         
         # prepare for output of the env_function 
@@ -1213,7 +1213,7 @@
         
         # Calculate mean 
         t_HL_mean<-mean(t_HL_df$V1)
-        t_HL_SD<-std(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
         
         
         # prepare for output of the env_function 
@@ -1353,7 +1353,7 @@
         
         # Calculate mean 
         t_HL_mean<-mean(t_HL_df$V1)
-        t_HL_SD<-std(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
         
         
         # prepare for output of the env_function 
@@ -1408,6 +1408,14 @@
       
       # model 2.1 
       mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
+        
+        # Make the variables global 
+        days<<-days
+        N<<-N
+        env_type<<-env_type
+        th_forage_fr<<-th_forage_fr
+        daylight_h<<-daylight_h
+        
         # Necessary packages if running the environments parallel 
         require(foreach)
         require(doParallel)
@@ -1699,7 +1707,7 @@
         
         # Calculate mean 
         t_HL_mean<-mean(t_HL_df$V1)
-        t_HL_SD<-std(t_HL_df$V1)
+        t_HL_SD<-sd(t_HL_df$V1)
         
         
         # prepare for output of the env_function 
@@ -1723,6 +1731,7 @@
       
       # model 2.2 
       mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
+
         require(foreach)
         require(doParallel)
         # Start the model 
