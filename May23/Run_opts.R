@@ -58,13 +58,13 @@ system.time({
   # DAYLIGHT HOURS 
   daylight_h<-8
   # set days
-  days<-15
+  days<-30
   # set individuals
-  N<-50
+  N<-1000
   # Set the model type: 
-  modelType<-232
+  modelType<-11
   # number of threshold values for each 
-  num_th<-5
+  num_th<-50
 
 #############
   print(paste(modelType))
