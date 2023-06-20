@@ -81,7 +81,7 @@ source('ModelSource.R')
   # Run model 1.2
     system.time({
       # run model 
-        mod_1_2(days= 30, N= 1000, env_type=15, th_forage_sc1=0.1, th_forage_sc2=0.3, daylight_h=8)
+        mod_1_2(days= 30, N= 1000, env_type=8, th_forage_sc1=0.1, th_forage_sc2=0.3, daylight_h=8)
       #  save the data 
         setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/")
         save(total_vars_df12, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run12', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'dayh', daylight_h,   '.Rda'))
@@ -100,7 +100,7 @@ source('ModelSource.R')
     
   # The same but in parallel 
       system.time({
-        env_func_1_2_par(days = 30, N= 100, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, daylight_h = 8, modelType = 12)})
+        env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, daylight_h = 8, modelType = 12)})
   
       # Now do an overview image 
         plot_env_18_surv(output_env_func)
