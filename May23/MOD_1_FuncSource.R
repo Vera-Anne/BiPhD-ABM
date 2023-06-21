@@ -311,6 +311,7 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   mat_caches<<-matrix(NA,1,TS)             # matrix to keep track of the number of caches each bird has at each timestep
   mat_Pkill<<-matrix(NA,1,TS)              # matrix to keep track of what Pkill every bird had at each timestep
   mat_find_food<<-matrix(NA, 1, TS)         # Keep track of how many food items are found 
+  mat_flr<<-matrix(NA, 1, TS)
   
   # fill in some initial values for agent variables  (global)
   # This also needs to be specific (and stochastic) for the individual
@@ -324,8 +325,39 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   mat_alive[,1]<<-alive_init
   mat_sc[,1]<<-sc_init
   mat_fr[,1]<<-fr_init
-  mat_mass[,1]<<-mass_init
+  mat_mass[,1]<<-(mass_init + sc_init + fr_init)
   mat_caches[,1]<<-caches_init
+  
+  # This is where the matrix with previous FR's needs to be generated 
+  cur_indiv_fr_prerun_mat<<-matrix(NA, 1, 7)
+  # The same for a total mass situation 
+  cur_indiv_mass_prerun_mat<<-matrix(NA, 1, 7)
+  # Fill in the first value (t = t1 - 1) 
+  # This will have the initival values (they represent the FR value at the end of the last timestep)
+  cur_indiv_fr_prerun_mat[1]<<-fr_init
+  # Give the initial value for mass as well - note that sc is not in here, as we assume an empty stomach 
+  cur_indiv_mass_prerun_mat[1]<<-(mass_init + fr_init)
+  # Now, for the 6 timesteps left, we need to calculate how much fat reserve was left in the timestep before 
+  # We know at each piont in time, the bird was resting (the simulation starts first thing in the morning)
+  # For the temperature, we will assume the initial temperature of t=1 
+  # We can use the functions for bmr and mr to calculate what must have gone on
+  # First find the temperature to use
+  # The temp function did already run, because it is included in setup_general 
+  temp_for_prerun_fr<<-total_temp_profile[1]
+  # Put that temperature in the mr function 
+  cur_mr<<-mr_function(temp_cur = temp_for_prerun_fr)
+  
+  # The rest will need to happen for each of the leftover timesteps 
+  for (i in 1:6){
+      # Calcualte the current bmr
+      # note that we can only do this with the mass that the bird has in the timestep after it
+      # so it is not completely correct 
+      cur_bmr<<-bmr_function(mr_cur=cur_mr, mass_cur = cur_indiv_mass_prerun_mat[i])  
+      # Now we need to subtract this amount off the fat-reserves of the timestep at hand 
+      cur_indiv_fr_prerun_mat[(i+1)]<<-(cur_indiv_fr_prerun_mat[i]+cur_bmr)
+      # put the correct value in the mass matrix as well 
+      cur_indiv_mass_prerun_mat[(i+1)]<<-mass_init+cur_indiv_fr_prerun_mat[(i+1)]
+}
   
   # Keep track of what the bird is doing 
   forage_count<<-matrix(NA, 1, TS)
@@ -558,6 +590,36 @@ food_distr_func<-function(num_food_mean, prob_b_forage, b_size){
   }
   
 } # end of the foraging function 
+
+#################################
+#         FAT-LOSS-RATE         # 
+#################################
+
+flr_func<-function(t, i){
+  # In the case of 'normal' timesteps 
+  if (t>7){
+    
+    # the 'current' fat-reserve is where the previous timestep ended (therefore the use of t-1)
+    cur_fr<<-mat_fr[i, (t-1)]
+    # the 'previous' fat-reserve is where the timestep 2 hours (6 timesteps) before that ended (hence t-7)
+    prev_fr<<-mat_fr[i, (t-7)]
+    # In the special case of the first timestep in the simulation 
+  } else if (t==1){
+    # The 'current fr' is the fat reserve that the bird (likely) had 1 hypothetical timestep before the simulation started 
+    # Note that the order of that matrix goes from closest in time (1) to furthest away in time (7)
+    cur_fr<<-cur_indiv_fr_prerun_mat[1]
+    # The 'previous' FR will be 6 timesteps before that 
+    prev_fr<<-cur_indiv_fr_prerun_mat[7]
+    # In the other cases where cur_FR needs to come from the normal matrix, but prev_FR needs to come from the prerun matrix 
+  } else {
+    cur_fr<<-mat_fr[i, (t-1)]
+    prev_fr<<-cur_indiv_fr_prerun_mat[8-t]
+    
+  }
+  # Now these results are used to calcualte the FLR 
+  cur_flr<<-cur_fr-prev_fr
+  mat_flr[i,t]<<-cur_flr
+}
 
 
 #################################
@@ -1023,7 +1085,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   require(purrr)
   N<-nrow(outputFile)
   
-  for (k in 1:12){
+  for (k in 1:15){
     if (k==1){
       # create a clean list in the first round 
       list_outcome_vars<-list()
@@ -1033,21 +1095,12 @@ create_df_func<-function(outputFile, modelType, env_type){
     # add this to the empty list created 
     list_outcome_vars<-append(list_outcome_vars, list(cur_df))
   }
-  
-  # Now name them correctly 
-  # assign(paste('df_eat', modelType, sep=''),list_outcome_vars[[1]], envir=.GlobalEnv)
-  # assign(paste('df_eat_hoard', modelType, sep=''),list_outcome_vars[[2]], envir=.GlobalEnv)
-  # assign(paste('df_forage', modelType, sep=''), list_outcome_vars[[3]], envir=.GlobalEnv)
-  # assign(paste('df_dir_hoard', modelType, sep=''),list_outcome_vars[[4]], envir=.GlobalEnv)
-  # assign(paste('df_alive', modelType, sep=''), list_outcome_vars[[5]], envir=.GlobalEnv)
-  # assign(paste('df_caches', modelType, sep=''), list_outcome_vars[[6]], envir=.GlobalEnv)
-  # assign(paste('df_find_food', modelType, sep = ''), list_outcome_vars[[7]], envir=.GlobalEnv)
-  # assign(paste('df_fr', modelType, sep=''), list_outcome_vars[[8]], envir=.GlobalEnv)
-  # assign(paste('df_sc',modelType,  sep=''), list_outcome_vars[[9]], envir=.GlobalEnv)
-  # assign(paste('df_mass',modelType, sep=''), list_outcome_vars[[10]], envir=.GlobalEnv)
-  # assign(paste('df_Pkill', modelType, sep=''), list_outcome_vars[[11]], envir=.GlobalEnv)
-  # assign(paste('df_predation',modelType,  sep=''), list_outcome_vars[[12]], envir=.GlobalEnv)
 
+
+  # Give the dataframes in the 'list_outcome_vars' the correct names 
+  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep')
+  names(list_outcome_vars)<-variable_names
+  
   # create a list of teh raw dataframes 
   y<-assign(paste0('output_df_list_raw',modelType),list_outcome_vars, envir=.GlobalEnv)
   
@@ -1061,8 +1114,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   names<-c('value', 'timestep')
   mean_dfs<<-lapply(mean_dfs, setNames, nm=names)
   
-  # Now give the dataframes a name 
-  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'mass',  'predation', 'rest')
+ # Same names but for this dataframe 
   names(mean_dfs)<<-variable_names
   
   # export the mean_dfs as a specific name 
@@ -1083,7 +1135,8 @@ create_df_func<-function(outputFile, modelType, env_type){
 
 plots_12_func<-function(inputdata, modelType){
   
-  inputdata<-data.table(inputdata)
+  inputdata<-data.table(inputdata) 
+  
   
   inputdata[id == "alive", y_min :=0]
   inputdata[id == "alive", y_max :=1]
@@ -1109,8 +1162,8 @@ plots_12_func<-function(inputdata, modelType){
   inputdata[id == "forage",y_min := 0]
   inputdata[id == "forage",y_max := 1]
 
-  inputdata[id == "mass",y_min := 0]
-  inputdata[id == "mass",y_max := 15]
+  inputdata[id == 'fat_loss_r',y_min := 0]
+  inputdata[id == 'fat_loss_r',y_max := 0.5]
 
   inputdata[id == "predation",y_min := 0]
   inputdata[id == "predation",y_max := 1]
@@ -1120,11 +1173,20 @@ plots_12_func<-function(inputdata, modelType){
   
   inputdata[id == 'rest', y_min := 0]
   inputdata[id == 'rest', y_max := 1]
+  
+  inputdata[id == 'mass', y_min := 8]
+  inputdata[id == 'mass', y_max := 13]
+  
+  inputdata[id == 'retrieve', y_min := 0]
+  inputdata[id == 'retrieve', y_max := 1]
+  
+  inputdata[id == 'sleep', y_min := 0]
+  inputdata[id == 'sleep', y_max := 1]
 
   plot<-ggplot(inputdata, aes(x=timestep, y=value)) + 
     geom_line() +
-    facet_wrap(.~id, scales='free_y', nrow=4)+
-    ggtitle(paste('output model', modelType))+
+    facet_wrap(.~id, scales='free_y', nrow=5)+
+    ggtitle(paste('output model', modelType, 'N=',N, 'days=',days, 'daylight_h=',daylight_h))+
     geom_blank(aes(y = y_min)) +
     geom_blank(aes(y = y_max))
   

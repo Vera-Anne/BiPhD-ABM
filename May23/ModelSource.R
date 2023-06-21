@@ -119,6 +119,9 @@
           # Start a for loop for each timestep 
           for (t in 1:TS){
             
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
             # Check if it is night or day 
@@ -209,8 +212,9 @@
             
             
           } # end timestep loop
+          
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -430,6 +434,10 @@
           # Start a for loop for each timestep 
           for (t in 1:TS){
             
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
+            
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
             # Check if it is night or day 
@@ -541,7 +549,7 @@
           
           
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass,  predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -765,6 +773,10 @@
           # Start a for loop for each timestep 
           for (t in 1:TS){
             
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
+            
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
             # Check if it is night or day 
@@ -895,7 +907,7 @@
           
           
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass,  predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -965,6 +977,10 @@
           
           # Start a for loop for each timestep 
           for (t in 1:TS){
+            
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
             
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
@@ -1096,7 +1112,7 @@
           
           
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -1462,6 +1478,10 @@
           # Start a for loop for each timestep 
           for (t in 1:TS){
             
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
+            
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
             # Check if it is night or day 
@@ -1553,7 +1573,7 @@
             
           } # end timestep loop
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -1779,6 +1799,10 @@
           # Start a for loop for each timestep 
           for (t in 1:TS){
             
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
+            
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
             # Check if it is night or day 
@@ -1890,7 +1914,7 @@
           
           
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass,  predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -2064,6 +2088,9 @@
           # Start a for loop for each timestep 
           for (t in 1:TS){
             
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
             # Check if it is night or day 
@@ -2194,7 +2221,7 @@
           
           
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass,  predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
@@ -2260,6 +2287,10 @@
           
           # Start a for loop for each timestep 
           for (t in 1:TS){
+            
+            # Calculate the current fat loss rate 
+            flr_func(t,i)
+            
             
             # Set the current temperature 
             temp_cur<<-total_temp_profile[t]
@@ -2391,7 +2422,7 @@
           
           
           # Alternatively, I could try to create lists with the output 
-          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_mass, predation_count, rest_count)
+          list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
           
         } # end of the foreach loop (individuals) 
         
