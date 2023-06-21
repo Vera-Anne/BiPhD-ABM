@@ -349,15 +349,15 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   
   # The rest will need to happen for each of the leftover timesteps 
   for (i in 1:6){
-      # Calcualte the current bmr
-      # note that we can only do this with the mass that the bird has in the timestep after it
-      # so it is not completely correct 
-      cur_bmr<<-bmr_function(mr_cur=cur_mr, mass_cur = cur_indiv_mass_prerun_mat[i])  
-      # Now we need to subtract this amount off the fat-reserves of the timestep at hand 
-      cur_indiv_fr_prerun_mat[(i+1)]<<-(cur_indiv_fr_prerun_mat[i]+cur_bmr)
-      # put the correct value in the mass matrix as well 
-      cur_indiv_mass_prerun_mat[(i+1)]<<-mass_init+cur_indiv_fr_prerun_mat[(i+1)]
-}
+    # Calcualte the current bmr
+    # note that we can only do this with the mass that the bird has in the timestep after it
+    # so it is not completely correct 
+    cur_bmr<<-bmr_function(mr_cur=cur_mr, mass_cur = cur_indiv_mass_prerun_mat[i])  
+    # Now we need to subtract this amount off the fat-reserves of the timestep at hand 
+    cur_indiv_fr_prerun_mat[(i+1)]<<-(cur_indiv_fr_prerun_mat[i]+cur_bmr)
+    # put the correct value in the mass matrix as well 
+    cur_indiv_mass_prerun_mat[(i+1)]<<-mass_init+cur_indiv_fr_prerun_mat[(i+1)]
+  }
   
   # Keep track of what the bird is doing 
   forage_count<<-matrix(NA, 1, TS)
@@ -368,7 +368,7 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   eat_count<<-matrix(NA, 1, TS)
   predation_count<<-matrix(NA, 1,TS)                               # Keep track of how many birds have actually been killed by predation
   hoard_count<<-matrix(NA, 1, TS)
-
+  
 } # end set-up function for individuals 
 
 set_up_func_indiv2<-function(days, env_type, daylight_h, TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, n_daylight_timestep){
@@ -628,60 +628,60 @@ flr_func<-function(t, i){
 
 dead_or_alive_func<-function(t, i){
   #print(paste('this is i=', i ,'and t=', t))
-
-# Check if individual is alive? 
-# in step 1 all birds are alive 
+  
+  # Check if individual is alive? 
+  # in step 1 all birds are alive 
   
   
-if (t==1){
-  mat_alive[i,t]<<- 1
-  #print(paste(mat_alive[i,t]))
-} else if (mat_alive[i,(t-1)]==0){
-  # if not step 1, check if bird was previously dead
-  # if previously dead, it needs to be dead now 
-  mat_alive[i,t]<<-0
-} else if (mat_fr[i,t]==0){
-  # if not step 1 and not previously dead 
-  # check if the bird should die now 
-  mat_alive[i,t]<<-0
-} else {
-  # in all other cases the bird is alive 
-  mat_alive[i,t]<<-1
-  #print('this should be printed when t=2')
-  #print(paste(' the mat alive in dead/alive at i=', i, 'and t=', t, 'is', (mat_alive[i,t])))
-}
-
+  if (t==1){
+    mat_alive[i,t]<<- 1
+    #print(paste(mat_alive[i,t]))
+  } else if (mat_alive[i,(t-1)]==0){
+    # if not step 1, check if bird was previously dead
+    # if previously dead, it needs to be dead now 
+    mat_alive[i,t]<<-0
+  } else if (mat_fr[i,t]==0){
+    # if not step 1 and not previously dead 
+    # check if the bird should die now 
+    mat_alive[i,t]<<-0
+  } else {
+    # in all other cases the bird is alive 
+    mat_alive[i,t]<<-1
+    #print('this should be printed when t=2')
+    #print(paste(' the mat alive in dead/alive at i=', i, 'and t=', t, 'is', (mat_alive[i,t])))
+  }
+  
   ################
   #  DEAD BIRDS  #
   ################
   if(mat_alive[i,t]==0){
-  # these are the dead birds 
-  # Set the matrices to 'NA' for dead birds 
-  # For the fr matrix 
-  mat_fr[i,t]<<-NA
-  # For the mass matrix 
-  mat_mass[i,t]<<-NA
-  # For the sc matrix 
-  mat_sc[i,t]<<-NA
-  # for the caches matrix 
-  mat_caches[i,t]<<-NA
+    # these are the dead birds 
+    # Set the matrices to 'NA' for dead birds 
+    # For the fr matrix 
+    mat_fr[i,t]<<-NA
+    # For the mass matrix 
+    mat_mass[i,t]<<-NA
+    # For the sc matrix 
+    mat_sc[i,t]<<-NA
+    # for the caches matrix 
+    mat_caches[i,t]<<-NA
   } else {
-
-  #################
-  #  ALIVE BIRDS  #
-  #################
-  #print(paste('bird', i, 'is alive t=', t))
     
-  
-  # Set the current BMR 
-  # Note: I have made the decision to calculate this at the start of the tick. 
-  # So this is before any behaviour, or food is moved around 
-  # set the current mass 
-  mass_cur<<-mat_mass[i,t]
-  # calculate the current mr 
-  mr_function(temp_cur)                                   # note that this will need to be changed if we're using different temperatures
-  # calculate the current 
-  bmr_function(mr_cur, mass_cur)
+    #################
+    #  ALIVE BIRDS  #
+    #################
+    #print(paste('bird', i, 'is alive t=', t))
+    
+    
+    # Set the current BMR 
+    # Note: I have made the decision to calculate this at the start of the tick. 
+    # So this is before any behaviour, or food is moved around 
+    # set the current mass 
+    mass_cur<<-mat_mass[i,t]
+    # calculate the current mr 
+    mr_function(temp_cur)                                   # note that this will need to be changed if we're using different temperatures
+    # calculate the current 
+    bmr_function(mr_cur, mass_cur)
   } # end of alive birds 
   
   # print(paste('dead or alive for bird', i, ' and t=', t, 'done'))
@@ -701,40 +701,40 @@ sleep_func<-function(t, i){
     ################
     #   SLEEPING   # 
     ################
-        
-        # set the sleeping matrix to 1 
-        sleep_count[i,t]<<-1
-        # set the forage to 0
-        forage_count[i, t]<<-0
-        # set the resting matrix to 0
-        rest_count[i,t]<<-0
-        # set the retrieval matrix to 0 
-        retrieve_count[i,t]<<-0
-        # set the eat-hoarding matrix to 0
-        eat_hoard_count[i,t]<<-0
-        # set the eating matrix to 0 
-        eat_count[i,t]<<-0
-        # set the direct hoarding matrix to 0
-        hoard_count[i,t]<<-0
-        # find food matrix
-        mat_find_food[i,t]<<-NA
-        
-        # set the BMR-multi
-        BMR_multi<<-1
-        #set the predation risk 
-        Patt_cur<<-Patt_sleep
-      
-        # Food will be moved from the stomach
-        # Into the fat reserves 
-        # and be burned depending on BMR-multi
-        # in the ' Everyone '  part of the code below
-        # end of birds that are asleep   
+    
+    # set the sleeping matrix to 1 
+    sleep_count[i,t]<<-1
+    # set the forage to 0
+    forage_count[i, t]<<-0
+    # set the resting matrix to 0
+    rest_count[i,t]<<-0
+    # set the retrieval matrix to 0 
+    retrieve_count[i,t]<<-0
+    # set the eat-hoarding matrix to 0
+    eat_hoard_count[i,t]<<-0
+    # set the eating matrix to 0 
+    eat_count[i,t]<<-0
+    # set the direct hoarding matrix to 0
+    hoard_count[i,t]<<-0
+    # find food matrix
+    mat_find_food[i,t]<<-NA
+    
+    # set the BMR-multi
+    BMR_multi<<-1
+    #set the predation risk 
+    Patt_cur<<-Patt_sleep
+    
+    # Food will be moved from the stomach
+    # Into the fat reserves 
+    # and be burned depending on BMR-multi
+    # in the ' Everyone '  part of the code below
+    # end of birds that are asleep   
   } else {
     
     ################
     #    AWAKE     # 
     ################
-
+    
     # set the sleeping matrix to 0 
     sleep_count[i,t]<<-0
   }
@@ -760,7 +760,7 @@ forage_function<-function(t, i){
   food_item_found_gram<<-(food_item_found*food_item)
   
 } # end foraging function 
-  
+
 
 #######################
 #    EAT FUNCTION     # 
@@ -793,7 +793,7 @@ eat_func<-function(t ,i){
   hoard_count[i,t]<<-0
   
 } # end of eating function 
-  
+
 #####################
 #      RESTING      # 
 #####################
@@ -826,7 +826,7 @@ rest_func<-function(t,i){
 retrieve_func<-function(t,i){
   # retrieving happens when the stomach content is below the lowest threshold (sc-th1)
   # The bird also needs to have the minimum number of caches to allow retrieval 
-
+  
   # determine how many caches are retrieved
   cur_stomach_space<<-(stom_size-mat_sc[i,t])                     # What is the space left in the stomach?
   cur_caches_retrieved<<-((round(cur_stomach_space/food_item)))   # how many caches to fill this back up
@@ -919,7 +919,7 @@ eat_hoard_func<-function(t,i){
     hoard_count[i,t]<<-0
     
   }
-    
+  
 } # end of the eat-hoard function 
 
 #############################
@@ -954,7 +954,7 @@ dir_hoard_func<-function(t,i){
 ##########################
 
 predation_func<-function(t,i){
- 
+  
   # Some calulations to prepare 
   mass_cur<<-mat_mass[i,t]                                            # find out the current mass of the bird 
   Pcap_cur<<-(0.78+(0.5*(10^-8)*exp(1.4*mass_cur)))                   # calculate the current Pcapture 
@@ -1073,7 +1073,7 @@ retrieve_output_func<-function(modelType, fileName){
   mainDir<<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/'
   # Now set to the correct folder 
   setwd(paste0(mainDir, modelType))
-
+  
 }
 
 
@@ -1095,8 +1095,8 @@ create_df_func<-function(outputFile, modelType, env_type){
     # add this to the empty list created 
     list_outcome_vars<-append(list_outcome_vars, list(cur_df))
   }
-
-
+  
+  
   # Give the dataframes in the 'list_outcome_vars' the correct names 
   variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep')
   names(list_outcome_vars)<-variable_names
@@ -1114,7 +1114,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   names<-c('value', 'timestep')
   mean_dfs<<-lapply(mean_dfs, setNames, nm=names)
   
- # Same names but for this dataframe 
+  # Same names but for this dataframe 
   names(mean_dfs)<<-variable_names
   
   # export the mean_dfs as a specific name 
@@ -1124,7 +1124,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   total_vars_df<-map_df(mean_dfs, ~as.data.frame(.x), .id = 'id')
   # same for the total dataframe 
   assign(paste('total_vars_df',modelType,sep=''), total_vars_df, envir=.GlobalEnv)
-
+  
   
 }
 
@@ -1143,31 +1143,31 @@ plots_12_func<-function(inputdata, modelType){
   
   inputdata[id == "caches",y_min := 0]
   inputdata[id == "caches",y_max := 300]
-
+  
   inputdata[id == "dir_hoard",y_min := 0]
   inputdata[id == "dir_hoard",y_max := 1]
-
+  
   inputdata[id == "eat",y_min := 0]
   inputdata[id == "eat",y_max := 1]
-
+  
   inputdata[id == "eat_hoard",y_min := 0]
   inputdata[id == "eat_hoard",y_max := 1]
-
+  
   inputdata[id == "fat_res",y_min := 0]
   inputdata[id == "fat_res",y_max := 5]
-
+  
   inputdata[id == "find_food",y_min := 0]
   inputdata[id == "find_food",y_max := 10]
-
+  
   inputdata[id == "forage",y_min := 0]
   inputdata[id == "forage",y_max := 1]
-
+  
   inputdata[id == 'fat_loss_r',y_min := 0]
   inputdata[id == 'fat_loss_r',y_max := 0.5]
-
+  
   inputdata[id == "predation",y_min := 0]
   inputdata[id == "predation",y_max := 1]
-
+  
   inputdata[id == "stom_con",y_min := 0]
   inputdata[id == "stom_con",y_max := 0.5]
   
@@ -1182,7 +1182,7 @@ plots_12_func<-function(inputdata, modelType){
   
   inputdata[id == 'sleep', y_min := 0]
   inputdata[id == 'sleep', y_max := 1]
-
+  
   plot<-ggplot(inputdata, aes(x=timestep, y=value)) + 
     geom_line() +
     facet_wrap(.~id, scales='free_y', nrow=5)+
@@ -1190,14 +1190,14 @@ plots_12_func<-function(inputdata, modelType){
     geom_blank(aes(y = y_min)) +
     geom_blank(aes(y = y_max))
   
-# Then assign this some useful name 
+  # Then assign this some useful name 
   assign(paste0('plot_12_', modelType), plot, envir=.GlobalEnv)
   
   
   # In future I want to change the scales for easier comparison 
   # this code could help: 
-
-
+  
+  
   
 }
 
@@ -1239,10 +1239,10 @@ plot_env_18_surv<-function(output_env_func){
 t_halflife_func<-function(halflife_input){
   for (i in 1:length(halflife_input)){
     if (i==1){
-    # list for the t_HL
-    t_HL_list<<-list()
-    # list for general fit summaries
-    fit_sum_list<-list()
+      # list for the t_HL
+      t_HL_list<<-list()
+      # list for general fit summaries
+      fit_sum_list<-list()
     } 
     
     # Create the dataframe you'll be dealing with 
@@ -1254,29 +1254,29 @@ t_halflife_func<-function(halflife_input){
     
     # Now fit the model 
     
-      # To control the interations in NLS I use the following 
-      nls.control(maxiter = 100)
-      # I use a basic exponential decay curve 
-      # starting values need to be given 
-      fit<-nls(y ~ a*exp(-b*t), data=df, 
-               start=list(a=1, b=0.0000001))
-      # pull out hte summary --> this has the estimated values for a an db in it 
-      sum_fit<-summary(fit)
-      # put in the list 
-      fit_sum_list[[i]]<-sum_fit$parameters
-      
+    # To control the interations in NLS I use the following 
+    nls.control(maxiter = 100)
+    # I use a basic exponential decay curve 
+    # starting values need to be given 
+    fit<-nls(y ~ a*exp(-b*t), data=df, 
+             start=list(a=1, b=0.0000001))
+    # pull out hte summary --> this has the estimated values for a an db in it 
+    sum_fit<-summary(fit)
+    # put in the list 
+    fit_sum_list[[i]]<-sum_fit$parameters
+    
     # Now, where does it cross the x-axis? 
-      # Set the current a & b 
-      cur_a<-fit_sum_list[[i]][1]
-      cur_b<-fit_sum_list[[i]][2]
-      # set the halflife 
-      y_halflife<-0.5
-      # now calculate the timestep at which this will occur 
-      t_halflife<-(-(log(y_halflife/cur_a)/cur_b))
-      # calculate y from there (just to check)
-      #ytest<-(cur_a*exp(-cur_b*t_halflife))
-      # put in the list 
-      t_HL_list[i]<<-t_halflife
+    # Set the current a & b 
+    cur_a<-fit_sum_list[[i]][1]
+    cur_b<-fit_sum_list[[i]][2]
+    # set the halflife 
+    y_halflife<-0.5
+    # now calculate the timestep at which this will occur 
+    t_halflife<-(-(log(y_halflife/cur_a)/cur_b))
+    # calculate y from there (just to check)
+    #ytest<-(cur_a*exp(-cur_b*t_halflife))
+    # put in the list 
+    t_HL_list[i]<<-t_halflife
   }
   return(t_HL_list)
 }
