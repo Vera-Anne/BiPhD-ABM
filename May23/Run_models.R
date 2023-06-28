@@ -111,8 +111,6 @@ plots_12_func(inputdata=save_12_list[[1]], modelType='12')
 # if needed 
 plot_12_12
 
-
-
 # RUN ENVIRONMENTS 1.2 
 system.time({
   
@@ -159,7 +157,6 @@ plots_12_func(inputdata=save_131_list[[1]], modelType='131')
 # if needed 
 plot_12_131
 
-
 # rUN IT FOR THE 18 ENVIRONMENTS 
 system.time({
   
@@ -204,7 +201,6 @@ system.time({
 plots_12_func(inputdata = save_132_list[[1]], modelType='132')
 # output
 plot_12_132
-
 
 # RUN THE 18 ENVIRONMENTS PARALLEL
 system.time({
@@ -254,7 +250,6 @@ plots_12_func(inputdata=save_21_list[[1]], modelType='21')
 # if needed 
 plot_12_21
 
-
 # Run IT FOR THE 18 ENVIRONMENTS -  parallel 
 system.time({
   # clear workspace
@@ -269,7 +264,6 @@ system.time({
 
 # Now do an overview image 
 plot_env_18_surv(output_env_func)
-
 
 
 ######################################################################
@@ -298,7 +292,6 @@ system.time({
 plots_12_func(inputdata=save_22_list[[1]], modelType='22')
 # if needed 
 plot_12_22
-
 
 # rUN IT FOR THE 18 ENVIRONMENTS - parallel 
 system.time({
@@ -342,7 +335,6 @@ plots_12_func(inputdata= save_231_list[[1]], modelType='231')
 # if needed 
 plot_12_231
 
-
 # rUN IT FOR THE 18 ENVIRONMENTS 
 system.time({
   # clear workspace
@@ -384,7 +376,6 @@ plots_12_func(inputdata = save_232_list[[1]], modelType='232')
 # output
 plot_12_232
 
-
 # RUN IT FOR THE 18 ENVIRONMENTS 
 system.time({
   # clear workspace
@@ -399,3 +390,50 @@ system.time({
 
 # Now do an overview image 
 plot_env_18_surv(output_env_func)
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+
+#################################################################
+##   Model 3.1: Non-hoarding bird, Access to Fat Loss Rate     ##
+#################################################################
+
+# Run model 3.1 
+    system.time({
+      
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      
+      # Run the model 
+      # Range of FLR: -0.6 to 0.6
+      mod_3_1(days=30, N=1000, env_type = 8, th_forage_flr = 0.2, daylight_h = 8)
+      # First put together some relevant dataframes (we want both individual data and mean data)
+      save_31_list<-list(total_vars_df31, output_df_list_raw31)
+      # save the results 
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/")
+      save(save_31_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run31', 'd', days, 'N', N,'env_t', env_type, 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+    })
+    # create plots 
+    plots_12_func(inputdata=save_31_list[[1]], modelType='31')
+    # if needed 
+    plot_12_31
+
+# Run 3.1 for the 18 ENVIRONMENTS -  parallel 
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      
+      env_func_3_1_par(days = 30, N= 100, th_forage_flr = 0.2, daylight_h = 8, modelType = 31)
+    })
+    
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
+
