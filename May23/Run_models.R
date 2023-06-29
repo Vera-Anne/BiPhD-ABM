@@ -303,7 +303,9 @@ system.time({
   source('ModelSource.R')
   # run the model 
   env_func_2_2_par(days = 30, N= 1000, th_forage_fr1 = 1, th_forage_fr2 = 3, daylight_h = 8, modelType = 22)
+  # mark that simulation is done
   print('18 env MOD 2.2 done')
+  beep()
 })
 
 # Now do an overview image 
@@ -424,6 +426,7 @@ plot_env_18_surv(output_env_func)
       # save the results 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/")
       save(save_31_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run31', 'd', days, 'N', N,'env_t', env_type, 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+      # Mark the end of the simulation
       beep()
       print('single run 3.1 done')
       })
@@ -442,10 +445,159 @@ plot_env_18_surv(output_env_func)
       source('ModelSource.R')
       
       env_func_3_1_par(days = 30, N= 1000, th_forage_flr = 0, daylight_h = 8, modelType = 31)
+      # mark end of simulation
       beep()
       print('Run 18 env 3.1 done')
     })
     
     # Now do an overview image 
     plot_env_18_surv(output_env_func)
-
+    
+    
+    
+######################################################################
+##   Model 3.2: Leftover-hoarding bird, Access to Fat-loss-rate     ##
+######################################################################
+    
+    # Run model 3.2
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # run the model 
+      mod_3_2(days=30, N=1000, env_type=8, th_forage_flr1= -0.2, th_forage_flr2= 0.2, daylight_h = 8)
+      # First put together some relevant dataframes (we want both individual data and mean data)
+      save_32_list<-list(total_vars_df32, output_df_list_raw32)
+      # save the results 
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/")
+      save(save_32_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run32', 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
+      # mark end of simulation 
+      beep()
+      print('single run 3.2 done')
+      })
+    
+    # create plots 
+    plots_12_func(inputdata=save_32_list[[1]], modelType='32')
+    # if needed 
+    plot_12_32
+    
+    # rUN IT FOR THE 18 ENVIRONMENTS - parallel 
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # run the model 
+      env_func_3_2_par(days = 30, N= 1000, th_forage_flr1 = -0.2, th_forage_flr2 = 0.2, daylight_h = 8, modelType = 32)
+      # mark that simulation is done
+      print('18 env MOD 3.2 done')
+      beep()
+    })
+    
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
+    
+    
+####################################################################################
+##    Model 3.3.1: Direct hoarding bird, Access to Fat-loss-rate  - hoard top     ##
+####################################################################################
+    
+    # Run model 3.3.1
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # run the model 
+      mod_3_3_1(days=30, N=1000, env_type=8, th_forage_flr1=-0.3, th_forage_flr2=0, th_forage_flr3=0.3, daylight_h=8)
+      # First put together some relevant dataframes (we want both individual data and mean data)
+      save_331_list<-list(total_vars_df331, output_df_list_raw331)
+      # save the results 
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/")
+      save( save_331_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run331', 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,   '.Rda'))
+      # mark that the simulation is done
+      beep()
+      print('run single 3.3.1 done ')
+    }) 
+    
+    # create plots 
+    plots_12_func(inputdata= save_331_list[[1]], modelType='331')
+    # if needed 
+    plot_12_331
+    
+    # Run 3.3.1 IT FOR THE 18 ENVIRONMENTS 
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # run the model 
+      env_func_3_3_1_par(days = 30, N= 1000, th_forage_flr1 = -0.3, th_forage_flr2 = 0, th_forage_flr3 = 0.3, daylight_h = 8, modelType = 331)
+      # mark the end of the simulation 
+      beep()
+      print('run 18 environments 3.3.1 done ')
+    })
+    
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
+    
+####################################################################################
+##    Model 3.3.2: Direct hoarding bird, Access to Fat-loss-rate  - rest  top    ##
+###################################################################################
+    
+  # Run model 3.3.2 
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # run the model 
+      mod_3_3_2(days=30, N=1000, env_type=8, th_forage_flr1=-0.3, th_forage_flr2=0, th_forage_flr3=0.3, daylight_h=8)
+      # First put together some relevant dataframes (we want both individual data and mean data)
+      save_332_list<-list(total_vars_df332, output_df_list_raw332)
+      # save the results 
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/")
+      save(save_332_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run332', 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,   '.Rda'))
+      # mark the end of the simulation 
+      beep()
+      print('run 3.3.2 single done')
+    })
+    
+    # now plot
+    plots_12_func(inputdata = save_332_list[[1]], modelType='332')
+    # output
+    plot_12_332
+    
+    # RUN IT FOR THE 18 ENVIRONMENTS 
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # run the model 
+      env_func_3_3_2_par(days = 30, N= 1000, th_forage_flr1 = -0.3, th_forage_fr2 = 0, th_forage_flr3 = 0.3, daylight_h = 8, modelType = 332)
+      # mark the end of the simulation 
+      beep()
+      print('18 env 3.3.2 done')
+    })
+    
+    # Now do an overview image 
+    plot_env_18_surv(output_env_func)
+    
+    
+# -----------------------------------------------------------------------------------------------------------------------------
+    
+    
