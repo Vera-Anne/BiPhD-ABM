@@ -507,7 +507,7 @@ plot_env_18_surv(output_env_func)
 ##    Model 3.3.1: Direct hoarding bird, Access to Fat-loss-rate  - hoard top     ##
 ####################################################################################
     
-    # Run model 3.3.1
+  # Run model 3.3.1
     system.time({
       # clear workspace
       rm(list=ls())
@@ -532,7 +532,7 @@ plot_env_18_surv(output_env_func)
     # if needed 
     plot_12_331
     
-    # Run 3.3.1 IT FOR THE 18 ENVIRONMENTS 
+  # Run 3.3.1 IT FOR THE 18 ENVIRONMENTS 
     system.time({
       # clear workspace
       rm(list=ls())
@@ -588,7 +588,7 @@ plot_env_18_surv(output_env_func)
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       # run the model 
-      env_func_3_3_2_par(days = 30, N= 1000, th_forage_flr1 = -0.3, th_forage_fr2 = 0, th_forage_flr3 = 0.3, daylight_h = 8, modelType = 332)
+      env_func_3_3_2_par(days = 30, N= 1000, th_forage_flr1 = -0.3, th_forage_flr2 = 0, th_forage_flr3 = 0.3, daylight_h = 8, modelType = 332)
       # mark the end of the simulation 
       beep()
       print('18 env 3.3.2 done')

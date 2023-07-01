@@ -42,9 +42,7 @@ library(plotly)         # For the 3D scatterplot
 ##     OPTIMIZATIONS     ##
 ###########################
 
-# When optimizing on the environment level 
 
-# daylight_h<-8
 system.time({
   
   # link to the function file 
@@ -60,11 +58,11 @@ system.time({
   # set days
   days<-30
   # set individuals
-  N<-100
+  N<-1000
   # Set the model type: 
-  modelType<-31
+  modelType<-21
   # number of threshold values for each 
-  num_th<-20
+  num_th<-50
   
   #############
   print(paste(modelType))
@@ -397,13 +395,6 @@ system.time({
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
     outcome_opt_df_plot<-subset(outcome_opt_df, (!is.na(outcome_opt_df[,1])) & (!is.na(outcome_opt_df[,2])))
-    
-    # plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean) %>%
-    #   add_markers(size=~mean, marker=list(sizeref=0.02, sizemode='area')) %>%
-    #   layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
-    #                       yaxis = list(range=c(0, 0.4),title = 'TH2'),
-    #                       zaxis = list(range=c(0, 0.4),title = 'TH3')),
-    #          title = list(text='1.3.1 Mean End survival  - 3 thresholds ', y=0.95))
     
     # halflife
     plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean) %>%
@@ -786,6 +777,62 @@ system.time({
         ) +
         ggtitle(paste('Mean TS where halflife is reached per th MOD 3.1, N=',N, ' days=',days, 'num_th=',num_th))
       opt_plot
+      
+  } else if(modelType=='31'){
+    
+    print('debug 31 here')
+    
+    # Set the number of thresholds you want to test for
+    num_th<-num_th
+    # The minimum 
+    min_th_val<-(-0.6)
+    # And the maximum 
+    max_th_val<-0.6
+    # create the vector that has the actual threshold values in it 
+    th_vec<-linspace( x1=min_th_val, x2=max_th_val, num_th)
+    # For loop to go through all the combinations 
+    for (i in 1:length(th_vec)){
+      if (i==1){
+        list_3_1<-list()
+      }
+      # Set the current threshold 
+      cur_th<-th_vec[i]
+      # Run the function with this threshold 
+      env_func_3_1_par(days = days, N= N, th_forage_flr = cur_th, daylight_h = daylight_h, modelType = modelType)
+      # Add the output to the outcome list 
+      list_3_1[[length(list_3_1)+1]]<-output_env_func[[1]]
+      # To keep track when running 
+      print(paste('model 3.1 opt par-env threshold number =', i))
+    }
+    
+    # put it in a dataframe 
+    outcome_opt_df<-ldply(list_3_1, data.frame)
+    # Create a column with the threshold that goes with the outcome
+    outcome_opt_df$threshold<-th_vec
+
+    # best HL
+    HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
+    
+    # save the data 
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/Optimization")
+    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+    
+    # colour for the graph 
+    halflife_col<-"#69b3a2"
+    
+    # Make a plot 
+    opt_plot<-ggplot(outcome_opt_df, aes(x=threshold))+
+      geom_line(aes(y=mean), size=2, col=halflife_col)+
+      geom_point(aes(x=HL_best$threshold, y=(HL_best$mean)), colour='#ffcc00', size=5)+
+      #geom_ribbon(aes(y = mean, ymin=mean-SD, ymax=mean+SD), color = "#69b3a2", fill = alpha("#69b3a2", .5))+
+      theme(
+        axis.title.y = element_text(color = 'black', size=13, face='bold'),
+        axis.title.x=element_text(size=13, face='bold')
+      ) +
+      ggtitle(paste('Mod 3.1 - Mean TS where halflife is reached per threshold, N=',N, ' days=',days, 'num_th=',num_th))
+    opt_plot
+    
+    
     
   } else if(modelType=='32'){
         
