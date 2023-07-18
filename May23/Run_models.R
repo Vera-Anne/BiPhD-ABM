@@ -335,6 +335,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_231_list<-list(total_vars_df231, output_df_list_raw231)
   # save the results 
+  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/")
   save( save_231_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run231', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
   print('run single 2.3.1 done ')
