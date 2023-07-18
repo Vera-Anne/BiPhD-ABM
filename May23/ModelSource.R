@@ -1378,6 +1378,7 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
   env_type<<-env_type
   th_forage_fr<<-th_forage_fr
   daylight_h<<-daylight_h
+  modelType<<-21
   
   # load necessary packages for parallel (if needed)
   require(foreach)

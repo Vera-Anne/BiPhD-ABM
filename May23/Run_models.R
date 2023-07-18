@@ -60,11 +60,12 @@ system.time({
   source('ModelSource.R')
   
   # Run the model 
-  mod_1_1(days=30, N=1000, env_type = 8, th_forage_sc = 0.2, daylight_h = 8)
+  mod_1_1(days=30, N=1000, env_type = 13, th_forage_sc = 0.09795918 , daylight_h = 8)
   
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_11_list<-list(total_vars_df11, output_df_list_raw11)
   #  save the data 
+  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/")
   save(save_11_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run11', 'd', days, 'N', N,'env_t', env_type, 'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
 })
@@ -76,7 +77,7 @@ plot_12_11
 
 # and then parallel 
 system.time({
-  env_func_1_1_par(days = 30, N= 1000, th_forage_sc = 0.2, daylight_h = 8, modelType = 11)
+  env_func_1_1_par(days = 30, N= 1000, th_forage_sc = 0.09795918, daylight_h = 8, modelType = 11)
 })
 
 # Now do an overview image 
@@ -97,11 +98,12 @@ system.time({
   source('ModelSource.R')
   
   # run model 
-  mod_1_2(days= 30, N= 1000, env_type=8, th_forage_sc1=0.1, th_forage_sc2=0.3, daylight_h=8)
+  mod_1_2(days= 30, N= 1000, env_type=13, th_forage_sc1=0.05714286, th_forage_sc2=0.06530612 , daylight_h=8)
   
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_12_list<-list(total_vars_df12, output_df_list_raw12)
   #  save the data 
+  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/")
   save(save_12_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run12', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'dayh', daylight_h,   '.Rda'))
 })
@@ -121,11 +123,11 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   
-  env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.1, th_forage_sc2 = 0.3, daylight_h = 8, modelType = 12)
+  env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.05714286, th_forage_sc2 = 0.06530612 , daylight_h = 8, modelType = 12)
 })
 
 # Now do an overview image 
-plot_env_18_surv(output_env_func)
+plot_env_18_surv(output_env_func, modelType=12)
 
 
 #################################################################################
@@ -237,7 +239,7 @@ system.time({
   source('ModelSource.R')
   
   # Run the model 
-  mod_2_1(days=30, N=1000, env_type = 8, th_forage_fr = 2, daylight_h = 8)
+  mod_2_1(days=30, N=1000, env_type = 13, th_forage_fr = 1.55102 , daylight_h = 8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_21_list<-list(total_vars_df21, output_df_list_raw21)
   # save the results 
@@ -259,11 +261,11 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   
-  env_func_2_1_par(days = 30, N= 1000, th_forage_fr = 2, daylight_h = 8, modelType = 21)
+  env_func_2_1_par(days = 30, N= 1000, th_forage_fr = 1.55102, daylight_h = 8, modelType = 21)
 })
 
 # Now do an overview image 
-plot_env_18_surv(output_env_func)
+plot_env_18_surv(output_env_func, modelType='21')
 
 
 ######################################################################
@@ -280,7 +282,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run the model 
-  mod_2_2(days=30, N=1000, env_type=8, th_forage_fr1=1, th_forage_fr2= 3, daylight_h = 8)
+  mod_2_2(days=30, N=1000, env_type=13, th_forage_fr1=0.6530612, th_forage_fr2= 1.061224, daylight_h = 8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_22_list<-list(total_vars_df22, output_df_list_raw22)
   # save the results 
@@ -302,14 +304,14 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run the model 
-  env_func_2_2_par(days = 30, N= 1000, th_forage_fr1 = 1, th_forage_fr2 = 3, daylight_h = 8, modelType = 22)
+  env_func_2_2_par(days = 30, N= 1000, th_forage_fr1 = 0.6530612, th_forage_fr2 = 1.0612242 , daylight_h = 8, modelType = 22)
   # mark that simulation is done
   print('18 env MOD 2.2 done')
   beep()
 })
 
 # Now do an overview image 
-plot_env_18_surv(output_env_func)
+plot_env_18_surv(output_env_func, modelType='22')
 
 
 ####################################################################################
@@ -420,7 +422,7 @@ plot_env_18_surv(output_env_func)
       
       # Run the model 
       # Range of FLR: -0.6 to 0.6
-      mod_3_1(days=30, N=1000, env_type = 8, th_forage_flr = 0, daylight_h = 8)
+      mod_3_1(days=30, N=1000, env_type = 13, th_forage_flr = 0.2326531 , daylight_h = 8)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_31_list<-list(total_vars_df31, output_df_list_raw31)
       # save the results 
@@ -444,14 +446,14 @@ plot_env_18_surv(output_env_func)
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       
-      env_func_3_1_par(days = 30, N= 1000, th_forage_flr = 0, daylight_h = 8, modelType = 31)
+      env_func_3_1_par(days = 30, N= 1000, th_forage_flr = 0.2326531, daylight_h = 8, modelType = 31)
       # mark end of simulation
       beep()
       print('Run 18 env 3.1 done')
     })
     
     # Now do an overview image 
-    plot_env_18_surv(output_env_func)
+    plot_env_18_surv(output_env_func, modelType = 31)
     
     
     
@@ -468,7 +470,7 @@ plot_env_18_surv(output_env_func)
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       # run the model 
-      mod_3_2(days=30, N=1000, env_type=8, th_forage_flr1= -0.2, th_forage_flr2= 0.2, daylight_h = 8)
+      mod_3_2(days=30, N=1000, env_type=13, th_forage_flr1= -0.06122449, th_forage_flr2= 0.1102041, daylight_h = 8)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_32_list<-list(total_vars_df32, output_df_list_raw32)
       # save the results 
@@ -493,14 +495,14 @@ plot_env_18_surv(output_env_func)
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       # run the model 
-      env_func_3_2_par(days = 30, N= 1000, th_forage_flr1 = -0.2, th_forage_flr2 = 0.2, daylight_h = 8, modelType = 32)
+      env_func_3_2_par(days = 30, N= 1000, th_forage_flr1 = -0.06122449, th_forage_flr2 = 0.1102041, daylight_h = 8, modelType = 32)
       # mark that simulation is done
       print('18 env MOD 3.2 done')
       beep()
     })
     
     # Now do an overview image 
-    plot_env_18_surv(output_env_func)
+    plot_env_18_surv(output_env_func, modelType=32)
     
     
 ####################################################################################

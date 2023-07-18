@@ -60,7 +60,7 @@ system.time({
   # set individuals
   N<-1000
   # Set the model type: 
-  modelType<-21
+  modelType<-11
   # number of threshold values for each 
   num_th<-50
   
