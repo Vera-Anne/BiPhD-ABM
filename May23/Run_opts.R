@@ -583,7 +583,6 @@ system.time({
       if (cur_th2>cur_th1 && cur_th3>cur_th2){
         env_func_2_3_1_par(days = days, N= N, th_forage_fr1 = cur_th1, th_forage_fr2 = cur_th2, th_forage_fr3=cur_th3, daylight_h = daylight_h, modelType=modelType)
         # put it in the output list
-        print('debug')
         list_2_3_1[[length(list_2_3_1)+1]]<-output_env_func[[1]]
       } else{
         # Fill the variables wiht 0
