@@ -311,7 +311,8 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   mat_caches<<-matrix(NA,1,TS)             # matrix to keep track of the number of caches each bird has at each timestep
   mat_Pkill<<-matrix(NA,1,TS)              # matrix to keep track of what Pkill every bird had at each timestep
   mat_find_food<<-matrix(NA, 1, TS)         # Keep track of how many food items are found 
-  mat_flr<<-matrix(NA, 1, TS)
+  mat_flr<<-matrix(NA, 1, TS)               # Keeps track of the fat-change rate 
+  
   
   # fill in some initial values for agent variables  (global)
   # This also needs to be specific (and stochastic) for the individual
@@ -474,6 +475,9 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
     # Ok cool, I have a vector that has the temperatures for every day. 
     # Now save them somewhere so they can all be amended 
     total_temp_profile<<-c(total_temp_profile, cur_day_temp_vector)
+    
+    #Create a matrix alternative, which can be saved 
+    mat_temp<<-t(as.matrix(total_temp_profile))
     
   } # for loop per day ends 
   
@@ -1034,7 +1038,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   require(purrr)
   N<-nrow(outputFile)
   
-  for (k in 1:15){
+  for (k in 1:16){
     if (k==1){
       # create a clean list in the first round 
       list_outcome_vars<-list()
@@ -1047,7 +1051,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   
   
   # Give the dataframes in the 'list_outcome_vars' the correct names 
-  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep')
+  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep', 'temp')
   names(list_outcome_vars)<-variable_names
   
   # create a list of teh raw dataframes 

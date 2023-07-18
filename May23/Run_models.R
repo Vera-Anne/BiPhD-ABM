@@ -124,6 +124,7 @@ system.time({
   source('ModelSource.R')
   
   env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.05714286, th_forage_sc2 = 0.06530612 , daylight_h = 8, modelType = 12)
+  beep()
 })
 
 # Now do an overview image 
@@ -150,6 +151,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_131_list<-list(total_vars_df131, output_df_list_raw131)
   #  save the data 
+  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/")
   save(save_131_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run131', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'th_sc3', th_forage_sc3, 'dayh', daylight_h,   '.Rda'))
 })
@@ -195,6 +197,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_132_list<-list(total_vars_df132, output_df_list_raw132)
   # save the data 
+  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/")
   save(save_132_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run132', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'th_sc3', th_forage_sc3, 'dayh', daylight_h,   '.Rda'))
 })
@@ -243,6 +246,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_21_list<-list(total_vars_df21, output_df_list_raw21)
   # save the results 
+  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/")
   save(save_21_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run21', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
 })

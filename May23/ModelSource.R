@@ -214,7 +214,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
     } # end timestep loop
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -526,7 +526,7 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -884,7 +884,7 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1089,7 +1089,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1523,7 +1523,7 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
     } # end timestep loop
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1836,7 +1836,7 @@ mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1883,36 +1883,6 @@ env_func_2_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, daylight_h, mo
   
   # clean up cluster 
   stopImplicitCluster()
-  
-  # Old code 
-  # # print(environment())
-  # #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
-  # 
-  # # now select only the information about survival
-  # list_means_envs<-lapply(outcome_env_2_2_par, function(x){subset(x, x$id=='alive')})
-  # 
-  # # now find the row with the closest value of survival to 0.5 (halflife)
-  # halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
-  # # Same for the end survival
-  # end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
-  # 
-  # # now put relevant data in the global environment
-  # # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
-  # # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
-  # # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
-  # 
-  # # generate the average average end-survival for this threshold, across all the environments 
-  # mean_ES_cur_th<-mean(unlist(end_survival_per_env))
-  # # and now for the average time till halflife 
-  # mean_HL_cur_th<-mean(unlist(halflife_per_env))
-  # # do the same for the 
-  # 
-  # 
-  # performance<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
-  # output_env_func<<-list(performance, outcome_env_2_2_par)
-  # return(output_env_func)
-  
-  
   
   # The result we have at this point is 'outcome_env_2_2_par' 
   # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
@@ -2648,7 +2618,7 @@ mod_3_1<-function(days, N, env_type, th_forage_flr, daylight_h){
     } # end timestep loop
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -2896,7 +2866,7 @@ mod_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, daylight_h)
     } # end timestep loop
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -3165,7 +3135,7 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -3365,7 +3335,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
