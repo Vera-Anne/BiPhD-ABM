@@ -104,6 +104,12 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     #print('here')
     set_up_func_indiv(days, env_type, daylight_h)
@@ -119,17 +125,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
       
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
       
       ###########################
       #     DEAD OR ALIVE?      #
@@ -142,6 +138,19 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
         
         ####################
         #     SLEEPING     #
@@ -234,9 +243,6 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
   
   
 } # end of model 1 function 
-
-# run it here 
-#mod_1_1(10, 100, 8, 0.2, 8)
 
 ########################
 #   ENVIRONMENT LOOP   #
@@ -397,6 +403,11 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -410,20 +421,7 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
     
     # Start a for loop for each timestep 
     for (t in 1:TS){
-      
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
+
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -435,6 +433,21 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         
         ####################
         #     SLEEPING     #
@@ -736,6 +749,11 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -750,18 +768,7 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
+     
       
       ###########################
       #     DEAD OR ALIVE?      #
@@ -774,6 +781,19 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
         
         ####################
         #     SLEEPING     #
@@ -801,7 +821,7 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             dir_hoard_func(t,i)
             
             
-          } else if (((mat_sc[i,t])> th_forage_sc2) && ((mat_sc[i,t])<= th_forage_sc3)){
+          } else if (((mat_sc[i,t])> th_forage_sc2)){
             # The bird will be resting 
             
             ##################
@@ -833,9 +853,9 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             ######################
             #     FORAGE  + EAT  # 
             ######################
-            if (mat_sc[i,t]<=th_forage_sc1){
-              #print('bird tried to retrieve but went to forage and eat ')
-            }
+            # if (mat_sc[i,t]<=th_forage_sc1){
+            #   #print('bird tried to retrieve but went to forage and eat ')
+            # }
             
             #print('a bird forage + eats ')
             
@@ -941,6 +961,11 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -1002,7 +1027,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             
             
             
-          } else if (((mat_sc[i,t])> th_forage_sc2) && ((mat_sc[i,t])<= th_forage_sc3)){
+          } else if (((mat_sc[i,t])> th_forage_sc2)){
             # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
             
             ############################
@@ -1413,6 +1438,12 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     #print('here')
     set_up_func_indiv(days, env_type, daylight_h)
@@ -1428,17 +1459,7 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
+
       
       ###########################
       #     DEAD OR ALIVE?      #
@@ -1451,6 +1472,18 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
         
         ####################
         #     SLEEPING     #
@@ -1707,6 +1740,11 @@ mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -1721,19 +1759,7 @@ mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
+  
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -1745,6 +1771,20 @@ mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         
         ####################
         #     SLEEPING     #
@@ -1965,6 +2005,11 @@ mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -1979,17 +2024,7 @@ mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
+   
       
       ###########################
       #     DEAD OR ALIVE?      #
@@ -2002,6 +2037,18 @@ mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
         
         ####################
         #     SLEEPING     #
@@ -2029,7 +2076,7 @@ mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             dir_hoard_func(t,i)
             
             
-          } else if (((mat_fr[i,t])> th_forage_fr2) && ((mat_fr[i,t])<= th_forage_fr3)){
+          } else if (((mat_fr[i,t])> th_forage_fr2)){
             # The bird will be resting 
             
             ##################
@@ -2163,6 +2210,11 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -2177,19 +2229,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
+  
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -2201,6 +2241,20 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         
         ####################
         #     SLEEPING     #
@@ -2224,7 +2278,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             
             
             
-          } else if (((mat_fr[i,t])> th_forage_fr2) && ((mat_fr[i,t])<= th_forage_fr3)){
+          } else if (((mat_fr[i,t])> th_forage_fr2)){
             # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
             
             ############################
@@ -2508,6 +2562,11 @@ mod_3_1<-function(days, N, env_type, th_forage_flr, daylight_h){
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     #print('here')
     set_up_func_indiv(days, env_type, daylight_h)
@@ -2523,18 +2582,7 @@ mod_3_1<-function(days, N, env_type, th_forage_flr, daylight_h){
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
+    
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -2546,6 +2594,19 @@ mod_3_1<-function(days, N, env_type, th_forage_flr, daylight_h){
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         
         ####################
         #     SLEEPING     #
@@ -2741,6 +2802,11 @@ mod_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, daylight_h)
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -2755,18 +2821,7 @@ mod_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, daylight_h)
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
+ 
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -2778,6 +2833,19 @@ mod_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, daylight_h)
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         
         ####################
         #     SLEEPING     #
@@ -2988,6 +3056,11 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -3002,18 +3075,7 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
+ 
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -3025,6 +3087,19 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         
         ####################
         #     SLEEPING     #
@@ -3052,7 +3127,7 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
             dir_hoard_func(t,i)
             
             
-          } else if (((mat_flr[i,t])> th_forage_flr2) && ((mat_flr[i,t])<= th_forage_flr3)){
+          } else if (((mat_flr[i,t])> th_forage_flr2)){
             # The bird will be resting 
             
             ##################
@@ -3187,6 +3262,11 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
     # And individual matrices 
     set_up_func_indiv(days, env_type, daylight_h)
     
@@ -3201,17 +3281,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     # Start a for loop for each timestep 
     for (t in 1:TS){
       
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
+   
       
       ###########################
       #     DEAD OR ALIVE?      #
@@ -3225,6 +3295,18 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
       # The rest of the code only needs to happen for the alive birds 
       
       if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
         
         ####################
         #     SLEEPING     #
@@ -3248,7 +3330,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
             
             
             
-          } else if (((mat_flr[i,t])> th_forage_flr2) && ((mat_flr[i,t])<= th_forage_flr3)){
+          } else if (((mat_flr[i,t])> th_forage_flr2)){
             # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
             
             ############################

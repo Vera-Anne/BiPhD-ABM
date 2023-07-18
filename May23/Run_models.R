@@ -60,7 +60,7 @@ system.time({
   source('ModelSource.R')
   
   # Run the model 
-  mod_1_1(days=30, N=1000, env_type = 13, th_forage_sc = 0.09795918 , daylight_h = 8)
+  mod_1_1(days=30, N=10000, env_type = 6, th_forage_sc = 0.09795918 , daylight_h = 8)
   
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_11_list<-list(total_vars_df11, output_df_list_raw11)

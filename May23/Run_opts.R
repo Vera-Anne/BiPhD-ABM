@@ -107,10 +107,11 @@ system.time({
     # calculate the best 
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_11<<-outcome_opt_df
     
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+    save(outcome_opt_df_11, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     halflife_col<-"#69b3a2"
     
@@ -192,15 +193,11 @@ system.time({
     # calculate the best HL across the different combinations 
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
-    # OLD CODE FORM es AND HL 
-    # # best ES
-    # ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
-    # # best HL
-    # HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_HL_cur_th)),]
+    outcome_opt_df_12<<-outcome_opt_df
     
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+    save(outcome_opt_df_12, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     # create a matrix with the values for ES
     #ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
@@ -289,9 +286,11 @@ system.time({
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_131<<-outcome_opt_df 
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
+    save(outcome_opt_df_131, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
@@ -382,15 +381,14 @@ system.time({
     outcome_opt_df$threshold2<-th1_th2_th3_comb[,2]
     outcome_opt_df$threshold3<-th1_th2_th3_comb[,3]
     
-    # best ES (old code)
-    #ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
-    
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_132<<-outcome_opt_df
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
+    save(outcome_opt_df_132, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
@@ -444,9 +442,11 @@ system.time({
     # best HL
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_21<<-outcome_opt_df
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+    save(outcome_opt_df_21, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     # colour for the graph 
     halflife_col<-"#69b3a2"
@@ -520,16 +520,16 @@ system.time({
     
     outcome_opt_df$threshold1<-th1_th2_comb[,1]
     outcome_opt_df$threshold2<-th1_th2_comb[,2]
-    
-    # best ES
-    #ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
+
     
     # best HL
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_22<<-outcome_opt_df
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+    save(outcome_opt_df_22, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     # create a matrix with the values for ES
     #ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
@@ -611,9 +611,11 @@ system.time({
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_231<<-outcome_opt_df
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
+    save(outcome_opt_df_231, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
@@ -705,9 +707,11 @@ system.time({
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_232<<-outcome_opt_df
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
+    save(outcome_opt_df_232, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
@@ -759,9 +763,10 @@ system.time({
       # calculate the best 
       HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
       
+      outcome_opt_df_31<<-outcome_opt_df
       # save the data 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/Optimization")
-      save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+      save(outcome_opt_df_31 , file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
       
       # Put the colour 
       halflife_col<-"#69b3a2"
@@ -778,63 +783,7 @@ system.time({
         ggtitle(paste('Mean TS where halflife is reached per th MOD 3.1, N=',N, ' days=',days, 'num_th=',num_th))
       opt_plot
       
-  } else if(modelType=='31'){
-    
-    print('debug 31 here')
-    
-    # Set the number of thresholds you want to test for
-    num_th<-num_th
-    # The minimum 
-    min_th_val<-(-0.6)
-    # And the maximum 
-    max_th_val<-0.6
-    # create the vector that has the actual threshold values in it 
-    th_vec<-linspace( x1=min_th_val, x2=max_th_val, num_th)
-    # For loop to go through all the combinations 
-    for (i in 1:length(th_vec)){
-      if (i==1){
-        list_3_1<-list()
-      }
-      # Set the current threshold 
-      cur_th<-th_vec[i]
-      # Run the function with this threshold 
-      env_func_3_1_par(days = days, N= N, th_forage_flr = cur_th, daylight_h = daylight_h, modelType = modelType)
-      # Add the output to the outcome list 
-      list_3_1[[length(list_3_1)+1]]<-output_env_func[[1]]
-      # To keep track when running 
-      print(paste('model 3.1 opt par-env threshold number =', i))
-    }
-    
-    # put it in a dataframe 
-    outcome_opt_df<-ldply(list_3_1, data.frame)
-    # Create a column with the threshold that goes with the outcome
-    outcome_opt_df$threshold<-th_vec
-
-    # best HL
-    HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
-    
-    # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
-    
-    # colour for the graph 
-    halflife_col<-"#69b3a2"
-    
-    # Make a plot 
-    opt_plot<-ggplot(outcome_opt_df, aes(x=threshold))+
-      geom_line(aes(y=mean), size=2, col=halflife_col)+
-      geom_point(aes(x=HL_best$threshold, y=(HL_best$mean)), colour='#ffcc00', size=5)+
-      #geom_ribbon(aes(y = mean, ymin=mean-SD, ymax=mean+SD), color = "#69b3a2", fill = alpha("#69b3a2", .5))+
-      theme(
-        axis.title.y = element_text(color = 'black', size=13, face='bold'),
-        axis.title.x=element_text(size=13, face='bold')
-      ) +
-      ggtitle(paste('Mod 3.1 - Mean TS where halflife is reached per threshold, N=',N, ' days=',days, 'num_th=',num_th))
-    opt_plot
-    
-    
-    
-  } else if(modelType=='32'){
+  }  else if(modelType=='32'){
         
         # print('debug 32 here')
         # Set the number of options for which each trheshold needs to be tested 
@@ -894,9 +843,11 @@ system.time({
         # best HL
         HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
         
+        outcome_opt_df_32<<-outcome_opt_df
+        
         # save the data 
         setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/Optimization")
-        save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+        save(outcome_opt_df_32, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
         
         # create a matrix with the values for HL
         HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th2_vec))
@@ -973,9 +924,11 @@ system.time({
         # best HL (new code)
         HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
         
+        outcome_opt_df_331<<-outcome_opt_df
+        
         # save the data 
         setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/Optimization")
-        save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
+        save(outcome_opt_df_331, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
         
         
         # Change the dataframe so that 'NA' for both HL and ES are not plotted
@@ -1062,9 +1015,11 @@ system.time({
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
+    outcome_opt_df_332<<-outcome_opt_df
+    
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/Optimization")
-    save(outcome_opt_df, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
+    save(outcome_opt_df_332, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
     outcome_opt_df_plot<-subset(outcome_opt_df, (!is.na(outcome_opt_df[,1])) & (!is.na(outcome_opt_df[,2])))

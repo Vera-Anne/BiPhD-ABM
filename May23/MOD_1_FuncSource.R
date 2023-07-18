@@ -9,6 +9,7 @@
 #  set-up environment function   #
 ##################################
 
+# don't think this is used anymore (18/07)
 set_up_env<-function(days,N, env_type, daylight_h){
   
   
@@ -24,15 +25,15 @@ set_up_env<-function(days,N, env_type, daylight_h){
   stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
   fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
   
-  # set metabolic rates (create the functions)
-  mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
-    mr_cur<<-45.65-(1.33*temp_cur)
-  }
-  bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
-    bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
-  }
-  
-  
+  # set metabolic rates (create the functions) --> Commented these out on 18/07 to move to below
+      # mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
+      #   mr_cur<<-45.65-(1.33*temp_cur)
+      # }
+      # bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
+      #   bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
+      # }
+      # 
+      
   # TIMINGS SET UP 
   # how many timesteps do we have? (total over the days)
   TS<<-(days*72)
@@ -294,10 +295,6 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   # setwd("C:/Local_R/BiPhD-ABM/")
   # source('MOD_1_FuncSource.R')
   
-  # Run hte temperature function 
-  # Running this seperately for each individual brings in some desired stochasticity 
-  temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
-  
   # The output of the temperature function is a variable called 'total_temp_profile', 
   # This is just a vector with a temperature for each timestep 
   # This can later be used for the current temp determination 
@@ -316,7 +313,7 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   
   # fill in some initial values for agent variables  (global)
   # This also needs to be specific (and stochastic) for the individual
-  mass_init<<-8+(rtruncnorm(1, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
+  mass_base<<-8+(rtruncnorm(1, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007
   sc_init<<-0+(rtruncnorm(1, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
   fr_init<<-0+(rtruncnorm(1, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
   alive_init<<-rep(1, 1 )                                                     # all birds are alive at the start 
@@ -326,40 +323,43 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   mat_alive[,1]<<-alive_init
   mat_sc[,1]<<-sc_init
   mat_fr[,1]<<-fr_init
-  mat_mass[,1]<<-(mass_init + sc_init + fr_init)
+  mass_init<<-(mass_base+ sc_init + fr_init)   # first calculate the actual initial mass from the base weight 
+  mat_mass[,1]<<-mass_init                     # Then put this in as an initial value 
   mat_caches[,1]<<-caches_init
   
-  # This is where the matrix with previous FR's needs to be generated 
-  cur_indiv_fr_prerun_mat<<-matrix(NA, 1, 7)
-  # The same for a total mass situation 
-  cur_indiv_mass_prerun_mat<<-matrix(NA, 1, 7)
-  # Fill in the first value (t = t1 - 1) 
-  # This will have the initival values (they represent the FR value at the end of the last timestep)
-  cur_indiv_fr_prerun_mat[1]<<-fr_init
-  # Give the initial value for mass as well - note that sc is not in here, as we assume an empty stomach 
-  cur_indiv_mass_prerun_mat[1]<<-(mass_init + fr_init)
-  # Now, for the 6 timesteps left, we need to calculate how much fat reserve was left in the timestep before 
-  # We know at each piont in time, the bird was resting (the simulation starts first thing in the morning)
-  # For the temperature, we will assume the initial temperature of t=1 
-  # We can use the functions for bmr and mr to calculate what must have gone on
-  # First find the temperature to use
-  # The temp function did already run, because it is included in setup_general 
-  temp_for_prerun_fr<<-total_temp_profile[1]
-  # Put that temperature in the mr function 
-  cur_mr<<-mr_function(temp_cur = temp_for_prerun_fr)
-  
-  # The rest will need to happen for each of the leftover timesteps 
-  for (i in 1:6){
-    # Calcualte the current bmr
-    # note that we can only do this with the mass that the bird has in the timestep after it
-    # so it is not completely correct 
-    cur_bmr<<-bmr_function(mr_cur=cur_mr, mass_cur = cur_indiv_mass_prerun_mat[i])  
-    # Now we need to subtract this amount off the fat-reserves of the timestep at hand 
-    cur_indiv_fr_prerun_mat[(i+1)]<<-(cur_indiv_fr_prerun_mat[i]+cur_bmr)
-    # put the correct value in the mass matrix as well 
-    cur_indiv_mass_prerun_mat[(i+1)]<<-mass_init+cur_indiv_fr_prerun_mat[(i+1)]
-  }
-  
+  # tHE CALCULATION OF INIITIAL FLR VALUES AND THE VALUES BEFORE THE SIMULATION 
+      # # This is where the matrix with previous FR's needs to be generated
+      # cur_indiv_fr_prerun_mat<<-matrix(NA, 1, 7)
+      # # The same for a total mass situation
+      # cur_indiv_mass_prerun_mat<<-matrix(NA, 1, 7)
+      # # Fill in the first value (t = t1 - 1)
+      # # This will have the initival values (they represent the FR value at the end of the last timestep)
+      # cur_indiv_fr_prerun_mat[1]<<-fr_init
+      # # Give the initial value for mass as well - note that sc is not in here, as we assume an empty stomach
+      # cur_indiv_mass_prerun_mat[1]<<-(mass_base + fr_init)
+      # # Now, for the 6 timesteps left, we need to calculate how much fat reserve was left in the timestep before
+      # # We know at each piont in time, the bird was resting (the simulation starts first thing in the morning)
+      # # For the temperature, we will assume the initial temperature of t=1
+      # # We can use the functions for bmr and mr to calculate what must have gone on
+      # # First find the temperature to use
+      # # The temp function did already run, because it is included in setup_general
+      # temp_for_prerun_fr<<-total_temp_profile[1]
+      # # Put that temperature in the mr function
+      # cur_mr<<-mr_function(temp_cur = temp_for_prerun_fr)
+      # 
+      # # The rest will need to happen for each of the leftover timesteps
+      # for (i in 1:6){
+      #   # Calcualte the current bmr
+      #   # note that we can only do this with the mass that the bird has in the timestep after it
+      #   # so it is not completely correct
+      #   cur_bmr<<-bmr_function(mr_cur=cur_mr, mass_cur = cur_indiv_mass_prerun_mat[i])
+      #   # Now we need to subtract this amount off the fat-reserves of the timestep at hand
+      #   cur_indiv_fr_prerun_mat[(i+1)]<<-(cur_indiv_fr_prerun_mat[i]+cur_bmr)
+      #   # put the correct value in the mass matrix as well
+      #   cur_indiv_mass_prerun_mat[(i+1)]<<-mass_base+cur_indiv_fr_prerun_mat[(i+1)]
+      # }
+
+
   # Keep track of what the bird is doing 
   forage_count<<-matrix(NA, 1, TS)
   rest_count<<-matrix(NA, 1, TS)
@@ -496,7 +496,7 @@ food_distr_func<-function(num_food_mean, prob_b_forage, b_size){
   # The following code takes a sample of of size 1 of the elements 'forage b' and 'forage n'
   # Samplign should be with replacement
   # probw is a vector of the probability weights for obtaining the elements being sampled (forage b and forage-n)
-  cur_forage_type<<-sample(c('forage-b', 'forage-n'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
+  cur_forage_type<<-sample(c('forage-b', 'forage-p'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
   
   # Code to draw a piechart for testing the 'pick foraging type' code 
   # prob_b_forage<-0.5
@@ -558,11 +558,46 @@ flr_func<-function(t, i){
     prev_fr<<-mat_fr[i, (t-7)]
     # In the special case of the first timestep in the simulation 
   } else if (t==1){
-    # The 'current fr' is the fat reserve that the bird (likely) had 1 hypothetical timestep before the simulation started 
-    # Note that the order of that matrix goes from closest in time (1) to furthest away in time (7)
-    cur_fr<<-cur_indiv_fr_prerun_mat[1]
-    # The 'previous' FR will be 6 timesteps before that 
-    prev_fr<<-cur_indiv_fr_prerun_mat[7]
+    
+    # First do all the work to generate the pre-simulation matrix 
+          # This is where the matrix with previous FR's needs to be generated
+          cur_indiv_fr_prerun_mat<<-matrix(NA, 1, 7)
+          # The same for a total mass situation
+          cur_indiv_mass_prerun_mat<<-matrix(NA, 1, 7)
+          # Fill in the first value (t = t1 - 1)
+          # This will have the initival values (they represent the FR value at the end of the last timestep)
+          cur_indiv_fr_prerun_mat[1,1]<<-fr_init
+          # Give the initial value for mass as well - note that sc is not in here, as we assume an empty stomach
+          cur_indiv_mass_prerun_mat[1,1]<<-(mass_base + fr_init)
+          # Now, for the 6 timesteps left, we need to calculate how much fat reserve was left in the timestep before
+          # We know at each piont in time, the bird was resting (the simulation starts first thing in the morning)
+          # For the temperature, we will assume the initial temperature of t=1
+          # We can use the functions for bmr and mr to calculate what must have gone on
+          # First find the temperature to use
+          # The temp function did already run, because it is included in setup_general
+          temp_for_prerun_fr<<-total_temp_profile[1]
+          # Put that temperature in the mr function
+          cur_mr<<-mr_function(temp_cur = temp_for_prerun_fr)
+          #print('debug')
+
+          # The rest will need to happen for each of the leftover timesteps
+          for (o in 1:6){
+            # Calcualte the current bmr
+            # note that we can only do this with the mass that the bird has in the timestep after it
+            # so it is not completely correct
+            cur_bmr<<-bmr_function(mr_cur=cur_mr, mass_cur = cur_indiv_mass_prerun_mat[o])
+            # Now we need to subtract this amount off the fat-reserves of the timestep at hand
+            cur_indiv_fr_prerun_mat[(o+1)]<<-(cur_indiv_fr_prerun_mat[o]+cur_bmr)
+            # put the correct value in the mass matrix as well
+            cur_indiv_mass_prerun_mat[(o+1)]<<-mass_base+cur_indiv_fr_prerun_mat[(o+1)]
+          }
+
+    # Now extract what actually needs to be inputted for the first timestepl 
+        # The 'current fr' is the fat reserve that the bird (likely) had 1 hypothetical timestep before the simulation started 
+        # Note that the order of that matrix goes from closest in time (1) to furthest away in time (7)
+        cur_fr<<-cur_indiv_fr_prerun_mat[1]
+        # The 'previous' FR will be 6 timesteps before that 
+        prev_fr<<-cur_indiv_fr_prerun_mat[7]
     # In the other cases where cur_FR needs to come from the normal matrix, but prev_FR needs to come from the prerun matrix 
   } else {
     cur_fr<<-mat_fr[i, (t-1)]
@@ -618,23 +653,25 @@ dead_or_alive_func<-function(t, i){
     mat_sc[i,t]<<-NA
     # for the caches matrix 
     mat_caches[i,t]<<-NA
+    # For the FLR matrix 
+    mat_flr[i,t]<<-NA
   } else {
     
     #################
     #  ALIVE BIRDS  #
     #################
     #print(paste('bird', i, 'is alive t=', t))
-    
-    
-    # Set the current BMR 
-    # Note: I have made the decision to calculate this at the start of the tick. 
-    # So this is before any behaviour, or food is moved around 
-    # set the current mass 
-    mass_cur<<-mat_mass[i,t]
-    # calculate the current mr 
-    mr_function(temp_cur)                                   # note that this will need to be changed if we're using different temperatures
-    # calculate the current 
-    bmr_function(mr_cur, mass_cur)
+    # 
+    # commented these out to move them to later in th emetabolic function 
+          # # Set the current BMR 
+          # # Note: I have made the decision to calculate this at the start of the tick. 
+          # # So this is before any behaviour, or food is moved around 
+          # # set the current mass 
+          # mass_cur<<-mat_mass[i,t]
+          # # calculate the current mr 
+          # mr_function(temp_cur)                                   # note that this will need to be changed if we're using different temperatures
+          # # calculate the current 
+          # bmr_function(mr_cur, mass_cur)
   } # end of alive birds 
   
   # print(paste('dead or alive for bird', i, ' and t=', t, 'done'))
@@ -670,7 +707,7 @@ sleep_func<-function(t, i){
     # set the direct hoarding matrix to 0
     hoard_count[i,t]<<-0
     # find food matrix
-    mat_find_food[i,t]<<-NA
+    mat_find_food[i,t]<<-0
     
     # set the BMR-multi
     BMR_multi<<-1
@@ -929,7 +966,20 @@ predation_func<-function(t,i){
 #   ENERGY METABOLISM   # 
 #########################
 
+# Metabolic rate, based on temperature 
+mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
+  mr_cur<<-45.65-(1.33*temp_cur)
+}
+
+# Basal metabolic rate based on MR and the current mass of the bird 
+bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
+  bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
+}
+
+# Updating
 en_metab_func<-function(t,i){
+  
+
   
   # UPDATE THE FAT RESERVES AND STOMACH CONTENT
   # move food out of stomach into fat 
@@ -944,6 +994,18 @@ en_metab_func<-function(t,i){
   }
   
   # ENERGY EXPENDITURE 
+  
+  # Calculate the mr and bmr 
+  # Set the current BMR 
+  # Note: these are calcualted with the mat_mass[i,t] which as not changed since the start of the tick 
+  # So this is before any behaviour, or food is moved around 
+  # set the current mass 
+  mass_cur<<-mat_mass[i,t]
+  # calculate the current mr 
+  mr_function(temp_cur)                                   # note that this will need to be changed if we're using different temperatures
+  # calculate the current 
+  bmr_function(mr_cur, mass_cur)
+  
   # Set the fat reserves down depending on bmr-multi
   # first subtract the amount
   mat_fr[i,(t)]<<-(mat_fr[i,t]-(bmr_cur*BMR_multi))
@@ -966,7 +1028,7 @@ en_metab_func<-function(t,i){
   
   # SET MASS 
   # set the new mass for all individuals 
-  mat_mass[i,t]<<-((mass_init[i])+(mat_fr[i,t])+(mat_sc[i,t]))
+  mat_mass[i,t]<<-((mass_base[i])+(mat_fr[i,t])+(mat_sc[i,t]))
   
 } # end of the metabolism function 
 
