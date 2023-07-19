@@ -622,7 +622,7 @@ plot_env_18_surv(output_env_func)
       source('ModelSource.R')
       
       # Run the model 
-      mod_4_1(days=30, N=100, env_type = 8, th_forage_fr = 2, th_forage_flr = 0 , daylight_h = 8)
+      mod_4_1(days=30, N=1000, env_type = 8, th_forage_fr = 2, th_forage_flr = 0 , daylight_h = 8)
       
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_41_list<-list(total_vars_df41, output_df_list_raw41)

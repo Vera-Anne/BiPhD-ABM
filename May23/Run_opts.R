@@ -60,7 +60,7 @@ system.time({
   # set individuals
   N<-100
   # Set the model type: 
-  modelType<-41
+  modelType<-42
   # number of threshold values for each 
   num_th<-10
   
@@ -1021,7 +1021,6 @@ system.time({
       thfr_thflr_comb<-as.matrix(expand.grid(th_fr_vec, th_flr_vec))
       
       # Now, make a for loop 
-      
       for (i in 1:nrow(thfr_thflr_comb)){
         if (i==1){
           list_4_1<-list()
@@ -1043,28 +1042,111 @@ system.time({
       
       # put it in a dataframe 
       outcome_opt_df<-ldply(list_4_1, data.frame)
-      
+      # Add the threshold columsn 
       outcome_opt_df$threshold_fr<-thfr_thflr_comb[,1]
       outcome_opt_df$threshold_flr<-thfr_thflr_comb[,2]
       
       # best HL
       HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
-      
+      # Rename so when I import it back in, it is clear which model this is
       outcome_opt_df_41<<-outcome_opt_df
-      
       # save the data 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/Optimization")
       save(outcome_opt_df_41, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
       
       # create a matrix with the values for HL
       HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th_fr_vec))
-      
+      # Plot
       HL_plot<-persp3D(z=HL_matrix, xlab='th_fr', ylab='th_flr', zlab='Timesteps at 50% alive', main='Optimal survival for th_fr and th_flr - Halflife', zlim= c(0, (days*72)))
       
       # mark that opt is done 
       beep()
       print('run opt 4.1 is done')
       
+  }else if(modelType=='4.2'){
+    
+        # Set the number of options for which each threshold needs to be tested 
+        num_th<-num_th
+        # set the minima 
+        min_th_fr1<-0
+        min_th_fr2<-0
+        min_th_flr1<-(-0.6)
+        min_th_flr2<-(-0.6)
+        # set the maxima
+        max_th_fr1<-4
+        max_th_fr2<-4
+        max_th_flr1<-0.6
+        max_th_flr2<-0.6
+        # create the vectors
+        th_fr1_vec<-linspace(x1=min_th_fr1, x2=max_th_fr1, n=num_th)
+        th_fr2_vec<-linspace(x1=min_th_fr2, x2=max_th_fr2, n=num_th)
+        th_flr1_vec<-linspace(x1=min_th_flr1, x2=max_th_flr1, n=num_th)
+        th_flr2_vec<-linspace(x1=min_th_flr2, x2=max_th_flr2, n=num_th)
+        # create a matrix that contains all possible combinations 
+        # var 1 = th fr1 
+        # var 2 = th fr2
+        # var 3 = th flr1 
+        # var 4 = th flr2
+        th_fr1_th_fr2_th_flr1_th_flr2_comb<-as.matrix(expand.grid(th_fr1_vec, th_fr2_vec, th_flr1_vec, th_flr2_vec))
+        
+        # Now, make a for loop 
+        for (i in 1:nrow(th_fr1_th_fr2_th_flr1_th_flr2_comb)){
+          if (i==1){
+            list_4_2<-list()
+          }
+          
+          cur_th_fr1<-th_fr1_th_fr2_th_flr1_th_flr2_comb[i,1]
+          cur_th_fr2<-th_fr1_th_fr2_th_flr1_th_flr2_comb[i,2]
+          cur_th_flr1<-th_fr1_th_fr2_th_flr1_th_flr2_comb[i,3]
+          cur_th_flr2<-th_fr1_th_fr2_th_flr1_th_flr2_comb[i,4]
+          
+          # but only do this in the case that th2 (both fr or flr) is actually larger than th 1 (both fr and flr)
+          if ((cur_th_fr2>cur_th_fr1) && (cur_th_flr2>cur_th_flr1)){
+            # Run th eenvironment function 
+            env_func_4_2_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, daylight_h = daylight_h, modelType=modelType)
+            # put it in the list 
+            list_4_2[[length(list_4_2)+1]]<-output_env_func[[1]]
+            
+          } else{
+            # Fill the variables wiht 0
+            # generate the average average HL
+            mean<-0
+            # and now for the sd
+            SD<-0
+            # do the same for the 
+            output_env_func<-cbind(mean, SD)
+            # put it in the list 
+            list_4_2[[length(list_4_2)+1]]<-output_env_func
+            
+          }
+          
+          print(paste('model 4.2 opt par-env combination =', i))
+        }
+        
+        
+        # put it in a dataframe 
+        outcome_opt_df<-ldply(list_4_2, data.frame)
+        
+        outcome_opt_df$fr_th1<-th_fr1_th_fr2_th_flr1_th_flr2_comb[,1]
+        outcome_opt_df$fr_th2<-th_fr1_th_fr2_th_flr1_th_flr2_comb[,2]
+        outcome_opt_df$flr_th1<-th_fr1_th_fr2_th_flr1_th_flr2_comb[,3]
+        outcome_opt_df$flr_th2<-th_fr1_th_fr2_th_flr1_th_flr2_comb[,4]
+        
+        # calculate the best HL across the different combinations 
+        HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
+        # Name after the model so when I upload it from saved files, It indicates which modeltype was used 
+        outcome_opt_df_42<<-outcome_opt_df
+        
+        # save the data 
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/Optimization")
+        save(outcome_opt_df_42, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+        
+        # create a matrix with the values for HL
+        #HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th_fr1_vec))
+        # plot it 
+        #HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
+        
+
   }else {
      print('help stop, something is wrong with the modeltype ')
     
