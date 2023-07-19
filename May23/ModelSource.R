@@ -3567,4 +3567,239 @@ env_func_3_3_2_par<-function(days, N, th_forage_flr1, th_forage_flr2, th_forage_
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#################################################################
+##     Model 4.1: Non-hoarding bird, Access to FR and FLR      ##
+#################################################################
+
+# model 1.1 
+mod_4_1<-function(days, N, env_type, th_forage_fr, th_forage_flr, daylight_h){
+  # Make the variables global 
+  days<<-days
+  N<<-N
+  env_type<<-env_type
+  th_forage_fr<<-th_forage_fr
+  th_forage_flr<<-th_forage_flr
+  daylight_h<<-daylight_h
+  
+  # load necessary packages for parallel (if needed)
+  require(foreach)
+  require(doParallel)
+  # Start the model 
+  
+  # Start the model 
+  # link to the function file 
+  setwd("C:/Local_R/BiPhD-ABM/May23")
+  source('MOD_1_FuncSource.R')
+  # set the number of cores 
+  #numCores<-(detectCores()-1)
+  #registerDoParallel(numCores)
+  
+  # Set up the general environment 
+  # This part is the same for each bird 
+  set_up_func_general(days, env_type, daylight_h)
+  
+  
+  ################################
+  #      individual loops        # 
+  ################################
+  
+  # The individual loops need to start now
+  # These should be parallelised 
+  
+  outcome_4_1<-foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+    
+    # Run hte temperature function 
+    # Running this seperately for each individual brings in some desired stochasticity 
+    temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
+    
+    # And individual matrices 
+    #print('here')
+    set_up_func_indiv(days, env_type, daylight_h)
+    
+    # As we are running this in parallele, there is no 'i' for the number of indivuals 
+    # So we can use the same functions, but just need to make sure i is always set to 1 
+    i<-1
+    
+    ###################################
+    #   start the for loop  timesteps # 
+    ###################################
+    
+    # Start a for loop for each timestep 
+    for (t in 1:TS){
+      
+      ###########################
+      #     DEAD OR ALIVE?      #
+      ###########################
+      # Check which birds are dead or alive 
+      # set some variables for dead birds
+      # set some variables for alive birds 
+      dead_or_alive_func(t,i)
+      # The function above sets matrices of dead birds to 'NA' 
+      # The rest of the code only needs to happen for the alive birds 
+      
+      if(mat_alive[i,t]==1){
+        
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
+        ####################
+        #     SLEEPING     #
+        ####################
+        
+        sleep_func(t,i)
+        
+        if (sleep_count[i,t]==0){
+          
+          # RULE SPECIFIC FOR MODEL 4_1 
+          
+          # Access to FR and FLR and base the decision on this 
+          if ((mat_fr[i,t]) < th_forage_fr | mat_flr[i,t] < th_forage_flr){
+            # If this is the case, the bird is hungry and needs to forage for food 
+            
+            #################
+            #     FORAGE    # 
+            #################
+            
+            # At this point, foraging means to go out and find a NEW food item 
+            forage_function(t,i)
+            
+            # RULE SPECIFIC TO MODEL 4_1
+            
+            # This means that we have a non-hoarding bird that forages under the fr-threshold or flr-threshold
+            # It can only eat or rest. Eat-hoarding and hoarding are not possible 
+            eat_func(t,i)
+            
+          } else {
+            
+            ##################
+            #    RESTING     # 
+            ##################
+            
+            # If the bird is not foraging and eating, it will be resting (model 4.1)           
+            rest_func(t,i)
+            
+          } # end resting statement 
+          
+        } # End of the statement for awake birds 
+        
+        
+        ###################
+        #    EVERYONE     # 
+        ###################
+        # All alive birds, no matter if asleep or awake need to update these variables 
+        
+        ####################
+        #    PREDATION     #
+        ####################
+        
+        # Check if the bird is predated upon & caught 
+        predation_func(t,i)
+        
+        ##########################
+        #   ENERGY METABOLISM   # 
+        #########################
+        # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
+        en_metab_func(t,i)
+        
+        ##################################
+        #   PREPARE FOR NEXT TIMESTEP   # 
+        ##################################
+        
+        ts_prep_func(t,i, TS)
+        
+      } # end of loop for alive individuals 
+      
+      
+    } # end timestep loop
+    
+    # Alternatively, I could try to create lists with the output 
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    
+  } # end of the foreach loop (individuals) 
+  
+  # clean up cluster 
+  stopImplicitCluster()
+  
+  #return(outcome_4_1)
+  assign(paste0('outcome_4_1_env', env_type),outcome_4_1, envir=.GlobalEnv)
+  
+  create_df_func(outputFile = outcome_4_1, modelType = '41', env_type= env_type)
+
+} # end of model 4.1 function 
+
+
+########################
+#   ENVIRONMENT LOOP   #
+########################
+
+# environment loop paralelel 
+env_func_4_1_par<-function(days, N, th_forage_fr, th_forage_flr, daylight_h, modelType){
+  
+  require(doParallel)
+  require(foreach)
+  
+  numCores<-(detectCores()-1)
+  registerDoParallel(numCores)
+  
+  num_env<-18 
+  
+  outcome_env_4_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+    
+    setwd("C:/Local_R/BiPhD-ABM/May23")
+    source('MOD_1_FuncSource.R')
+    source('ModelSource.R')
+    
+    mod_4_1(days = days, N = N, env_type = i, th_forage_fr = th_forage_fr, th_forage_flr = th_forage_flr, daylight_h = daylight_h)
+
+  }
+  
+  # clean up cluster 
+  stopImplicitCluster()
+
+  # The result we have at this point is 'outcome_env_4_1_par' 
+  # These will have the same form for each of the models
+  # So I will need to write a function that takes care of this and outputs the t_halflife 
+  
+  # load any functions 
+  setwd("C:/Local_R/BiPhD-ABM/May23")
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+  
+  # Create the variable called halflife_input
+  halflife_input<-outcome_env_4_1_par
+  
+  # run the t_halflife function 
+  t_halflife_func(halflife_input)
+  # put the output into a dataframe 
+  t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+  t_HL_df$env<-1:18
+  
+  # Calculate mean 
+  t_HL_mean<-mean(t_HL_df$V1)
+  t_HL_SD<-sd(t_HL_df$V1)
+  
+  
+  performance<<-cbind(t_HL_mean, t_HL_SD)
+  colnames(performance)<-c('mean', 'SD')
+  output_env_func<<-list(performance, outcome_env_4_1_par)
+  
+  # # save the data 
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/env_par")
+  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_fr', th_forage_fr, 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+  
+  
+  return(output_env_func)
+  
+  
+} # end environment function loop 
 
