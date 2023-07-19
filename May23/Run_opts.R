@@ -1063,7 +1063,7 @@ system.time({
       beep()
       print('run opt 4.1 is done')
       
-  }else if(modelType=='4.2'){
+  }else if(modelType=='42'){
     
         # Set the number of options for which each threshold needs to be tested 
         num_th<-num_th
@@ -1146,7 +1146,194 @@ system.time({
         # plot it 
         #HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
         
-
+  }else if (modelType=='431'){
+        
+        # Set the number of options for which each threshold needs to be tested 
+        num_th<-num_th
+        # set the minima 
+        min_th_fr1<-0
+        min_th_fr2<-0
+        min_th_fr3<-0
+        min_th_flr1<-(-0.6)
+        min_th_flr2<-(-0.6)
+        min_th_flr3<-(-0.6)
+        # set the maxima
+        max_th_fr1<-4
+        max_th_fr2<-4
+        max_th_fr3<-4
+        max_th_flr1<-0.6
+        max_th_flr2<-0.6
+        max_th_flr3<-0.6
+        # create the vectors
+        th_fr1_vec<-linspace(x1=min_th_fr1, x2=max_th_fr1, n=num_th)
+        th_fr2_vec<-linspace(x1=min_th_fr2, x2=max_th_fr2, n=num_th)
+        th_fr3_vec<-linspace(x1=min_th_fr3, x2=max_th_fr3, n=num_th)
+        th_flr1_vec<-linspace(x1=min_th_flr1, x2=max_th_flr1, n=num_th)
+        th_flr2_vec<-linspace(x1=min_th_flr2, x2=max_th_flr2, n=num_th)
+        th_flr3_vec<-linspace(x1=min_th_flr3, x2=max_th_flr3, n=num_th)
+        # create a matrix that contains all possible combinations 
+        # var 1 = th fr1 
+        # var 2 = th fr2
+        # var 3 = th fr3 
+        # var 4 = th flr1 
+        # var 5 = th flr2
+        # var 6 = th flr 3
+        th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb<-as.matrix(expand.grid(th_fr1_vec, th_fr2_vec, th_fr3_vec, th_flr1_vec, th_flr2_vec, th_flr3_vec))
+        
+        # Now, make a for loop 
+        for (i in 1:nrow(th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb)){
+          if (i==1){
+            list_4_3_1<-list()
+          }
+          
+          cur_th_fr1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,1]
+          cur_th_fr2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,2]
+          cur_th_fr3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,3]
+          cur_th_flr1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,4]
+          cur_th_flr2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,5]
+          cur_th_flr3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,6]
+          
+          # but only do this in the case that th2 (both fr or flr) is actually larger than th 1 (both fr and flr)
+          if ((cur_th_fr2>cur_th_fr1) && (cur_th_fr3>cur_th_fr2) && (cur_th_flr2>cur_th_flr1) && (cur_th_flr3> cur_th_flr2)){
+            # Run th eenvironment function 
+            env_func_4_3_1_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_fr3= cur_th_fr3, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, th_forage_fr3=cur_th_flr3, daylight_h = daylight_h, modelType=modelType)
+            # put it in the list 
+            list_4_3_1[[length(list_4_3_1)+1]]<-output_env_func[[1]]
+            
+          } else{
+            # Fill the variables wiht 0
+            # generate the average average HL
+            mean<-0
+            # and now for the sd
+            SD<-0
+            # do the same for the 
+            output_env_func<-cbind(mean, SD)
+            # put it in the list 
+            list_4_3_1[[length(list_4_3_1)+1]]<-output_env_func
+            
+          }
+          
+          print(paste('model 4.3_1 opt par-env combination =', i))
+        }
+        
+        # put it in a dataframe 
+        outcome_opt_df<-ldply(list_4_3_1, data.frame)
+        
+        outcome_opt_df$fr_th1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,1]
+        outcome_opt_df$fr_th2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,2]
+        outcome_opt_df$fr_th3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,3]
+        outcome_opt_df$flr_th1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,4]
+        outcome_opt_df$flr_th2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,5]
+        outcome_opt_df$flr_th3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,6]
+        
+        # calculate the best HL across the different combinations 
+        HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
+        # Name after the model so when I upload it from saved files, It indicates which modeltype was used 
+        outcome_opt_df_431<<-outcome_opt_df
+        
+        # save the data 
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/Optimization")
+        save(outcome_opt_df_431, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+        
+        # create a matrix with the values for HL
+        #HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th_fr1_vec))
+        # plot it 
+        #HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
+        
+  } else if(modelType=='432'){
+    
+      # Set the number of options for which each threshold needs to be tested 
+      num_th<-num_th
+      # set the minima 
+      min_th_fr1<-0
+      min_th_fr2<-0
+      min_th_fr3<-0
+      min_th_flr1<-(-0.6)
+      min_th_flr2<-(-0.6)
+      min_th_flr3<-(-0.6)
+      # set the maxima
+      max_th_fr1<-4
+      max_th_fr2<-4
+      max_th_fr3<-4
+      max_th_flr1<-0.6
+      max_th_flr2<-0.6
+      max_th_flr3<-0.6
+      # create the vectors
+      th_fr1_vec<-linspace(x1=min_th_fr1, x2=max_th_fr1, n=num_th)
+      th_fr2_vec<-linspace(x1=min_th_fr2, x2=max_th_fr2, n=num_th)
+      th_fr3_vec<-linspace(x1=min_th_fr3, x2=max_th_fr3, n=num_th)
+      th_flr1_vec<-linspace(x1=min_th_flr1, x2=max_th_flr1, n=num_th)
+      th_flr2_vec<-linspace(x1=min_th_flr2, x2=max_th_flr2, n=num_th)
+      th_flr3_vec<-linspace(x1=min_th_flr3, x2=max_th_flr3, n=num_th)
+      # create a matrix that contains all possible combinations 
+      # var 1 = th fr1 
+      # var 2 = th fr2
+      # var 3 = th fr3 
+      # var 4 = th flr1 
+      # var 5 = th flr2
+      # var 6 = th flr 3
+      th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb<-as.matrix(expand.grid(th_fr1_vec, th_fr2_vec, th_fr3_vec, th_flr1_vec, th_flr2_vec, th_flr3_vec))
+      
+      # Now, make a for loop 
+      for (i in 1:nrow(th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb)){
+        if (i==1){
+          list_4_3_2<-list()
+        }
+        
+        cur_th_fr1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,1]
+        cur_th_fr2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,2]
+        cur_th_fr3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,3]
+        cur_th_flr1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,4]
+        cur_th_flr2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,5]
+        cur_th_flr3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[i,6]
+        
+        # but only do this in the case that th2 (both fr or flr) is actually larger than th 1 (both fr and flr)
+        if ((cur_th_fr2>cur_th_fr1) && (cur_th_fr3>cur_th_fr2) && (cur_th_flr2>cur_th_flr1) && (cur_th_flr3> cur_th_flr2)){
+          # Run th eenvironment function 
+          env_func_4_3_2_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_fr3= cur_th_fr3, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, th_forage_fr3=cur_th_flr3, daylight_h = daylight_h, modelType=modelType)
+          # put it in the list 
+          list_4_3_2[[length(list_4_3_2)+1]]<-output_env_func[[1]]
+          
+        } else{
+          # Fill the variables wiht 0
+          # generate the average average HL
+          mean<-0
+          # and now for the sd
+          SD<-0
+          # do the same for the 
+          output_env_func<-cbind(mean, SD)
+          # put it in the list 
+          list_4_3_2[[length(list_4_3_2)+1]]<-output_env_func
+          
+        }
+        
+        print(paste('model 4.3_2 opt par-env combination =', i))
+      }
+      
+      # put it in a dataframe 
+      outcome_opt_df<-ldply(list_4_3_2, data.frame)
+      
+      outcome_opt_df$fr_th1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,1]
+      outcome_opt_df$fr_th2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,2]
+      outcome_opt_df$fr_th3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,3]
+      outcome_opt_df$flr_th1<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,4]
+      outcome_opt_df$flr_th2<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,5]
+      outcome_opt_df$flr_th3<-th_fr1_th_fr2_th_fr3_th_flr1_th_flr2_th_flr3_comb[,6]
+      
+      # calculate the best HL across the different combinations 
+      HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
+      # Name after the model so when I upload it from saved files, It indicates which modeltype was used 
+      outcome_opt_df_431<<-outcome_opt_df
+      
+      # save the data 
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/Optimization")
+      save(outcome_opt_df_432, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+      
+      # create a matrix with the values for HL
+      #HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th_fr1_vec))
+      # plot it 
+      #HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
+        
   }else {
      print('help stop, something is wrong with the modeltype ')
     
