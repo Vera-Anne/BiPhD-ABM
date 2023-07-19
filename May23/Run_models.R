@@ -629,7 +629,7 @@ plot_env_18_surv(output_env_func)
       #  save the data 
       beep()
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/")
-      save(save_41_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run11', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr , 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+      save(save_41_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run41', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr , 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
     })
     # create plots 
     plots_12_func(inputdata=save_41_list[[1]], modelType='41')
@@ -651,4 +651,55 @@ plot_env_18_surv(output_env_func)
     })
     # Now do an overview image 
     plot_env_18_surv(output_env_func, modelType=41)
+    
+    
+######################################################################
+##   Model 4.2: Leftover-hoarding bird, Access to Stomach Content   ##
+######################################################################
+    
+# Run model 4.2
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      
+      # run model 
+      mod_4_2(days= 30, N= 100, env_type=8, th_forage_fr1=1, th_forage_fr2=2 , th_forage_flr1=-0.3, th_forage_flr2=0.3, daylight_h=8)
+      
+      # First put together some relevant dataframes (we want both individual data and mean data)
+      save_42_list<-list(total_vars_df42, output_df_list_raw42)
+      #  save the data 
+      beep()
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/")
+      save(save_42_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run42', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
+    })
+    
+    # create plots 
+    plots_12_func(inputdata=save_42_list[[1]], modelType='42')
+    # if needed 
+    plot_12_42
+    
+# RUN ENVIRONMENTS 4.2 
+    system.time({
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # Run the environment function in parallel 
+      env_func_4_2_par(days = 30, N= 1000, th_forage_fr1=1, th_forage_fr2=2 , th_forage_flr1=-0.3, th_forage_flr2=0.3 , daylight_h = 8, modelType = 42)
+      beep()
+    })
+    
+    # Now do an overview image of survival across all environments 
+    plot_env_18_surv(output_env_func, modelType=12)
+    
+    
+    
+    
+    
     
