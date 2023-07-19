@@ -58,11 +58,11 @@ system.time({
   # set days
   days<-30
   # set individuals
-  N<-1000
+  N<-100
   # Set the model type: 
-  modelType<-231
+  modelType<-41
   # number of threshold values for each 
-  num_th<-50
+  num_th<-10
   
   #############
   print(paste(modelType))
@@ -176,10 +176,7 @@ system.time({
         list_1_2[[length(list_1_2)+1]]<-output_env_func
         
       }
-      
-      # This will not work: 
-      
-      
+
       print(paste('model 1.2 opt par-env combination =', i))
     }
     
@@ -204,16 +201,7 @@ system.time({
     
     # create a matrix with the values for HL
     HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th2_vec))
-    
-    # OLD code 
-    # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
-    # dev.new()
-    # par(mar = c(1, 1, 1, 1))
-    # 
-    # ES_plot<-persp3D(z=ES_matrix, xlab='th_sc1', ylab='th_sc2', zlab='survival', main='Optimal survival for th_sc1 and th_sc2 - End Survival') #, zlim= c(0, 1))
-    # 
-    
-    
+    # plot it 
     HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
     
     
@@ -295,14 +283,7 @@ system.time({
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
     outcome_opt_df_plot<-subset(outcome_opt_df, (!is.na(outcome_opt_df[,1])) & (!is.na(outcome_opt_df[,2])))
-    
-    # plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean) %>%
-    #   add_markers(size=~mean, marker=list(sizeref=0.02, sizemode='area')) %>%
-    #   layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
-    #                       yaxis = list(range=c(0, 0.4),title = 'TH2'),
-    #                       zaxis = list(range=c(0, 0.4),title = 'TH3')),
-    #          title = list(text='1.3.1 Mean End survival  - 3 thresholds ', y=0.95))
-    
+
     # halflife
     plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean) %>%
       add_markers(size=~mean, marker=list(sizeref=0.02, sizemode='area')) %>%
@@ -368,8 +349,7 @@ system.time({
         list_1_3_2[[length(list_1_3_2)+1]]<-output_env_func
         
       }
-      
-      
+
       
       print(paste('model 1.3.2 opt par-env combination =', i))
     }
@@ -401,8 +381,7 @@ system.time({
                           yaxis = list(range=c(0, 0.4),title = 'TH2'),
                           zaxis = list(range=c(0, 0.4),title = 'TH3')),
              title = list(text='1.3.1 Mean Halflife - 3 thresholds ', y=0.95))
-    
-    
+
     print('132 opt done')
     
     
@@ -513,8 +492,7 @@ system.time({
       
       print(paste('model 2.2 opt par-env combination =', i))
     }
-    
-    
+
     # put it in a dataframe 
     outcome_opt_df<-ldply(list_2_2, data.frame)
     
@@ -535,17 +513,9 @@ system.time({
     #ES_matrix<-matrix(data=outcome_opt_df$mean_ES_cur_th, ncol=length(th2_vec))
     # create a matrix with the values for HL
     HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th2_vec))
-    
-    # heatmap(ES_matrix, Colv=NA, Rowv=NA, scale='column')
-    # dev.new()
-    #par(mar = c(1, 1, 1, 1))
-    
-    #ES_plot<-persp3D(z=ES_matrix, xlab='th_fr1', ylab='th_fr2', zlab='survival', main='Optimal survival for th_fr1 and th_fr2 - End Survival') #, zlim= c(0, 1))
-    
+    # plot it 
     HL_plot<-persp3D(z=HL_matrix, xlab='th_fr1', ylab='th_fr2', zlab='Timesteps at 50% alive', main='Optimal survival for th_fr1 and th_fr2 - Halflife') #, zlim= c(0, (days*72)))
-    
-    
-    
+
   } else if(modelType==231) {
     
     #Set the number of options for which each trheshold needs to be tested
@@ -634,8 +604,7 @@ system.time({
     print('231 opt done')
     
   } else if(modelType==232) {
-    
-    
+
     #Set the number of options for which each threshold needs to be tested
     num_th<-num_th
     
@@ -688,9 +657,7 @@ system.time({
         list_2_3_2[[length(list_2_3_2)+1]]<-output_env_func
         
       }
-      
-      
-      
+
       print(paste('model 2.3.2 opt par-env combination =', i))
     }
     
@@ -948,8 +915,6 @@ system.time({
         print('331 opt done')
         
   }else if(modelType=='332'){
-    
-    
     #Set the number of options for which each threshold needs to be tested
     num_th<-num_th
     
@@ -1037,6 +1002,69 @@ system.time({
     beep()
     print('332 opt done')
     
+  }else if (modelType==41){
+      
+      # Set the number of options for which each trheshold needs to be tested 
+      num_th<-num_th
+      # set the minima 
+      min_th_fr<-0
+      min_th_flr<-(-0.6)
+      # set the maxima
+      max_th_fr<-4
+      max_th_flr<-0.6
+      # create the vectors
+      th_fr_vec<-linspace(x1=min_th_fr, x2=max_th_fr, n=num_th)
+      th_flr_vec<-linspace(x1=min_th_flr, x2=max_th_flr, n=num_th)
+      # create a matrix that contains all possible combinations 
+      # var 1 = th 1
+      # var 2 = th 2 
+      thfr_thflr_comb<-as.matrix(expand.grid(th_fr_vec, th_flr_vec))
+      
+      # Now, make a for loop 
+      
+      for (i in 1:nrow(thfr_thflr_comb)){
+        if (i==1){
+          list_4_1<-list()
+        }
+        
+        cur_th_fr<-thfr_thflr_comb[i,1]
+        cur_th_flr<-thfr_thflr_comb[i,2]
+        
+        # Run the environment function 
+
+          env_func_4_1_par(days = days, N= N, th_forage_fr = cur_th_fr, th_forage_flr = cur_th_flr, daylight_h = daylight_h, modelType=modelType)
+          # Add the calculated mean and SD to the list 
+          list_4_1[[length(list_4_1)+1]]<-output_env_func[[1]]
+          
+        
+        
+        print(paste('model 4.1 opt par-env combination =', i, 'fr=', cur_th_fr, ' flr=', cur_th_flr))
+      }
+      
+      # put it in a dataframe 
+      outcome_opt_df<-ldply(list_4_1, data.frame)
+      
+      outcome_opt_df$threshold_fr<-thfr_thflr_comb[,1]
+      outcome_opt_df$threshold_flr<-thfr_thflr_comb[,2]
+      
+      # best HL
+      HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
+      
+      outcome_opt_df_41<<-outcome_opt_df
+      
+      # save the data 
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/Optimization")
+      save(outcome_opt_df_41, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
+      
+      # create a matrix with the values for HL
+      HL_matrix<-matrix(data=outcome_opt_df$mean, ncol=length(th_fr_vec))
+      
+      HL_plot<-persp3D(z=HL_matrix, xlab='th_fr', ylab='th_flr', zlab='Timesteps at 50% alive', main='Optimal survival for th_fr and th_flr - Halflife', zlim= c(0, (days*72)))
+      
+      # mark that opt is done 
+      beep()
+      print('run opt 4.1 is done')
+      
   }else {
      print('help stop, something is wrong with the modeltype ')
     

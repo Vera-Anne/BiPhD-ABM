@@ -614,7 +614,6 @@ plot_env_18_surv(output_env_func)
     
     # Run model 4.1 
     system.time({
-      
       # clear workspace
       rm(list=ls())
       # load everything 
@@ -623,7 +622,7 @@ plot_env_18_surv(output_env_func)
       source('ModelSource.R')
       
       # Run the model 
-      mod_4_1(days=30, N=100, env_type = 8, th_forage_fr = 0.2, th_forage_flr = 0 , daylight_h = 8)
+      mod_4_1(days=30, N=100, env_type = 8, th_forage_fr = 2, th_forage_flr = 0 , daylight_h = 8)
       
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_41_list<-list(total_vars_df41, output_df_list_raw41)
@@ -640,8 +639,16 @@ plot_env_18_surv(output_env_func)
     
     # and then parallel 
     system.time({
-      env_func_4_1_par(days = 30, N= 1000, th_forage_fr = 2.0, th_forage_flr=0, daylight_h = 8, modelType = 11)
+      # clear workspace
+      rm(list=ls())
+      # load everything 
+      setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+      source('MOD_1_FuncSource.R')
+      source('ModelSource.R')
+      # Then run the function 
+      env_func_4_1_par(days = 30, N= 1000, th_forage_fr = 2.0, th_forage_flr=0, daylight_h = 8, modelType = 41)
+      beep()
     })
     # Now do an overview image 
-    plot_env_18_surv(output_env_func)
+    plot_env_18_surv(output_env_func, modelType=41)
     
