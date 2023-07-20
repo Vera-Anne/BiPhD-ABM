@@ -711,12 +711,12 @@ plot_env_18_surv(output_env_func)
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       # run the model 
-      mod_4_3_1(days=30, N=1000, env_type=8, th_forage_fr1=1, th_forage_fr2=2, th_forage_fr3=3, th_forage_flr1=-0.3, th_forage_flr2=0, th_forage_flr3=0.3, daylight_h=8)
+      mod_4_3_1(days=30, N=1000, env_type=8, th_forage_fr1=1.2343434, th_forage_fr2=2.34545454345, th_forage_fr3=3.345454545, th_forage_flr1=-0.3456545644545, th_forage_flr2=0, th_forage_flr3=0.3, daylight_h=8)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_431_list<-list(total_vars_df431, output_df_list_raw431)
       # save the results 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/")
-      save( save_431_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run431', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,   '.Rda'))
+      save( save_431_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run431', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', round(th_forage_fr1, digits=3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits = 3), 'th_flr1', round(th_forage_flr1, digits = 3), 'th_flr2', round(th_forage_flr2, digits = 3), 'th_flr3', round(th_forage_flr3, digits = 3), 'dayh', daylight_h,   '.Rda'))
       # mark that the simulation is done
       beep()
       print('run single 4.3.1 done ')
@@ -743,7 +743,7 @@ plot_env_18_surv(output_env_func)
     })
     
     # Now do an overview image 
-    plot_env_18_surv(output_env_func)
+    plot_env_18_surv(output_env_func, modelType=431)
     
     
 ####################################################################################
@@ -764,7 +764,7 @@ plot_env_18_surv(output_env_func)
       save_432_list<-list(total_vars_df432, output_df_list_raw432)
       # save the results 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/")
-      save(save_432_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run432', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,   '.Rda'))
+      save( save_432_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run432', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', round(th_forage_fr1, digits=3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits = 3), 'th_flr1', round(th_forage_flr1, digits = 3), 'th_flr2', round(th_forage_flr2, digits = 3), 'th_flr3', round(th_forage_flr3, digits = 3), 'dayh', daylight_h,   '.Rda'))
       # mark the end of the simulation 
       beep()
       print('run 4.3.2 single done')

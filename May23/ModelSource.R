@@ -4507,7 +4507,7 @@ env_func_4_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   
   #  save the data 
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_431', 'd', days, 'N', N, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3,'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,  '.Rda'))
+  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_431', 'd', days, 'N', N, 'th_fr1', round(th_forage_fr1, digits = 3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits=3),'th_flr1', round(th_forage_flr1, digits=3), 'th_flr2', round(th_forage_flr2, digits=3), 'th_flr3', round(th_forage_flr3, digits=3), 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -4571,7 +4571,7 @@ env_func_4_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   
   # # save the data 
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_432', 'd', days, 'N', N,'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_flr3, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,  '.Rda'))
+  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_432', 'd', days, 'N', N, 'th_fr1', round(th_forage_fr1, digits = 3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits=3),'th_flr1', round(th_forage_flr1, digits=3), 'th_flr2', round(th_forage_flr2, digits=3), 'th_flr3', round(th_forage_flr3, digits=3), 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
