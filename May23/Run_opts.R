@@ -60,7 +60,7 @@ system.time({
   # set individuals
   N<-100
   # Set the model type: 
-  modelType<-42
+  modelType<-431
   # number of threshold values for each 
   num_th<-10
   
@@ -1196,7 +1196,7 @@ system.time({
           # but only do this in the case that th2 (both fr or flr) is actually larger than th 1 (both fr and flr)
           if ((cur_th_fr2>cur_th_fr1) && (cur_th_fr3>cur_th_fr2) && (cur_th_flr2>cur_th_flr1) && (cur_th_flr3> cur_th_flr2)){
             # Run th eenvironment function 
-            env_func_4_3_1_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_fr3= cur_th_fr3, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, th_forage_fr3=cur_th_flr3, daylight_h = daylight_h, modelType=modelType)
+            env_func_4_3_1_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_fr3= cur_th_fr3, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, th_forage_flr3=cur_th_flr3, daylight_h = daylight_h, modelType=modelType)
             # put it in the list 
             list_4_3_1[[length(list_4_3_1)+1]]<-output_env_func[[1]]
             
