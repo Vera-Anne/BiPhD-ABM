@@ -60,7 +60,7 @@ system.time({
   source('ModelSource.R')
   
   # Run the model 
-  mod_1_1(days=30, N=10000, env_type = 6, th_forage_sc = 0.09795918 , daylight_h = 8)
+  mod_1_1(days=30, N=100, env_type = 6, th_forage_sc = 0.09795918 , daylight_h = 8)
   
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_11_list<-list(total_vars_df11, output_df_list_raw11)
@@ -70,6 +70,8 @@ system.time({
   save(save_11_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run11', 'd', days, 'N', N,'env_t', env_type, 'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
 })
 
+
+
 # create plots 
 plots_12_func(inputdata=save_11_list[[1]], modelType='11')
 # if needed 
@@ -77,7 +79,13 @@ plot_12_11
 
 # and then parallel 
 system.time({
-  env_func_1_1_par(days = 30, N= 1000, th_forage_sc = 0.09795918, daylight_h = 8, modelType = 11)
+  env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.09795918, daylight_h = 8, modelType = 11)
+})
+
+
+# HPC version - non paralleel 
+system.time({
+  env_func_1_1(days = 30, N= 100, th_forage_sc = 0.09795918, daylight_h = 8, modelType = 11)
 })
 
 # Now do an overview image 

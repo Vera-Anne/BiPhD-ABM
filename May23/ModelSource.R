@@ -249,7 +249,8 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
 ########################
 
 # The environment loop 
-env_func_1_1<-function(days, N, th_forage_sc, daylight_h, modelType){
+# OLD:  
+env_func_1_1_old<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   # Loop through the environments 
   for (env in 1:18){
@@ -297,6 +298,44 @@ env_func_1_1<-function(days, N, th_forage_sc, daylight_h, modelType){
   
 } # end environment function loop 
 
+# environment loop for the HPC 
+env_func_1_1_hpc<-function(days, N, th_forage_sc, daylight_h, modelType){
+  
+  num_env<-18 
+  
+  outcome_env_1_1<- foreach(j=1:num_env, .packages = c( "truncnorm", "purrr")) %do% {
+    
+    mod_1_1(days = days, N = N, env_type = j, th_forage_sc = th_forage_sc, daylight_h = daylight_h)
+    
+  }
+  
+  # Create the variable called halflife_input
+  halflife_input<-outcome_env_1_1
+  
+  # run the t_halflife function 
+  t_halflife_func(halflife_input)
+  # put the output into a dataframe 
+  t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+  t_HL_df$env<-1:18
+  
+  # Calculate mean 
+  t_HL_mean<-mean(t_HL_df$V1)
+  t_HL_SD<-sd(t_HL_df$V1)
+  
+  
+  performance<<-cbind(t_HL_mean, t_HL_SD)
+  colnames(performance)<-c('mean', 'SD')
+  output_env_func<<-list(performance, outcome_env_1_1)
+  
+  # save 
+  #setwd(out_dir)
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
+  # 
+  return(output_env_func)
+  
+  
+} # end environment function loop 
+
 # environment loop paralelel 
 env_func_1_1_par<-function(days, N, th_forage_sc, daylight_h, modelType){
   
@@ -315,9 +354,6 @@ env_func_1_1_par<-function(days, N, th_forage_sc, daylight_h, modelType){
     source('ModelSource.R')
     
     mod_1_1(days = days, N = N, env_type = i, th_forage_sc = th_forage_sc, daylight_h = daylight_h)
-    
-    #print('done')
-    
     
   }
   
@@ -561,7 +597,7 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
 ########################
 
 # The environment loop 
-env_func_1_2<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelType){
+env_func_1_2_old<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelType){
   
   # Loop through the environments 
   for (env in 1:18){
@@ -605,6 +641,40 @@ env_func_1_2<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelT
   return(output_env_func)
   
 } # end environment function loop 
+
+# environment loop for the HPC 
+env_func_1_2_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelType){
+  
+  num_env<-18 
+  
+  outcome_env_1_2<- foreach(j=1:num_env, .packages = c( "truncnorm", "purrr")) %do% {
+    
+    mod_1_2(days = days, N = N, env_type = j, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, daylight_h = daylight_h)
+    
+  }
+  
+  # Create the variable called halflife_input
+  halflife_input<-outcome_env_1_2
+  
+  # run the t_halflife function 
+  t_halflife_func(halflife_input)
+  # put the output into a dataframe 
+  t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+  t_HL_df$env<-1:18
+  
+  # Calculate mean 
+  t_HL_mean<-mean(t_HL_df$V1)
+  t_HL_SD<-sd(t_HL_df$V1)
+  
+  
+  performance<<-cbind(t_HL_mean, t_HL_SD)
+  colnames(performance)<-c('mean', 'SD')
+  output_env_func<<-list(performance, outcome_env_1_2)
+
+  return(output_env_func)
+  
+  
+} # end environment function loop for the hpc 
 
 # environment loop paralelel 
 env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelType){
@@ -1137,7 +1207,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
 ########################
 
 # The environment loop 
-env_func_1_3_1<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
+env_func_1_3_1_old<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
   
   # Loop through the environments 
   for (env in 1:18){
@@ -1181,6 +1251,40 @@ env_func_1_3_1<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, d
   return(output_env_func)
   
 } # end environment function loop 
+
+# environment loop for the HPC 
+env_func_1_3_1_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
+  
+  num_env<-18 
+  
+  outcome_env_1_3_1<- foreach(j=1:num_env, .packages = c( "truncnorm", "purrr")) %do% {
+    
+    mod_1_3_1(days = days, N = N, env_type = j, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3 = th_forage_sc3, daylight_h = daylight_h)
+    
+  }
+  
+  # Create the variable called halflife_input
+  halflife_input<-outcome_env_1_3_1
+  
+  # run the t_halflife function 
+  t_halflife_func(halflife_input)
+  # put the output into a dataframe 
+  t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+  t_HL_df$env<-1:18
+  
+  # Calculate mean 
+  t_HL_mean<-mean(t_HL_df$V1)
+  t_HL_SD<-sd(t_HL_df$V1)
+  
+  
+  performance<<-cbind(t_HL_mean, t_HL_SD)
+  colnames(performance)<-c('mean', 'SD')
+  output_env_func<<-list(performance, outcome_env_1_3_1)
+  
+  return(output_env_func)
+  
+  
+} # end environment function loop for the hpc 
 
 # the one that runs parallel 
 env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
@@ -1276,6 +1380,9 @@ env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
 } # end environment function loop 
 
 
+
+
+
 #  the enviornment loop
 env_func_1_3_2<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
   
@@ -1321,6 +1428,40 @@ env_func_1_3_2<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, d
   return(output_env_func)
   
 } # end environment function loop 
+
+# environment loop for the HPC 
+env_func_1_3_2_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
+  
+  num_env<-18 
+  
+  outcome_env_1_3_2<- foreach(j=1:num_env, .packages = c( "truncnorm", "purrr")) %do% {
+    
+    mod_1_3_2(days = days, N = N, env_type = j, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3 = th_forage_sc3, daylight_h = daylight_h)
+    
+  }
+  
+  # Create the variable called halflife_input
+  halflife_input<-outcome_env_1_3_2
+  
+  # run the t_halflife function 
+  t_halflife_func(halflife_input)
+  # put the output into a dataframe 
+  t_HL_df<-map_dfr(t_HL_list, ~as.data.frame(t(.x)))
+  t_HL_df$env<-1:18
+  
+  # Calculate mean 
+  t_HL_mean<-mean(t_HL_df$V1)
+  t_HL_SD<-sd(t_HL_df$V1)
+  
+  
+  performance<<-cbind(t_HL_mean, t_HL_SD)
+  colnames(performance)<-c('mean', 'SD')
+  output_env_func<<-list(performance, outcome_env_1_3_2)
+  
+  return(output_env_func)
+  
+  
+} # end environment function loop for the hpc 
 
 # The one that runs parallel 
 env_func_1_3_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){

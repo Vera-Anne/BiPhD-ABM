@@ -58,11 +58,11 @@ system.time({
   # set days
   days<-30
   # set individuals
-  N<-100
+  N<-1000
   # Set the model type: 
-  modelType<-431
+  modelType<-231
   # number of threshold values for each 
-  num_th<-10
+  num_th<-50
   
   #############
   print(paste(modelType))
