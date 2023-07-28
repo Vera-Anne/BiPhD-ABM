@@ -311,6 +311,7 @@ env_func_1_1_hpc<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   # Create the variable called halflife_input
   halflife_input<-outcome_env_1_1
+  rm(outcome_env_1_1)
   
   # run the t_halflife function 
   t_halflife_func(halflife_input)
@@ -325,7 +326,8 @@ env_func_1_1_hpc<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   performance<<-cbind(t_HL_mean, t_HL_SD)
   colnames(performance)<-c('mean', 'SD')
-  output_env_func<<-list(performance, outcome_env_1_1)
+  # New version where I no longer save the specific runs, jus tthe mean and SD to get to optimal results 
+  output_env_func<<-list(performance)
   
   # save 
   #setwd(out_dir)

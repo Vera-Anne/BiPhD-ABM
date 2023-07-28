@@ -26,21 +26,25 @@ library(tidyverse)
 library(viridis)
 library(foreach)
 library(doParallel)
+library(utils)
 
 # link to the function file 
 source('MOD_1_FuncSource.R')
 source('ModelSource.R')
 
+# checking memory usage 
+#Rprof(tf<-"rprof.log", memory.profiling=TRUE)
+
 ###############################
 #    USE WHEN RUNNING LOCAL   # 
 ###############################
-#args<-c(30, 100, 8, 5, 12, NA)
+# args<-c(30, 100, 8, 5, 11, NA)
 
 
 #############################
 #  COMMAND LINE ARGUMENTS   #
 #############################
-args<-commandArgs(trailingOnly=TRUE)
+#args<-commandArgs(trailingOnly=TRUE)
 
 # Input variables 
 # Number of days in the simulation 
@@ -61,7 +65,7 @@ out_dir<-args[6]
 ###################################
 
 # Set the number of cores that you will be using (10-20 was recommended by Jaume Barcadit 04/07/2023)
-numCores<-15
+numCores<-2
 registerDoParallel(numCores)
 
 # Start the if-statement and determine which model you are running 
@@ -91,7 +95,7 @@ if (modelType==00){
     # put into the environment fnction 
     env_results<-env_func_1_1_hpc(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType=modelType)
     # Give it all a name 
-    names(env_results)<-paste(c("Max_surv_", "All_vars_perEnv_"), i, sep="")
+    names(env_results)<-paste(c("Max_surv_"), i, sep="") # , "All_vars_perEnv_"
     
     env_results
     
@@ -255,7 +259,7 @@ if (modelType==00){
       # put into the environment fnction 
       env_results<-env_func_1_3_2_hpc(days = days, N= N, th_forage_sc1 = cur_th1, th_forage_sc2=cur_th2, th_forage_sc3=cur_th3, daylight_h = daylight_h, modelType=modelType)
       # Give it all a name 
-      names(env_results)<-paste(c("Max_surv_", "All_vars_perEnv_"), i, sep="")
+      names(env_results)<-paste(c("Max_surv_"), i, sep="") # , "All_vars_perEnv_"
       # Return it, so it will be included in the endresult of the optimization list 
       env_results
     } else{
@@ -318,3 +322,6 @@ if (modelType==00){
   
 }
 
+# End memory profiling 
+# Rprof(NULL)
+# summaryRprof(tf, memory='both')
