@@ -44,7 +44,7 @@ source('ModelSource.R')
 #############################
 #  COMMAND LINE ARGUMENTS   #
 #############################
-#args<-commandArgs(trailingOnly=TRUE)
+args<-commandArgs(trailingOnly=TRUE)
 
 # Input variables 
 # Number of days in the simulation 
@@ -65,7 +65,7 @@ out_dir<-args[6]
 ###################################
 
 # Set the number of cores that you will be using (10-20 was recommended by Jaume Barcadit 04/07/2023)
-numCores<-2
+numCores<-20
 registerDoParallel(numCores)
 
 # Start the if-statement and determine which model you are running 

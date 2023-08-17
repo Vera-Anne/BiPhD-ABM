@@ -995,7 +995,6 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
 
 # model 1.3.2 
 mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h){
-  
   # make some variables global 
   days<<-days
   N<<-N
@@ -1005,18 +1004,15 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
   th_forage_sc3<<-th_forage_sc3
   daylight_h<<-daylight_h
   
-  # Load packages for parallel if needed 
+  # load packages if needed 
   require(doParallel)
   require(foreach)
-  
   # Start the model 
+  
   # link to the function file 
   setwd("C:/Local_R/BiPhD-ABM/May23")
   source('MOD_1_FuncSource.R')
   
-  # set the number of cores 
-  numCores<-(detectCores()-1)
-  registerDoParallel(numCores)
   
   # Set up the general environment 
   # This part is the same for each bird 
@@ -1051,20 +1047,6 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     
     # Start a for loop for each timestep 
     for (t in 1:TS){
-      
-      # Calculate the current fat loss rate 
-      flr_func(t,i)
-      
-      
-      # Set the current temperature 
-      temp_cur<<-total_temp_profile[t]
-      # Check if it is night or day 
-      if ((t%%72)<= n_daylight_timestep){
-        dayOrNight<<-1                       # this means it is day 
-      } else {
-        dayOrNight<<-0                       # this means it is night 
-      }
-      
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -1077,6 +1059,19 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
       
       if(mat_alive[i,t]==1){
         
+        # Calculate the current fat loss rate 
+        flr_func(t,i)
+        
+        
+        # Set the current temperature 
+        temp_cur<<-total_temp_profile[t]
+        # Check if it is night or day 
+        if ((t%%72)<= n_daylight_timestep){
+          dayOrNight<<-1                       # this means it is day 
+        } else {
+          dayOrNight<<-0                       # this means it is night 
+        }
+        
         ####################
         #     SLEEPING     #
         ####################
@@ -1085,10 +1080,12 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
         
         if (sleep_count[i,t]==0){
           
-          # RULE SPECIFIC FOR MODEL 1_3_2 
+          # RULE SPECIFIC FOR MODEL 1_3 
           
           if ((mat_sc[i,t])> th_forage_sc3){
-            # The bird will be resting above the 3rd threshold 
+            # This is above the third threshold, so the bird will do its direct hoarding, without eating at all 
+            
+            # The bird will be resting 
             
             ##################
             #    RESTING     # 
@@ -1097,10 +1094,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             # If the bird has a SC above the second threshold, it is not hungry at all and can go rest        
             rest_func(t,i)
             
-            
-            
           } else if (((mat_sc[i,t])> th_forage_sc2)){
-            # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
             
             ############################
             #  FORAGE + HOARD DIRECT   #
@@ -1114,6 +1108,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             # Then directly just hoard it
             dir_hoard_func(t,i)
             
+           
             
           } else if (((mat_sc[i,t])<=th_forage_sc1) && ((mat_caches[i,t])>retrieve_min)){
             
@@ -1127,7 +1122,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             retrieve_func(t,i)
             # End of retrieving statement 
             
-            # RULE SPECIFIC FOR MODEL 1_3_2 
+            # RULE SPECIFIC FOR MODEL 1_3 
             
           }else {
             
@@ -1137,9 +1132,9 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             ######################
             #     FORAGE  + EAT  # 
             ######################
-            if (mat_sc[i,t]<=th_forage_sc1){
-              #print('bird tried to retrieve but went to forage and eat ')
-            }
+            # if (mat_sc[i,t]<=th_forage_sc1){
+            #   #print('bird tried to retrieve but went to forage and eat ')
+            # }
             
             #print('a bird forage + eats ')
             
@@ -1182,11 +1177,13 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
       } # end of loop for alive individuals 
       
       
+      
+      
     } # end timestep loop
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc,mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1351,32 +1348,7 @@ env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
-  
-  #  OLD CODE FROM PREVIOUS HL AND END SURVIVAL 
-  # # print(environment())
-  # #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
-  # 
-  # # now select only the information about survival
-  # list_means_envs<-lapply(outcome_env_1_3_1_par, function(x){subset(x, x$id=='alive')})
-  # 
-  # # now find the row with the closest value of survival to 0.5 (halflife)
-  # halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
-  # # Same for the end survival
-  # end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
-  # 
-  # # now put relevant data in the global environment
-  # # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
-  # # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
-  # # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
-  # 
-  # # generate the average average end-survival for this threshold, across all the environments
-  # mean_ES_cur_th<-mean(unlist(end_survival_per_env))
-  # # and now for the average time till halflife
-  # mean_HL_cur_th<-mean(unlist(halflife_per_env))
-  # # do the same for the
-  # performance<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
-  # output_env_func<<-list(performance, outcome_env_1_3_1_par)
-  
+
   
   
 } # end environment function loop 
@@ -1469,6 +1441,7 @@ env_func_1_3_2_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
 env_func_1_3_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
   
   
+  
   require(doParallel)
   require(foreach)
   
@@ -1493,7 +1466,7 @@ env_func_1_3_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   # clean up cluster 
   stopImplicitCluster()
   
-  # The result we have at this point is 'outcome_env_1_3_2_par' 
+  # The result we have at this point is 'outcome_env_1_3_1_par' 
   # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
   # It will go into the halflife function, so we find out at what point in time half of the birds are alive 
   
@@ -2328,15 +2301,15 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   th_forage_fr3<<-th_forage_fr3
   daylight_h<<-daylight_h
   
+  # load packages if needed 
   require(doParallel)
   require(foreach)
   # Start the model 
+  
   # link to the function file 
   setwd("C:/Local_R/BiPhD-ABM/May23")
   source('MOD_1_FuncSource.R')
-  # set the number of cores 
-  numCores<-(detectCores()-1)
-  registerDoParallel(numCores)
+  
   
   # Set up the general environment 
   # This part is the same for each bird 
@@ -2371,8 +2344,6 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     
     # Start a for loop for each timestep 
     for (t in 1:TS){
-      
-  
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
@@ -2398,7 +2369,6 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
           dayOrNight<<-0                       # this means it is night 
         }
         
-        
         ####################
         #     SLEEPING     #
         ####################
@@ -2407,10 +2377,12 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
         
         if (sleep_count[i,t]==0){
           
-          # RULE SPECIFIC FOR MODEL 1_3_2 
+          # RULE SPECIFIC FOR MODEL 1_3 
           
           if ((mat_fr[i,t])> th_forage_fr3){
-            # The bird will be resting above the 3rd threshold 
+            # This is above the third threshold, so the bird will do its direct hoarding, without eating at all 
+            
+            # The bird will be resting 
             
             ##################
             #    RESTING     # 
@@ -2419,10 +2391,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             # If the bird has a SC above the second threshold, it is not hungry at all and can go rest        
             rest_func(t,i)
             
-            
-            
           } else if (((mat_fr[i,t])> th_forage_fr2)){
-            # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
             
             ############################
             #  FORAGE + HOARD DIRECT   #
@@ -2437,6 +2406,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             dir_hoard_func(t,i)
             
             
+            
           } else if (((mat_fr[i,t])<=th_forage_fr1) && ((mat_caches[i,t])>retrieve_min)){
             
             #print('a bird retrieves')
@@ -2449,7 +2419,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             retrieve_func(t,i)
             # End of retrieving statement 
             
-            # RULE SPECIFIC FOR MODEL 1_3_2 
+            # RULE SPECIFIC FOR MODEL 1_3 
             
           }else {
             
@@ -2459,9 +2429,9 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             ######################
             #     FORAGE  + EAT  # 
             ######################
-            if (mat_fr[i,t]<=th_forage_fr1){
-              #print('bird tried to retrieve but went to forage and eat ')
-            }
+            # if (mat_sc[i,t]<=th_forage_sc1){
+            #   #print('bird tried to retrieve but went to forage and eat ')
+            # }
             
             #print('a bird forage + eats ')
             
@@ -2504,11 +2474,13 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
       } # end of loop for alive individuals 
       
       
+      
+      
     } # end timestep loop
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -2520,6 +2492,8 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   assign(paste0('outcome_2_3_2_env', env_type),outcome_2_3_2, envir=.GlobalEnv)
   
   create_df_func(outputFile = outcome_2_3_2, modelType = '232', env_type= env_type)
+  
+  #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
   
   
 } # end of model 2.3.2 function 
@@ -2597,7 +2571,6 @@ env_func_2_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
 # The one that runs parallel 
 env_func_2_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h, modelType){
   
-  
   require(doParallel)
   require(foreach)
   
@@ -2622,7 +2595,7 @@ env_func_2_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   # clean up cluster 
   stopImplicitCluster()
   
-  # The result we have at this point is 'outcome_env_1_3_2_par' 
+  # The result we have at this point is 'outcome_env_1_3_1_par' 
   # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
   # It will go into the halflife function, so we find out at what point in time half of the birds are alive 
   
@@ -2657,7 +2630,6 @@ env_func_2_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
-  
 } # end environment function loop 
 
 

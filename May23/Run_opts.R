@@ -58,11 +58,11 @@ system.time({
   # set days
   days<-30
   # set individuals
-  N<-1000
+  N<-100
   # Set the model type: 
-  modelType<-231
+  modelType<-232
   # number of threshold values for each 
-  num_th<-50
+  num_th<-10
   
   #############
   print(paste(modelType))
@@ -296,25 +296,20 @@ system.time({
     print('131 opt done')
   } else if (modelType==132){
     print('debug 132 here')
-    
-    #Set the number of options for which each threshold needs to be tested
+    #Set the number of options for which each trheshold needs to be tested
     num_th<-num_th
-    
     # set the minima
     min_th_sc1<-0
     min_th_sc2<-0
     min_th_sc3<-0
-    
     # set the maxima
     max_th_sc1<-0.4
     max_th_sc2<-0.4
     max_th_sc3<-0.4
-    
     # create the vectors
     th1_vec<-linspace(x1=min_th_sc1, x2=max_th_sc1, n=num_th)
     th2_vec<-linspace(x1=min_th_sc2, x2=max_th_sc2, n=num_th)
     th3_vec<-linspace(x1=min_th_sc3, x2=max_th_sc3, n=num_th)
-    
     # create a matrix that contains all possible combinations
     # var 1 = th 1
     # var 2 = th 2
@@ -335,7 +330,7 @@ system.time({
       # but only do this in the case that th2 is actually larger than th 1 
       if (cur_th2>cur_th1 && cur_th3>cur_th2){
         env_func_1_3_2_par(days = days, N= N, th_forage_sc1 = cur_th1, th_forage_sc2 = cur_th2, th_forage_sc3=cur_th3, daylight_h = daylight_h, modelType=modelType)
-        # add to the list 
+        # put it in the output list
         list_1_3_2[[length(list_1_3_2)+1]]<-output_env_func[[1]]
       } else{
         # Fill the variables wiht 0
@@ -345,11 +340,12 @@ system.time({
         SD<-NA
         # do the same for the th
         output_env_func<-cbind(mean, SD)
-        # add to the list 
+        # put in th elist 
         list_1_3_2[[length(list_1_3_2)+1]]<-output_env_func
         
       }
-
+      
+      
       
       print(paste('model 1.3.2 opt par-env combination =', i))
     }
@@ -361,10 +357,11 @@ system.time({
     outcome_opt_df$threshold2<-th1_th2_th3_comb[,2]
     outcome_opt_df$threshold3<-th1_th2_th3_comb[,3]
     
+
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
-    outcome_opt_df_132<<-outcome_opt_df
+    outcome_opt_df_132<<-outcome_opt_df 
     
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/Optimization")
@@ -380,11 +377,10 @@ system.time({
       layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
                           yaxis = list(range=c(0, 0.4),title = 'TH2'),
                           zaxis = list(range=c(0, 0.4),title = 'TH3')),
-             title = list(text='1.3.1 Mean Halflife - 3 thresholds ', y=0.95))
-
+             title = list(text='1.3.2 Mean Halflife - 3 thresholds ', y=0.95))
+    
+    
     print('132 opt done')
-    
-    
   } else if (modelType==21){
     
     print('debug 21 here')
@@ -605,24 +601,21 @@ system.time({
     
   } else if(modelType==232) {
 
-    #Set the number of options for which each threshold needs to be tested
+    print('debug 232 here')
+    #Set the number of options for which each trheshold needs to be tested
     num_th<-num_th
-    
     # set the minima
     min_th_fr1<-0
     min_th_fr2<-0
     min_th_fr3<-0
-    
-    # set the maxima
+    # set the maxima (for fat-reserves, so set this to 4)
     max_th_fr1<-4
     max_th_fr2<-4
     max_th_fr3<-4
-    
     # create the vectors
     th1_vec<-linspace(x1=min_th_fr1, x2=max_th_fr1, n=num_th)
     th2_vec<-linspace(x1=min_th_fr2, x2=max_th_fr2, n=num_th)
     th3_vec<-linspace(x1=min_th_fr3, x2=max_th_fr3, n=num_th)
-    
     # create a matrix that contains all possible combinations
     # var 1 = th 1
     # var 2 = th 2
@@ -643,7 +636,7 @@ system.time({
       # but only do this in the case that th2 is actually larger than th 1 
       if (cur_th2>cur_th1 && cur_th3>cur_th2){
         env_func_2_3_2_par(days = days, N= N, th_forage_fr1 = cur_th1, th_forage_fr2 = cur_th2, th_forage_fr3=cur_th3, daylight_h = daylight_h, modelType=modelType)
-        # add to the list 
+        # put it in the output list
         list_2_3_2[[length(list_2_3_2)+1]]<-output_env_func[[1]]
       } else{
         # Fill the variables wiht 0
@@ -653,11 +646,13 @@ system.time({
         SD<-NA
         # do the same for the th
         output_env_func<-cbind(mean, SD)
-        # add to the list 
+        # put in th elist 
         list_2_3_2[[length(list_2_3_2)+1]]<-output_env_func
         
       }
-
+      
+      
+      
       print(paste('model 2.3.2 opt par-env combination =', i))
     }
     
@@ -668,13 +663,11 @@ system.time({
     outcome_opt_df$threshold2<-th1_th2_th3_comb[,2]
     outcome_opt_df$threshold3<-th1_th2_th3_comb[,3]
     
-    # best ES (old code)
-    #ES_best<-outcome_opt_df[(which.max(outcome_opt_df$mean_ES_cur_th)),]
     
     # best HL (new code)
     HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
     
-    outcome_opt_df_232<<-outcome_opt_df
+    outcome_opt_df_232<<-outcome_opt_df 
     
     # save the data 
     setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/Optimization")
@@ -684,7 +677,6 @@ system.time({
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
     outcome_opt_df_plot<-subset(outcome_opt_df, (!is.na(outcome_opt_df[,1])) & (!is.na(outcome_opt_df[,2])))
     
-
     # halflife
     plot_ly(outcome_opt_df_plot, x = ~threshold1, y = ~threshold2, z = ~threshold3, color = ~mean) %>%
       add_markers(size=~mean, marker=list(sizeref=0.02, sizemode='area')) %>%
@@ -695,7 +687,6 @@ system.time({
     
     
     print('232 opt done')
-    
   } else if(modelType=='31'){
       # Set the number of thresholds you want to test for
       num_th<-num_th
