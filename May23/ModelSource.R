@@ -3352,15 +3352,15 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
   
+  # load packages if needed 
   require(doParallel)
   require(foreach)
   # Start the model 
+  
   # link to the function file 
   setwd("C:/Local_R/BiPhD-ABM/May23")
   source('MOD_1_FuncSource.R')
-  # set the number of cores 
-  numCores<-(detectCores()-1)
-  registerDoParallel(numCores)
+  
   
   # Set up the general environment 
   # This part is the same for each bird 
@@ -3395,13 +3395,9 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     
     # Start a for loop for each timestep 
     for (t in 1:TS){
-      
-   
-      
       ###########################
       #     DEAD OR ALIVE?      #
       ###########################
-      
       # Check which birds are dead or alive 
       # set some variables for dead birds
       # set some variables for alive birds 
@@ -3413,6 +3409,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
         
         # Calculate the current fat loss rate 
         flr_func(t,i)
+        
         
         # Set the current temperature 
         temp_cur<<-total_temp_profile[t]
@@ -3431,10 +3428,12 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
         
         if (sleep_count[i,t]==0){
           
-          # RULE SPECIFIC FOR MODEL 3_3_2 
+          # RULE SPECIFIC FOR MODEL 1_3 
           
           if ((mat_flr[i,t])> th_forage_flr3){
-            # The bird will be resting above the 3rd threshold 
+            # This is above the third threshold, so the bird will do its direct hoarding, without eating at all 
+            
+            # The bird will be resting 
             
             ##################
             #    RESTING     # 
@@ -3443,10 +3442,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
             # If the bird has a SC above the second threshold, it is not hungry at all and can go rest        
             rest_func(t,i)
             
-            
-            
           } else if (((mat_flr[i,t])> th_forage_flr2)){
-            # This is betwen th2 and th3 , so the bird will do its direct hoarding, without eating at all 
             
             ############################
             #  FORAGE + HOARD DIRECT   #
@@ -3461,6 +3457,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
             dir_hoard_func(t,i)
             
             
+            
           } else if (((mat_flr[i,t])<=th_forage_flr1) && ((mat_caches[i,t])>retrieve_min)){
             
             #print('a bird retrieves')
@@ -3473,7 +3470,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
             retrieve_func(t,i)
             # End of retrieving statement 
             
-            # RULE SPECIFIC FOR MODEL 3_3_2 
+            # RULE SPECIFIC FOR MODEL 1_3 
             
           }else {
             
@@ -3483,9 +3480,9 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
             ######################
             #     FORAGE  + EAT  # 
             ######################
-            if (mat_flr[i,t]<=th_forage_flr1){
-              #print('bird tried to retrieve but went to forage and eat ')
-            }
+            # if (mat_sc[i,t]<=th_forage_sc1){
+            #   #print('bird tried to retrieve but went to forage and eat ')
+            # }
             
             #print('a bird forage + eats ')
             
@@ -3528,11 +3525,13 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
       } # end of loop for alive individuals 
       
       
+      
+      
     } # end timestep loop
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -3545,6 +3544,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
   
   create_df_func(outputFile = outcome_3_3_2, modelType = '332', env_type= env_type)
   
+  #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
   
 } # end of model 3.3.2 function 
 
