@@ -60,9 +60,9 @@ system.time({
   # set individuals
   N<-100
   # Set the model type: 
-  modelType<-332
+  modelType<-432
   # number of threshold values for each 
-  num_th<-10
+  num_th<-5
   
   #############
   print(paste(modelType))
@@ -927,7 +927,7 @@ system.time({
     # create a matrix that contains all possible combinations
     # var 1 = th 1
     # var 2 = th 2
-    # var 3 = th 3
+    # var 3 = th 3   
     th1_th2_th3_comb<-as.matrix(expand.grid(th1_vec, th2_vec, th3_vec))
     
     # Now, make a for loop 
@@ -1281,7 +1281,7 @@ system.time({
         # but only do this in the case that th2 (both fr or flr) is actually larger than th 1 (both fr and flr)
         if ((cur_th_fr2>cur_th_fr1) && (cur_th_fr3>cur_th_fr2) && (cur_th_flr2>cur_th_flr1) && (cur_th_flr3> cur_th_flr2)){
           # Run th eenvironment function 
-          env_func_4_3_2_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_fr3= cur_th_fr3, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, th_forage_fr3=cur_th_flr3, daylight_h = daylight_h, modelType=modelType)
+          env_func_4_3_2_par(days = days, N= N, th_forage_fr1 = cur_th_fr1, th_forage_fr2 = cur_th_fr2, th_forage_fr3= cur_th_fr3, th_forage_flr1=cur_th_flr1, th_forage_flr2=cur_th_flr2, th_forage_flr3=cur_th_flr3, daylight_h = daylight_h, modelType=modelType)
           # put it in the list 
           list_4_3_2[[length(list_4_3_2)+1]]<-output_env_func[[1]]
           
@@ -1314,7 +1314,7 @@ system.time({
       # calculate the best HL across the different combinations 
       HL_best<-outcome_opt_df[(which.max(outcome_opt_df$mean)),]
       # Name after the model so when I upload it from saved files, It indicates which modeltype was used 
-      outcome_opt_df_431<<-outcome_opt_df
+      outcome_opt_df_432<<-outcome_opt_df
       
       # save the data 
       setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/Optimization")

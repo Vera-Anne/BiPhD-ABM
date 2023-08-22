@@ -4282,7 +4282,7 @@ mod_4_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             dir_hoard_func(t,i)
             
             
-            # RULE SPECIFIC FOR MODEL 4.2
+            # RULE SPECIFIC FOR MODEL 4.3.1
             
           } else if ((mat_fr[i,t]) > th_forage_fr2 | (mat_flr[i,t] > th_forage_flr2)){
             
@@ -4293,7 +4293,7 @@ mod_4_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
             
             rest_func(t,i)
             
-            # RULE SPECIFIC FOR MODEL 4.2 
+            # RULE SPECIFIC FOR MODEL 4.3.1
             
           } else if ((mat_fr[i,t]<= th_forage_fr1) && (mat_flr[i,t] <= th_forage_flr1) && (mat_caches[i,t]>retrieve_min)){
             
@@ -4403,7 +4403,7 @@ mod_4_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   
   # The individual loops need to start now
   # These should be parallelised 
-  outcome_4_3_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+  outcome_4_3_2<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
     # Run hte temperature function 
     # Running this seperately for each individual brings in some desired stochasticity 
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)

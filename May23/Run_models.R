@@ -675,7 +675,7 @@ plot_env_18_surv(output_env_func)
       source('ModelSource.R')
       
       # run model 
-      mod_4_2(days= 30, N= 100, env_type=8, th_forage_fr1=1, th_forage_fr2=2 , th_forage_flr1=-0.3, th_forage_flr2=0.3, daylight_h=8)
+      mod_4_2(days= 30, N= 1000, env_type=8, th_forage_fr1=1, th_forage_fr2=2 , th_forage_flr1=-0.3, th_forage_flr2=0.3, daylight_h=8)
       
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_42_list<-list(total_vars_df42, output_df_list_raw42)
@@ -719,7 +719,7 @@ plot_env_18_surv(output_env_func)
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       # run the model 
-      mod_4_3_1(days=30, N=1000, env_type=8, th_forage_fr1=1.2343434, th_forage_fr2=2.34545454345, th_forage_fr3=3.345454545, th_forage_flr1=-0.3456545644545, th_forage_flr2=0, th_forage_flr3=0.3, daylight_h=8)
+      mod_4_3_1(days=30, N=1000, env_type=8, th_forage_fr1=1, th_forage_fr2=2, th_forage_fr3=3, th_forage_flr1=-0.3, th_forage_flr2=0, th_forage_flr3=0.3, daylight_h=8)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_431_list<-list(total_vars_df431, output_df_list_raw431)
       # save the results 
