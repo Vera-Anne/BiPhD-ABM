@@ -3969,7 +3969,7 @@ mod_2_3_1_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
   # clean up cluster 
   stopImplicitCluster()
   
-  #return(outcome_1_1)
+  #return(outcome_2_3_1)
   assign(paste0('outcome_2_3_1_env', env_type),outcome_2_3_1, envir=.GlobalEnv)
   
   create_df_func(outputFile = outcome_2_3_1, modelType = '231', env_type= env_type)
@@ -4482,7 +4482,7 @@ env_func_2_3_1_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   stopImplicitCluster()
   
   # Create the variable called halflife_input
-  halflife_input<-outcome_env_1_3_1_par
+  halflife_input<-outcome_env_2_3_1_par
   
   # run the t_halflife function 
   t_halflife_func(halflife_input)

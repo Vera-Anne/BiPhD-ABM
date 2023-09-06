@@ -1,0 +1,149 @@
+---
+title: "Fractional Factorial Design notes"
+author: "Vera Vinken"
+date: "05/09/2022"
+output: html_document
+---
+  
+## Packages 
+As described by MS: 
+The `AlgDesign` package calculates exact and approximate designs for fractional factorial experiments and model runs. 
+The `tidyverse` package for tidy data handling and `flextable` for pretty tables. 
+
+```{r packages, include=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(flextable)
+library(AlgDesign)
+
+```
+
+## Background 
+I'm looking at this method as an alternative to the optimization we have been doing for the foraging thresholds in the models. Currently, we have (in the more complicated x.3 models) 3 thresholds that can all take 50 values between 0 and 0.4 (for the SC models). This gives us a total of 125000 possible combinations to run trhough. We try all these combinations and want to select the one combination that results in the best (optimal) survival. Even though we only run through sensible combinations (TH 3 > TH 2 > TH1), this still leaves us with a total of 19600 combinations to try out. Mark Shirley recommended the fractional factorial design as an alternative to this method. It should allow me to run fewer combinations, but still gain information about which combination of thresholds would be optimal  for (in this case) survival. 
+
+Background info that Mark wrote: 
+"Fractional factorial designs are experimental designs consisting of a carefully chosen subset (fraction) of the experimental runs of a full factorial design. The subset is chosen so as to exploit the sparsity-of-effects principle to expose information about the most important features of the problem studied, while using a fraction of the effort of a full factorial design in terms of experimental runs and resources. In other words, it makes use of the fact that many experiments in full factorial design are often redundant, giving little or no new information about the system."
+
+Refresher on some terms: 
+
+* **Factorial design**: as in experimental design. To study the effects of multiple factors (in my case these would be the different thresholds) each having multiple discrete possible values or 'levels'.
+* **Sparsity-of-effects principle**: A system is usually dominated by main effects and low-order interactions. Thus it is most likely that main (single factor) effects and two-factor interactions are the most significant responses in a factorial experiment (Wiki). 
+* **Determinant**: Can only be calculated for a square matrix that has the same number of rows and columns. The determinant of a matrix determines whether a matrix is a singular matrix or a non-singular matrix. For a singular matrix the determinant is 0. Calculated as: $detA=|A|=ad-bc$
+* **Singular matrix**: A square matrix whose determinant is zero. Since the determinant is zero, a singular matrix is non-invertible, which does not have an inverse. 
+* **Matrix inverse**: An inverse is the reciprocal of a number, this means; to flip the number over. 
+
+I will work through the 'how to plan a fractional factorial design' document Mark shared in order to see if this would be a good option for me. 
+
+## Generate example of full factorial design
+I'll be using the code that Mark sent over, but fill in my own variables. 
+
+I use 3 variables which each have 10 levels (just to keep it small for now). A, B and C respectively. 
+
+Use the `gen.factorial` function to generate the full design. Here, you specify that the variables are factors, otherwise they will be treated as continuous variables. In theory, my variables are continuous, so I could leave out the `, factors='all'` code inside the `gen.factorial()` function which would identify all variables as factors. --> Keep this in mind for future. 
+
+```{r toy example generate design, include=TRUE, message=FALSE, warning=FALSE}
+# Specify the levels of the design
+levels.design<-c(A=10, B=10, C=10, D=10)
+# Create the grid with all combinations (Similar to the expand.grid() function I use in my code)
+full.design <- gen.factorial(levels.design, varNames=names(levels.design), factor='all')
+```
+
+## Find the optimum fractional design 
+Now I use the `optFederov()` algorithm to find an optimum fractional design. 
+
+Key arguments are: 
+
+* **frml**: The first argument is the formula; In the example, all variables from  `full.design` are used linearly. Therefore, ~ is used as the formula, which is equivalent to `~ A + B + C + D + E + F`. Note that you can specify interactions between variables in this formula if desired (e.g. `~. + A:B` would be the above model with an interaction between variables `A` and `B`).
+
+* **data**: The full factorial design 
+
+* **nTrials**: if this value is missing and `approximate=FALSE`, it is set to the greater of `length(rows)` or `num_variables + 5`. If `approximate=TRUE`, `nTrials` will be used to round the optimal proportions so that the replications of the points add to `nTrials`. Increasing `nTrials` increases the fit of the model.
+
+* **approximate**: if `false`, calculates the exact design in `nTrials`. When `TRUE` the proportions for an approximate theory design will be calculated. In the example, approximate is set to `FALSE` which means that an exact design is calculated in `nTrials`. In my case, the number of rows is larger than the number of terms + 5. 
+
+```{r findt optimum fractional design, include=TRUE, message=FALSE, warning=FALSE}
+# Put the full design into the algorithm that will calculate which combinations to run
+fract.design<-optFederov(frml=~., 
+                         data=full.design, 
+                         approximate=FALSE)
+
+```
+
+## Output 
+```{r output fractional design, include=TRUE, message=FALSE, warning=FALSE}
+
+fract.design$design %>% 
+  mutate(row=fract.design$rows) %>% 
+  relocate(row) %>% 
+  flextable()
+
+# How many trials do we need in the end? 
+nTrials_start<-nrow(fract.design$design)
+  
+```
+So the idea is that the fractional factorial model has only 33 combinations that need to be ran, whereas the original had 1000 different trials. 
+The design efficiency is judged by `Ge` (the minimax normalized variance over X --> check what this means!). It should be 1 or close to 1. 
+
+```{r determine Ge (minimax normalize variance over X), include=TRUE, warning=FALSE, message=FALSE}
+fract.design$Ge
+```
+
+MS notes: Where `Ge` is low, it can be increased by increasing `nTrials`, forcing the algorithm to include more trials than is strictly necessary. Through trial and error you can find the minimum number of trials that produces maximum design efficiency. Note that this is not typically monotonic due to the structure of these models (? - Not sure what he means here)
+
+Code to find this is below. Some information about the `pmap` package that is used there
+
+* `pmap()`: These functions are variants of map() that iterate over multiple arguments simultaneously. They are parallel in the sense that each input is   processed in parallel with the others, not in the sense of multicore computing, i.e., they share the same notion of 'parallel' as `base::pmax()`   and `base::pmin()`. 
+* `.l =` gets the 'out' dataframe. A data frame will cause `.f` to be called once for each row 
+* `.f` = a function. Here we input the optFederov() algorithm and we use the `out$nTrials` to define how many trials to run for. 
+* `$Ge` adds the newly found Ge value into the dataframe under the new column 
+* `%>% unlist()` is addeda after the function and makes sure that the `$Ge` column is not a list, but just a column of numeric values. 
+
+I noticed that the code below (commented out) that uses the total number of levels ($10+10+10=30$ in the example) causes a 'singlar matrix' error. I think this might be due to the fact that this will start with a lower `nTrials` than what came out of the previous try  that automatically determines a 'good' number of trials. I've changed the code so it starts with the previous 'starting number' and increases from there up to 150.    
+
+```{r find number of trials needed for design efficiency, include=TRUE, warning=FALSE, message=FALSE }
+# run optFederov() with increasing number of trials
+
+# Create dataframe with a a column named 'nTrials'
+
+# Code from mark: 
+out <- data.frame(nTrials=seq(sum(levels.design), 100, by=1))
+
+# My alternative code to prevent singular matrix problems- Does not actually work:(
+#out<-data.frame(nTrials=seq(nTrials_start, 150, by=1))
+
+# Create a new column in the dataframe named 'Ge'
+# Request the use of the pmap function from the purrr-package 
+out$Ge <- purrr::pmap(.l=out, .f=\(nTrials) optFederov(frml=~., data=full.design, nTrials=nTrials, approximate=FALSE)$Ge) %>% unlist()
+
+# Determine the first row that exceeeds 90% 
+rn <- min(which(out$Ge>0.9))  # first row that Ge exceeds 90%
+
+# Plot all the values 
+ggplot(out, aes(x=nTrials, y=Ge)) +
+  geom_hline(yintercept=0.90, linetype="dashed") +
+  geom_path(colour="tomato") +
+  geom_point(colour="tomato") +
+  annotate("segment", x=out$nTrials[rn], xend=out$nTrials[rn], y=0.5, yend=out$Ge[rn]) +
+  annotate("text", x=out$nTrials[rn],  y=0.5, label=out$nTrials[rn], hjust=-0.5, vjust=0) +
+  theme_bw()
+
+```
+
+## Repeat for the 'correct' number of trials
+
+Now I have the number of trials that I should be running with. It is time to plug this into the `optFederov()` function. I will use the `nTrials` = 101. 
+
+```{r enter new nTrials into fract.design, include=TRUE, message=F, warning=T}
+# # Make teh fractional design 
+# fract.design_32<-optFederov(frml=~., 
+#                          data=full.design,
+#                          approximate=FALSE)
+# 
+# # Calculate the Ge again (Should be above 0.9 now)
+# fract.design_32$Ge
+# 
+# # And output that table again 
+# fract.design_32$design %>% 
+#   mutate(row=fract.design_32$rows) %>% 
+#   relocate(row) %>% 
+#   flextable()
+```
