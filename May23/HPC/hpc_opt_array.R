@@ -419,9 +419,9 @@ if (modelType==00){
   min_th_fr2<-0
   min_th_fr3<-0
   # set the maxima
-  max_th_fr1<-0.4
-  max_th_fr2<-0.4
-  max_th_fr3<-0.4
+  max_th_fr1<-4
+  max_th_fr2<-4
+  max_th_fr3<-4
   # create the vectors
   th1_vec<-linspace(x1=min_th_fr1, x2=max_th_fr1, n=num_th)
   th2_vec<-linspace(x1=min_th_fr2, x2=max_th_fr2, n=num_th)

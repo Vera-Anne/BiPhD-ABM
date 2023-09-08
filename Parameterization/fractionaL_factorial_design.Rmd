@@ -1,7 +1,7 @@
 ---
 title: "Fractional Factorial Design notes"
 author: "Vera Vinken"
-date: "05/09/2022"
+date: "06/09/2022"
 output: html_document
 ---
   
@@ -42,13 +42,16 @@ Use the `gen.factorial` function to generate the full design. Here, you specify 
 
 ```{r toy example generate design, include=TRUE, message=FALSE, warning=FALSE}
 # Specify the levels of the design
-levels.design<-c(A=10, B=10, C=10, D=10)
+levels.design<-c(A=50, B=50, C=50)
 # Create the grid with all combinations (Similar to the expand.grid() function I use in my code)
 full.design <- gen.factorial(levels.design, varNames=names(levels.design), factor='all')
 ```
 
 ## Find the optimum fractional design 
 Now I use the `optFederov()` algorithm to find an optimum fractional design. 
+
+Description from `https://search.r-project.org/CRAN/refmans/AlgDesign/html/Federov.html`: 
+The goal of this algorithm is to reduce the original matrix, which contains all possible combinations (matrix `X` with `N` rows and `k` columns) to a smaller matrix `Z` with fewer `n` rows and the same amount of colums `k`. `k` is the number of parameters (thresholds in my case). `X` can be discretized continuous variables or represent categories. The points `n` are taken from `X` and chosen randomly or trhough nullification until a non-signular n-point design is found. In this process, the points in the `n`-point design are exchanged to optimize a criterion untill no improvement can be done, or the maximum number of iterations (you can set this at the start) is reached. Note that this algorithm has a risk of finding local optima, this can be adressed using the `nRepeat` setting. `G` is one of the criteria that gives information about the matrix (`Z`). There are other criteria, but `G` is specifically useful because the optimal value of `G` is known in approximate theory designs. Therfore, the value `Ge` can be calcualted as the efficiency of `G` which is a standard for the design quality. 
 
 Key arguments are: 
 
@@ -60,28 +63,39 @@ Key arguments are:
 
 * **approximate**: if `false`, calculates the exact design in `nTrials`. When `TRUE` the proportions for an approximate theory design will be calculated. In the example, approximate is set to `FALSE` which means that an exact design is calculated in `nTrials`. In my case, the number of rows is larger than the number of terms + 5. 
 
+* **nullify**: When non-zero, the initial design is obtained by nullification. If nullify=1, nTrials will be calculated (In this case nRepeats is set to 1). If nullify=2, number-of-terms trials will be calculated, and the remainder, up to nTrials, will be filled out at random.Nullification is a procedure which iteratively adds points from the null space of X (the smaller matrix that we're trying to find), until a non-singular n (the number of rows in [X]) point design is found. MS did not use this in his code, but because I kept getting a 'singular matrix' error, I decided to try and set `nullify` to `1`. So far this seems to do the job and no other errors have ocurred. 
+
+* **nRepeats**: Number of times the entire process is repeated. Has no effect when approximate=TRUE, or when nullify=1. - I wanted to try and set this to a number of repeats, but apparently this doesnt work when I use nullify. I need to check why not and if it would be preferable to put nullify back to 0 and use repeats instead. 
+
 ```{r findt optimum fractional design, include=TRUE, message=FALSE, warning=FALSE}
 # Put the full design into the algorithm that will calculate which combinations to run
 fract.design<-optFederov(frml=~., 
                          data=full.design, 
+                         nullify=1,
                          approximate=FALSE)
 
 ```
 
 ## Output 
+The table with the fractional factorial design 
 ```{r output fractional design, include=TRUE, message=FALSE, warning=FALSE}
 
 fract.design$design %>% 
   mutate(row=fract.design$rows) %>% 
   relocate(row) %>% 
   flextable()
+```
 
+And the number of trials that were calculated to be needed 
+```{r number of trials needed, include = TRUE, message=FALSE, warning=FALSE}
 # How many trials do we need in the end? 
 nTrials_start<-nrow(fract.design$design)
+nTrials_start
   
 ```
-So the idea is that the fractional factorial model has only 33 combinations that need to be ran, whereas the original had 1000 different trials. 
-The design efficiency is judged by `Ge` (the minimax normalized variance over X --> check what this means!). It should be 1 or close to 1. 
+So the idea is that the fractional factorial model has fewer combinations that need to be ran, whereas the original had a large number of different trials. The design efficiency is judged by `Ge` (the minimax normalized variance over X --> check what this means!). It should be 1 or close to 1. 
+
+**G-criterion**: the minimax value of $d(x)=x'(Mi)x$ over X, where $Mi$ is the inverse of $M$ and $x'$ is a row of $X$. The minimax means that you are minimizing the possible loss for the worst case scenario (maximum loss). 
 
 ```{r determine Ge (minimax normalize variance over X), include=TRUE, warning=FALSE, message=FALSE}
 fract.design$Ge
@@ -105,16 +119,16 @@ I noticed that the code below (commented out) that uses the total number of leve
 # Create dataframe with a a column named 'nTrials'
 
 # Code from mark: 
-out <- data.frame(nTrials=seq(sum(levels.design), 100, by=1))
+#out <- data.frame(nTrials=seq(sum(levels.design), 150, by=1))
 
 # My alternative code to prevent singular matrix problems- Does not actually work:(
-#out<-data.frame(nTrials=seq(nTrials_start, 150, by=1))
+out<-data.frame(nTrials=seq(nTrials_start, 500, by=1))
 
 # Create a new column in the dataframe named 'Ge'
 # Request the use of the pmap function from the purrr-package 
-out$Ge <- purrr::pmap(.l=out, .f=\(nTrials) optFederov(frml=~., data=full.design, nTrials=nTrials, approximate=FALSE)$Ge) %>% unlist()
+out$Ge <- purrr::pmap(.l=out, .f=\(nTrials) optFederov(frml=~., data=full.design, nTrials=nTrials, nullify=1,approximate=FALSE)$Ge) %>% unlist()
 
-# Determine the first row that exceeeds 90% 
+# Determine the first row that exceeds 90% 
 rn <- min(which(out$Ge>0.9))  # first row that Ge exceeds 90%
 
 # Plot all the values 

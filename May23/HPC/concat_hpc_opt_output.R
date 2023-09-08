@@ -19,12 +19,13 @@ library(ggplot2)
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results)
-batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
-  # 131: 
+batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
+  # 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
   # 132:  'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/2023-08-29/'
+  # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
 
 # set opt_type
-opt_type=131
+opt_type=232
 
 
 ############################
