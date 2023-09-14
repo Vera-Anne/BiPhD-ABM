@@ -19,13 +19,13 @@ library(ggplot2)
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results)
-batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
+batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
   # 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
   # 132:  'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/2023-08-29/'
   # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
 
 # set opt_type
-opt_type=232
+opt_type=131
 
 
 ############################
@@ -101,7 +101,7 @@ opt_type=232
       HL_best<-HL_df[(which.max(HL_df$mean)),]
       
       # Save in the folder
-      save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type, '.Rda'))
+      save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
       
       HL_df$th1<-as.numeric(HL_df$th1)
       HL_df$th2<-as.numeric(HL_df$th2)
