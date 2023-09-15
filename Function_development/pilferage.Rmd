@@ -1,0 +1,179 @@
+---
+title: "Develop pilferage function"
+author: "Vera Vinken"
+date: "15/09/2022"
+output: html_document
+---
+  
+## Packages 
+
+```{r packages, include=TRUE, message=FALSE, warning=FALSE}
+library(dplyr)        # For summarizing means across groups
+library(SciViews)     # For the easy to use ln() function 
+```
+
+## Background
+We decided to put pilferage in the model. No large effect is expected, but because other models in literature (Pravosudov & Lucas (2001)) use it, we will implement this as well. The halflife used is that of 20 days, which was observed by Brodin in 1994 and described in his paper from that year. The function should do the following: 
+
+* Determine the decay constant (this will be set throughout simulatiosn as the halflife is set)
+* Determine a probabilty that within 1 timestep 1 or more items will decay. 
+* Then compare this to a randomly generated number between 0 and 1 
+* If our probability is larger than this number, an item will decay (we assume just 1, as the probability that this is 2 or more is incredibly small)
+* cache number needs to be updated accordingly 
+
+## Exploring the basic functionality 
+Here I use the maths as they are used for radioactive decay curves. https://www.britannica.com/science/decay-constant. 
+I have made a small model that simulates a number of `days` where birds start of with a number of caches (`num_cach_start`). 
+The number of birds (`num_birds`) can be inputted as well. 
+
+```{r simulating the formulas to test, include=TRUE, message=FALSE, warning=FALSE}
+# Number of days to simulate 
+days<-90
+# Number of caches to start with 
+num_cach_start<-100
+# How to often do we repeat this, and take an average at the end 
+num_birds<-100 
+# start for loop   
+for (j in 1:num_birds){
+  if (j==1){
+    repeats_list<-list()}
+  # Start loop trough timesteps 
+          ts<-days*72
+          for (i in 1:ts){
+          if (i==1){
+            samplesize<-num_cach_start
+            number<-1:ts
+            df<-as.data.frame(number)}
+          df$samplesize[i]<-samplesize
+          # Determine the decay constant
+          # We take this from an exponential decay curve with a T-halflife of 1440 timesteps
+          # This comes down to 20 days, as described in P & L (2001) and Brodin 1994
+          # Formula: lambda = 0.693/T-halflife 
+          lambda<-(ln(2))/1440
+          # Take the sample size into account 
+          lambda_2<-lambda*samplesize
+          # To find out the probability that k items out of x number of caches have decayed after 1 timestep
+          # CAlcualte this probability for different values of k and then sum them up to find the total probability of any number of items decaying 
+          # To find out the expected umber of items that decayed, calculated teh mean (lambda) of a poisson distribution 
+          # Using complement probability 
+          # P(at least one item decays) = 1 - (P (X = 0))
+          # With P(X=0) the probability that no items decay 
+          # So first calculate the P(X=0) with k= 0 (0 items decayed )
+          # P(X=0)= ((e^-lambda) * (lambda^0))/0! = e^(-lambda)
+          # We know lambda so we can easily calcualte P(X=0)
+          P_noDecay<-exp(-lambda_2)
+          df$P_noDecay[i]<-P_noDecay
+          # Now calcualte the chance that 1 or more items decayed 
+          P_oneOrMore<-(1-P_noDecay)
+          df$P_oneOrMore[i]<-P_oneOrMore
+          # Pull a random number
+          P_random<-runif(1)
+          df$random[i]<-P_random
+          # Check 
+          if(P_oneOrMore>P_random){
+            df$singleDecay[i]<-1
+            samplesize<-samplesize-1
+            # make sure it doesnt go below 0 
+            if(samplesize<0){
+              samplesize<-0
+            }
+          }else{
+          df$singleDecay[i]<-0 }  }
+          df$num_rep<-j
+        # Put the dataframe in the list 
+          repeats_list[[j]]<-df
+} # end the j for loop
+# bind together
+total_df<-do.call('rbind', repeats_list)
+# aggregate means 
+mean_df<-total_df%>%
+  group_by(number) %>%
+  summarise(mean_samplesize=mean(samplesize))
+```
+
+The output can be plotted as follows. The green horizontal line shows the starting number of caches. 
+Red vertical lines indicate 1 halflife time to be passed (20 days). The top horizontal line indicates half of the initial caches. 
+The second horizontal life indicates 1/4 of the initial caches, etc.  <span style="color:red">Check with Tom if he's happy with this.</span> 
+
+```{r plot the simulation output, include=TRUE, warning=FALSE, message=FALSE, echo=FALSE}
+# output a plot 
+plot(mean_df$number, mean_df$mean_samplesize, ylim=c(0,100), main='Decay of cache number', xlab='Timestep', ylab='Number of caches')
+abline(v=1440, col='tomato', lwd=1)
+abline(h=num_cach_start, col='forestgreen', lwd=3)
+abline(h=(num_cach_start/2), col='tomato', lwd=1)
+abline(v=2880, col='tomato', lwd=1)
+abline(h=(num_cach_start/4), col='tomato' ,lwd=1)
+abline(v=4320, col='tomato', lwd=1)
+abline(h=(num_cach_start/8), col='tomato' ,lwd=1)
+abline(v=5760, col='tomato', lwd=1)
+abline(h=(num_cach_start/16), col='tomato' ,lwd=1)
+
+```
+
+Now I need to build a function that can fit into our larger model and test it. 
+
+```{r build the model function, include=TRUE, warning=FALSE, message=FALSE}
+# Half life should be set in the general set up 
+cache_halflife<-20*72                             # 15/09/2023: Included in gen setup function 
+# Same for lambda 
+lambda<-(ln(2))/cache_halflife                    # 15/09/2023: Included in gen setup function 
+# The two matrices need to be initiated in the individual setup ( I think, just check where the predation matrices are)
+# Here are some dummy ones 
+mat_Pdecay<-matrix(NA,1,20)                       # 15/09/2023: Included in indiv-setup function 
+decay_count<-matrix(NA, 1,20)                     # 15/09/2023: Included in indiv-setup function 
+mat_caches<-matrix(c(NA), 1, 20)
+mat_caches[1,1]<-0
+
+# write function 
+pilf_func<-function(i,t, lambda){
+  # Calculcate the current lambda for all caches that this bird has 
+  cur_lambda<<-(lambda*mat_caches[i,t])
+  # calculate the probability of no decay at all
+  P_noDecay<<-exp(-cur_lambda)
+  # Now calculate the chance that 1 or more caches decayed 
+  P_oneOrMore<<-(1-P_noDecay)
+  # add that to the matrix 
+  mat_Pdecay[i,t]<<-P_oneOrMore
+  # Set a random nuber
+  P_random<<-runif(1)
+  
+  if(P_oneOrMore>P_random){
+    # pilfer 1 item 
+    mat_caches[i,t]<<-(mat_caches[i,t]-1)
+    if(mat_caches[i,t]<0){
+      mat_caches[i,t]<<-0
+    }
+    # set the counting matrix 
+    decay_count[i,t]<<-1
+  }else{
+    decay_count[i,t]<<-0
+  }
+}
+
+
+# To test the function write a little loop around it 
+
+for (k in 1:20){
+
+pilf_func(i=1,t=k, lambda)
+  
+  if(k==20){
+    print('done')
+  }else{
+  # need to artificially move the cache number to the next timestep
+  mat_caches[,(k+1)]<-mat_caches[,k]
+  print(paste(k, 'done'))
+  }
+  
+}
+
+```
+
+It looks like the function works well. Now I need to include it in the existing code, with the following steps. 
+
+* set `cache_halflife` and `lambda` in the general setup function 
+* initiate the `mat_Pdecay` and `decay_count` matrices in the individual setup function 
+* Add the `pilf_func` to the `FuncSource` file
+* Plug the `pilf_func` into the models: This should be at the end of each timestep, just before the wrapup 
+* Check that the `ts_prep_func` correctly transfers the number of caches to the next timestep 
+* Check if `retrieval_func` cannot cause caches to go lower than 0 

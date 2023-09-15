@@ -10,175 +10,7 @@
 ##################################
 
 # don't think this is used anymore (18/07)
-set_up_env<-function(days,N, env_type, daylight_h){
-  
-  
-  # PLOTTING PARAMETERS 
-  # Want to plot some initial value graphs? 
-  # 1 for yes, 0 for no 
-  plot_init_value<<-1
-  plot_interval<<-100   # every x timestep a dot on the graph is added 
-  # Sets you up for a 6 hour day 
-  
-  # BIRD PARAMETERS 
-  stom_size<<-0.4      # stomach size of the bird 
-  stom_to_fat<<-0.132  # variable that determines how many grams of sc go to fat
-  fat_max<<-4          # maximum fat reserve in gram (Pravosudov & Lucas, 2001)
-  
-  # set metabolic rates (create the functions) --> Commented these out on 18/07 to move to below
-      # mr_function<<-function(temp_cur){                 # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details 
-      #   mr_cur<<-45.65-(1.33*temp_cur)
-      # }
-      # bmr_function<<-function(mr_cur, mass_cur){        # see pravosudov & lucas (2001) and Lucas & Walter (1991) for details
-      #   bmr_cur<<-0.00616*mr_cur*((mass_cur/1000)^0.66)   # please note that the 0.00616 is for 20 min intervals 
-      # }
-      # 
-      
-  # TIMINGS SET UP 
-  # how many timesteps do we have? (total over the days)
-  TS<<-(days*72)
-  # Of every day, how many timesteps of daylight do we have 
-  n_daylight_timestep<<-(daylight_h*3)              # translates this into timesteps 
-  
-  # For the grpahs after optimization (day by day)
-  daylight_h<<-daylight_h
-  
-  # debugging 
-  #print('just before Temp func')
-  
-  #  TEMPERATURES 
-  # You know the environment type 
-  # Set the temperatures accordingly 
-  if (env_type==1|env_type==4|env_type==7|env_type==10|env_type==13|env_type==16){
-    # low temperatures 
-    Tmax_range_low<<- -13
-    Tmax_range_high<<- -7
-    Tmin_range_low<<- -23
-    Tmin_range_high<<- -17
-  } else if (env_type==2|env_type==5|env_type==8|env_type==11|env_type==14|env_type==17){
-    # mid temperatures 
-    Tmax_range_low<<- -3
-    Tmax_range_high<<- 3
-    Tmin_range_low<<- -13
-    Tmin_range_high<<- -7
-  } else{
-    # high temperatures 
-    Tmax_range_low<<- 7
-    Tmax_range_high<<- 13
-    Tmin_range_low<<- -3
-    Tmin_range_high<<- 3
-  }
-  # Run hte temperature function 
-  temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
-  
-  # The output of the temperature function is a variable called 'total_temp_profile', which is just a vector with a temperature for each timestep 
-  # This can later be used for the current temp determination 
-  # debuggin 
-  #print('temp func did run ')
-  
-  # CACHES / FOOD DISTRIBUTIONS SET UP 
-  food_item<<-0.064    # value of a food item 
-  b_size<<-24          # Size of a food bonanza 
-  
-  num_cache_min<<-50  # minimum number of caches that each bird has initially 
-  num_cache_max<<-100 # maximum number of caches each bird has initially 
-  retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
-  
-  # Do some calculations for food distributions: 
-  # Took these out as the forage-function was implemented 12/12/2022
-  #gram_food_mean<<-num_food_mean*food_item        # Sets the grams of fat found on average per time step
-  #gram_food_max<<-num_food_max*food_item          # sets the maximum grams of fat found per time step 
-  #food_sd<<-0.3
-  
-  # You know the environment types
-  # Set the food distributions accordingly 
-  if(env_type<4){
-    # Low food and poisson distributions 
-    num_food_mean<<-2
-    prob_b_forage<<-0
-  } else if (env_type>3 && env_type<7){
-    num_food_mean<<-2
-    prob_b_forage<<-0.5
-  } else if (env_type>6 && env_type<10){
-    num_food_mean<<-3
-    prob_b_forage<<-0
-  } else if (env_type>9 && env_type<13){
-    num_food_mean<<-3
-    prob_b_forage<<-0.5
-  } else if (env_type>12 && env_type<16){
-    num_food_mean<<-4
-    prob_b_forage<<-0
-  } else if (env_type>15){
-    num_food_mean<<-4
-    prob_b_forage<<-0.5
-  } else{
-    print('something is wrong with the env -food settings')
-  }
-  # PREDATION  PARAMETERS 
-  # Pattack: 
-  # In the current version Pattack for rest and sleep is 0 
-  # Pattack for any foraging behavior (retrieve, eat-hoard, eat) 
-  # This is as it is set in Pravosudov and Lucas 2001, citing Lima 1986
-  Patt_for<<-0.000667
-  Patt_sleep<<-0
-  Patt_rest<<-0
-  
-  
-  # MATRICES 
-  # create individual matrices (Global)
-  mat_alive<<-matrix(NA, N, TS)            # matrix to keep track of who's alive 
-  mat_sc<<-matrix(NA, N, TS)               # matrix to keep track of stomach contents
-  mat_fr<<-matrix(NA, N, TS)               # matrix to keep track of fat reserves 
-  mat_mass<<-matrix(NA,N,TS)               # matrix to keep track of mass of birds 
-  mat_caches<<-matrix(NA,N,TS)             # matrix to keep track of the number of caches each bird has at each timestep
-  mat_Pkill<<-matrix(NA,N,TS)              # matrix to keep track of what Pkill every bird had at each timestep
-  mat_find_food<<-matrix(NA, N, TS)         # Keep track of how many food items are found 
-  
-  # fill in some initial values for agent variables  (global)
-  mass_init<<-8+(rtruncnorm(N, a=0.01, b=0.2, mean=0.1, sd=0.01))             # Gives initial mass from normal distribution (Polo et al. 2007)
-  sc_init<<-0+(rtruncnorm(N, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
-  fr_init<<-0+(rtruncnorm(N, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
-  alive_init<<-rep(1, N )                                                     # all birds are alive at the start 
-  caches_init<<-round(0+(rtruncnorm(N, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
-  
-  # Put these in first column of the matrices  
-  mat_alive[,1]<<-alive_init
-  mat_sc[,1]<<-sc_init
-  mat_fr[,1]<<-fr_init
-  mat_mass[,1]<<-mass_init
-  mat_caches[,1]<<-caches_init
-  
-  
-  # Create empty matrices to keep track of numbers (Global)
-  # keep track of means 
-  #sc_mean<<-matrix(NA, 1, TS)
-  #fr_mean<<-matrix(NA, 1,TS)
-  #mass_mean<<-matrix(NA,1,TS)
-  #alive_mean<<-matrix(NA,1, TS)
-  #caches_mean<<-matrix(NA,1,TS)
-  # count what the birds are up to (Global)
-  forage_count<<-matrix(NA, N, TS)
-  rest_count<<-matrix(NA, N, TS)
-  sleep_count<<-matrix(NA, N,TS)
-  retrieve_count<<-matrix(NA, N, TS)
-  eat_hoard_count<<-matrix(NA, N, TS)
-  eat_count<<-matrix(NA, N, TS)
-  predation_count<<-matrix(NA, N,TS)                               # Keep track of how many birds have actually been killed by predation
-  hoard_count<<-matrix(NA, N, TS)
-  
-  
-  # total number of birds doing behaviours (Global)
-  # total_forage<<-matrix(NA, 1, TS)                  # total number of birds foraging each timestep
-  # total_rest<<-matrix(NA,1, TS)                     # total number of birds resting each timestep 
-  # total_alive<<-matrix(NA,1,TS)                     # total number of birds alive each timestep 
-  # total_retrieve<<-matrix(NA, 1, TS)                # total number of birds retrieving each timestep
-  # total_eat_hoard<<-matrix(NA, 1, TS)              # total number of birds eat-hoarding in each timestep
-  # total_eat<<-matrix(NA, 1, TS)                    # total number of birds eating in each timestep 
-  # total_predated<<-matrix(NA, 1, TS)
-  # total_sleep<<-matrix(NA,1,TS)
-  # 
-} # end set-up function 
-
+# Removed this so it doesn't load all the time (15/09/2023)
 
 #############################################
 #  set-up environment function - PARALLEL   #
@@ -237,6 +69,9 @@ set_up_func_general<-function(days, env_type, daylight_h){
   num_cache_max<<-100 # maximum number of caches each bird has initially 
   retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
   
+  cache_halflife<-1440            # The halflife as taken from Pravosudov & Lucas 2001. 20 days. 20*72 = 1440 timesteps. 
+  lambda<-(ln(2)/cache_halflife)   # Calculated as in radioactive decay curves. Lambda = 0.693/T-halftime (check pilferage.Rmd file for details)
+  
   # FOOD DISTRIBUTIONS 
   # You know the environment types
   # Set the food distributions accordingly 
@@ -272,20 +107,6 @@ set_up_func_general<-function(days, env_type, daylight_h){
   Patt_sleep<<-0
   Patt_rest<<-0
   
-  # test this 
-  # tot_eat_count<<-data.frame()
-  # tot_eat_hoard_count<<-data.frame()
-  # tot_forage_count<<-data.frame()
-  # tot_hoard_count<<-data.frame()
-  # tot_mat_alive<<-data.frame()
-  # tot_mat_caches<<-data.frame()
-  # tot_mat_find_food<<-data.frame()
-  # tot_mat_fr<<-data.frame()
-  # tot_mat_mass<<-data.frame()
-  # tot_mat_sc<<-data.frame()
-  # tot_mat_Pkill<<-data.frame()
-  # tot_predation_count<<-data.frame()
-  
 } # end set up general function 
 
 
@@ -309,6 +130,7 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   mat_Pkill<<-matrix(NA,1,TS)              # matrix to keep track of what Pkill every bird had at each timestep
   mat_find_food<<-matrix(NA, 1, TS)         # Keep track of how many food items are found 
   mat_flr<<-matrix(NA, 1, TS)               # Keeps track of the fat-change rate 
+  mat_Pdecay<-matrix(NA, 1, TS)             # Keeps track of the probability that caches decay at each timestep 
   
   
   # fill in some initial values for agent variables  (global)
@@ -336,6 +158,7 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   eat_count<<-matrix(NA, 1, TS)
   predation_count<<-matrix(NA, 1,TS)                               # Keep track of how many birds have actually been killed by predation
   hoard_count<<-matrix(NA, 1, TS)
+  decay_count<<-matrix(NA, 1, TS)
   
 } # end set-up function for individuals 
 
@@ -998,6 +821,36 @@ en_metab_func<-function(t,i){
   mat_mass[i,t]<<-((mass_base[i])+(mat_fr[i,t])+(mat_sc[i,t]))
   
 } # end of the metabolism function 
+
+
+######################
+#     PILFERAGE      #
+######################
+pilf_func<-function(t,i, lambda){
+  # Calculcate the current lambda for all caches that this bird has 
+  cur_lambda<<-(lambda*mat_caches[i,t])
+  # calculate the probability of no decay at all
+  P_noDecay<<-exp(-cur_lambda)
+  # Now calculate the chance that 1 or more caches decayed 
+  P_oneOrMore<<-(1-P_noDecay)
+  # add that to the matrix 
+  mat_Pdecay[i,t]<<-P_oneOrMore
+  # Set a random nuber
+  P_random<<-runif(1)
+  
+  if(P_oneOrMore>P_random){
+    # pilfer 1 item 
+    mat_caches[i,t]<<-(mat_caches[i,t]-1)
+    if(mat_caches[i,t]<0){
+      mat_caches[i,t]<<-0
+    }
+    # set the counting matrix 
+    decay_count[i,t]<<-1
+  }else{
+    decay_count[i,t]<<-0
+  }
+}
+
 
 ##################################
 #   PREPARE FOR NEXT TIMESTEP   # 
