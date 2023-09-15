@@ -36,6 +36,7 @@ library(doParallel)         # For runing code parallel with dopar function
 library(foreach)            # For running code parallel 
 library(ggpubr)             # To arrange plots 
 library(gridExtra)          # for grid.arrange 
+library(SciViews)           # For the easy to use ln() function in the cache decay stuff 
 
 # link to the function file 
 # This contains all the general, smaller funcitons needed for the models 
@@ -79,6 +80,13 @@ plot_12_11
 
 # and then parallel 
 system.time({
+  # clear workspace
+  rm(list=ls())
+  # load everything 
+  setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+  
   env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.09795918, daylight_h = 8, modelType = 11)
 })
 
@@ -89,7 +97,7 @@ system.time({
 })
 
 # Now do an overview image 
-plot_env_18_surv(output_env_func)
+plot_env_18_surv(output_env_func, modelType=11)
 
 
 ######################################################################
@@ -123,16 +131,14 @@ plot_12_12
 
 # RUN ENVIRONMENTS 1.2 
 system.time({
-  
   # clear workspace
   rm(list=ls())
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
-  
+  # now run environments 
   env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.05714286, th_forage_sc2 = 0.06530612 , daylight_h = 8, modelType = 12)
-  beep()
 })
 
 # Now do an overview image 
@@ -159,7 +165,6 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_131_list<-list(total_vars_df131, output_df_list_raw131)
   #  save the data 
-  beep()
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/")
   save(save_131_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run131', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'th_sc3', th_forage_sc3, 'dayh', daylight_h,   '.Rda'))
 })
@@ -183,7 +188,7 @@ system.time({
 })
 
 # Now do an overview image 
-plot_env_18_surv(output_env_func)
+plot_env_18_surv(output_env_func, modelType=131)
 
 #################################################################################
 ##   Model 1.3.2 : Direct hoarding bird, Access to Stomach Content - rest top  ##
@@ -230,7 +235,7 @@ system.time({
 })
 
 # Now do an overview image 
-plot_env_18_surv(output_env_func)
+plot_env_18_surv(output_env_func, modelType='132')
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

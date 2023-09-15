@@ -5,58 +5,6 @@
 # all models - for general use 
 #################################
 
-##############################
-#      load packages         #
-##############################
-# library(usethis)
-# library(devtools)
-# library(truncnorm)
-# library(pracma)
-# library(ggplot2)
-# library(plotly) # for 3D surface plot 
-# library(rgl)
-# library(plot3D)
-# library(htmlwidgets)
-# library(webshot)
-# library(withr)
-# library('plyr')
-# library('gridExtra')
-# library(grid)
-# library(lattice)
-# library(dplyr)
-# library(data.table)
-# library(tidyverse)
-# library(viridis)
-# library(foreach)
-# library(doParallel)
-# library(purrr)
-# library(beepr)
-# library(tidyr)
-
-# link to the function file 
-# This contains all the general, smaller funcitons needed for the models 
-# setwd("C:/Local_R/BiPhD-ABM/")
-# source('MOD_1_FuncSource.R')
-
-
-
-###############################
-#    USE WHEN RUNNING LOCAL   # 
-###############################
-
-# Input variables 
-# #Number of days in the simulation
-# days <- 30
-# # Number of agents in the simulation
-# N <- 100
-# # Type of environment (there are 18)
-# env_type <- 8
-# # Threshold stomach-content below which you forage
-# th_forage_sc <- 0.2
-# # Threshold fat-reserve below which you forage  (not relevant in model 1.1)
-# #th_forage_fr <-2.0
-# # Number of hours of daylight
-# daylight_h <- 8
 
 #################################################################
 ##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
@@ -96,7 +44,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
   # The individual loops need to start now
   # These should be parallelised 
   
-  outcome_1_1<-foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+  outcome_1_1<-foreach(icount(N), .packages =c("truncnorm", "SciViews"), .combine='rbind') %do% {
     
     # link to the function file 
     # setwd("C:/Local_R/BiPhD-ABM/")
@@ -211,6 +159,14 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+        pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -223,7 +179,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
     } # end timestep loop
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass, predation_count, rest_count, retrieve_count, sleep_count, decay_count,mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -234,14 +190,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
   assign(paste0('outcome_1_1_env', env_type),outcome_1_1, envir=.GlobalEnv)
   
   create_df_func(outputFile = outcome_1_1, modelType = '11', env_type= env_type)
-  
-  #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
-  
-  # save the data 
-  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/")
-  #save(outcome_1_1, file=paste0('outcome_1_1','d', days, 'N', N, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
-  
-  
+
 } # end of model 1 function 
 
 # model 1.1 
@@ -395,6 +344,13 @@ mod_1_1_hpc<-function(days, N, env_type, th_forage_sc, daylight_h){
         #########################
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
         
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
@@ -535,7 +491,7 @@ env_func_1_1_par<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   num_env<-18 
   
-  outcome_env_1_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+  outcome_env_1_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
     
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -586,7 +542,7 @@ env_func_1_1_par<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   
 } # end environment function loop 
-
+# parallel for the hpc 
 env_func_1_1_par_hpc<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   require(doParallel)
@@ -720,10 +676,8 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
       
       if(mat_alive[i,t]==1){
         
-        
         # Calculate the current fat loss rate 
         flr_func(t,i)
-        
         
         # Set the current temperature 
         temp_cur<<-total_temp_profile[t]
@@ -733,7 +687,6 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
         } else {
           dayOrNight<<-0                       # this means it is night 
         }
-        
         
         ####################
         #     SLEEPING     #
@@ -810,6 +763,15 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -818,26 +780,19 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
         
       } # end of loop for alive individuals 
       
-      
-      
-      
     } # end timestep loop
     
-    
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
-  # clean up cluster 
-  stopImplicitCluster()
+  stopImplicitCluster()     # clean up cluster 
   
   #return(outcome_1_1)
   assign(paste0('outcome_1_2_env', env_type),outcome_1_2, envir=.GlobalEnv)
   
   create_df_func(outputFile = outcome_1_2, modelType = '12', env_type= env_type)
-  
-  #assign(paste0('output_means_list',modelType, 'env', env_type, sep=''), mean_dfs, envir=.GlobalEnv)
   
 } # end of model 1.2 function 
 
@@ -997,6 +952,14 @@ mod_1_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -1115,31 +1078,25 @@ env_func_1_2_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, mo
 
 # environment loop paralelel 
 env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelType){
-  
+  # parallel computing 
   require(doParallel)
   require(foreach)
-  
   numCores<-(detectCores()-1)
   registerDoParallel(numCores)
-  
+  # hardcode env 
   num_env<-18 
-  
-  outcome_env_1_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
-    
+  # start loop
+  outcome_env_1_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+    # load files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
     source('ModelSource.R')
-    
+    # run model
     mod_1_2(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, daylight_h = daylight_h)
-    
-    #print('done')
-    
-    
   }
   
   # clean up cluster 
   stopImplicitCluster()
-  
   
   # The result we have at this point is 'outcome_env_1_2_par' 
   # This is a list with the averages fo each behaviour/usrvival/physiology for each timestep per environment 
@@ -1149,7 +1106,6 @@ env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, mo
   setwd("C:/Local_R/BiPhD-ABM/May23")
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
-  
   
   # Create the variable called halflife_input
   halflife_input<-outcome_env_1_2_par
@@ -1164,7 +1120,6 @@ env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, mo
   t_HL_mean<-mean(t_HL_df$V1)
   t_HL_SD<-sd(t_HL_df$V1)
   
-  
   # prepare for output of the env_function 
   performance<<-cbind(t_HL_mean, t_HL_SD)
   colnames(performance)<-c('mean', 'SD')
@@ -1174,46 +1129,9 @@ env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, mo
   setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/env_par")
   save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'dayh', daylight_h,  '.Rda'))
   
-  
-  
-  # OLD CODE FROM HL AND END SURVIVAL 
-  
-  # # print(environment())
-  # #list_means_envs<<-mget(ls(pattern = "output_means_list11env"))
-  # 
-  # # now select only the information about survival
-  # list_means_envs<-lapply(outcome_env_1_2_par, function(x){subset(x, x$id=='alive')})
-  # 
-  # # now find the row with the closest value of survival to 0.5 (halflife)
-  # halflife_per_env<-lapply(list_means_envs, function(x){x$timestep[which.min(abs(0.5-x$value))]})
-  # # Same for the end survival
-  # end_survival_per_env<-lapply(list_means_envs, function(x){x$value[x$timestep==(days*72)]})
-  # 
-  # # now put relevant data in the global environment
-  # # assign(paste0('HL_pEnv_th_sc', th_forage_sc), halflife_per_env, envir=.GlobalEnv)
-  # # assign(paste0('ES_pEnv_th_sc', th_forage_sc), end_survival_per_env, envir=.GlobalEnv)
-  # # assign(paste0('list_means_per_env_thsc', th_forage_sc), list_means_envs, envir=.GlobalEnv)
-  # 
-  # # generate the average average end-survival for this threshold, across all the environments 
-  # mean_ES_cur_th<-mean(unlist(end_survival_per_env))
-  # # and now for the average time till halflife 
-  # mean_HL_cur_th<-mean(unlist(halflife_per_env))
-  # # do the same for the 
-  
-  
-  # 
-  # # assign(paste0('output_env_function_th1=', th_forage_sc1, ' th2=', th_forage_sc2), output_env_func, envir=.GlobalEnv)
-  # 
-  # performance<<-cbind(mean_ES_cur_th, mean_HL_cur_th)
-  # output_env_func<<-list(performance, outcome_env_1_2_par)
-  # 
-  # #  save the data 
-  # setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/env_par")
-  # save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'dayh', daylight_h,  '.Rda'))
-  # 
   return(output_env_func)
   
-} # end environment function loop 
+} # end environment function loop for local parallel 12
 
 # environment loop paralelel 
 env_func_1_2_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, modelType){
@@ -1418,11 +1336,6 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             ######################
             #     FORAGE  + EAT  # 
             ######################
-            # if (mat_sc[i,t]<=th_forage_sc1){
-            #   #print('bird tried to retrieve but went to forage and eat ')
-            # }
-            
-            #print('a bird forage + eats ')
             
             # At this point, foraging means to go out and find a NEW food item 
             forage_function(t,i)
@@ -1454,6 +1367,15 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
+
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -1461,15 +1383,13 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
         ts_prep_func(t,i, TS)
         
       } # end of loop for alive individuals 
-      
-      
-      
+
       
     } # end timestep loop
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count,mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1513,7 +1433,7 @@ mod_1_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
   # The individual loops need to start now
   # These should be parallelised 
   
-  outcome_1_3_1<- foreach(icount(N), .packages = "truncnorm", .combine='rbind') %do% {
+  outcome_1_3_1<- foreach(icount(N), .packages =c( "truncnorm","SciViews"), .combine='rbind') %do% {
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
@@ -1657,6 +1577,14 @@ mod_1_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -1665,8 +1593,7 @@ mod_1_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
         
       } # end of loop for alive individuals 
       
-      
-      
+    
       
     } # end timestep loop
     
@@ -1829,11 +1756,6 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
             ######################
             #     FORAGE  + EAT  # 
             ######################
-            # if (mat_sc[i,t]<=th_forage_sc1){
-            #   #print('bird tried to retrieve but went to forage and eat ')
-            # }
-            
-            #print('a bird forage + eats ')
             
             # At this point, foraging means to go out and find a NEW food item 
             forage_function(t,i)
@@ -1865,6 +1787,14 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -1880,7 +1810,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count,mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -2072,6 +2002,14 @@ mod_1_3_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -2201,17 +2139,14 @@ env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   
   num_env<-18 
   
-  outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+  outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
     
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
     source('ModelSource.R')
     
     mod_1_3_1(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3= th_forage_sc3, daylight_h = daylight_h)
-    
-    #print('done')
-    
-    
+
   }
   
   # clean up cluster 
@@ -2327,7 +2262,7 @@ env_func_1_3_1_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forag
 } # end environment function loop 
 
 
-#  the enviornment loop
+#  the enviornment loop OLD 
 env_func_1_3_2<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3, daylight_h, modelType){
   
   # Loop through the environments 
@@ -2420,7 +2355,7 @@ env_func_1_3_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   
   num_env<-18 
   
-  outcome_env_1_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+  outcome_env_1_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
     
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -2698,6 +2633,14 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
         
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
+        
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 
         ##################################
@@ -2879,6 +2822,14 @@ mod_2_1_hpc<-function(days, N, env_type, th_forage_fr, daylight_h){
         #########################
         # Move food from stomach to fat, use some fat for metabolism and make sure nothing is below 0 
         en_metab_func(t,i)
+        
+        ####################
+        #    PILFERAGE     #
+        ####################
+        # Pilfer, but only if there are actually caches left 
+        if(mat_caches[i,t]>0){
+          pilf_func(i=i,t=t,lambda=lambda)
+        }
         
         ##################################
         #   PREPARE FOR NEXT TIMESTEP   # 

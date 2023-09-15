@@ -171,9 +171,29 @@ pilf_func(i=1,t=k, lambda)
 
 It looks like the function works well. Now I need to include it in the existing code, with the following steps. 
 
-* set `cache_halflife` and `lambda` in the general setup function 
-* initiate the `mat_Pdecay` and `decay_count` matrices in the individual setup function 
-* Add the `pilf_func` to the `FuncSource` file
-* Plug the `pilf_func` into the models: This should be at the end of each timestep, just before the wrapup 
-* Check that the `ts_prep_func` correctly transfers the number of caches to the next timestep 
-* Check if `retrieval_func` cannot cause caches to go lower than 0 
+* set `cache_halflife` and `lambda` in the general setup function. <span style="color:green">**Done**.</span> 
+* initiate the `mat_Pdecay` and `decay_count` matrices in the individual setup function. <span style="color:green">Done.</span> 
+* Add the `pilf_func` to the `FuncSource` file. <span style="color:green">**Done**.</span>
+* Plug the `pilf_func` into model 11: This should be at the end of each timestep, just before the wrapup. Would be good to include an if-statement that checks if there are actually caches. If not, this doesn't need to run. <span style="color:green">**Done**.</span> 
+* Consider in which way the matrices of this need to be used? Am I interested in those at all? I've added the `count_decay` to the saved matrices. I don't think we're interested in the `PoneOrMore` for the long run. All I did was add 'decay_count' to the list at the end of the model and then change the number of variables in the `create_df_func`<span style="color:red">Check if Tom is happy.</span>
+* Check that the `ts_prep_func` correctly transfers the number of caches to the next timestep. <span style="color:green">**Done**.</span> 
+* Check if `retrieval_func` cannot cause caches to go lower than 0. <span style="color:green">**Done**.</span> 
+* Test 11 singular run <span style="color:green">**Done**.</span> 
+* Test 11 environment parallel run: I had to add the `SciViews` package to the `foreach %dopar%` loop --> will need to happen for all of them. <span style="color:green">**Done**.</span> 
+
+Once the local stuff all works, I'll need to optimize everything again. For this: 
+
+* Update the HPC scripts (curently ony for the 3 threshold models): add the ln() pacackage, read through code to see if anything needs changing. Apart from the R shell, it should pull directly from the updated Sourcefiles 
+* Run on HPC 
+* Repeat for all other models 
+
+I've done the following models (made changes + singular test run + environmental test run): 
+
+* model 1.1 
+* model 1.2 
+* model 1.3.1 
+* model 1.3.2 
+
+Next I want to get 1.3.1 running on the HPC so I can start putting jobs through. 
+
+

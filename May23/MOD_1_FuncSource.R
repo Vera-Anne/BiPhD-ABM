@@ -16,6 +16,7 @@
 #  set-up environment function - PARALLEL   #
 #############################################
 
+# global environment
 set_up_func_general<-function(days, env_type, daylight_h){
   # This function includes all the set up variables that are the same for every bird in the simulation 
   
@@ -69,8 +70,8 @@ set_up_func_general<-function(days, env_type, daylight_h){
   num_cache_max<<-100 # maximum number of caches each bird has initially 
   retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
   
-  cache_halflife<-1440            # The halflife as taken from Pravosudov & Lucas 2001. 20 days. 20*72 = 1440 timesteps. 
-  lambda<-(ln(2)/cache_halflife)   # Calculated as in radioactive decay curves. Lambda = 0.693/T-halftime (check pilferage.Rmd file for details)
+  cache_halflife<<-1440            # The halflife as taken from Pravosudov & Lucas 2001. 20 days. 20*72 = 1440 timesteps. 
+  lambda<<-(ln(2)/cache_halflife)   # Calculated as in radioactive decay curves. Lambda = 0.693/T-halftime (check pilferage.Rmd file for details)
   
   # FOOD DISTRIBUTIONS 
   # You know the environment types
@@ -109,7 +110,7 @@ set_up_func_general<-function(days, env_type, daylight_h){
   
 } # end set up general function 
 
-
+# Individual bird 
 set_up_func_indiv<-function(days, env_type, daylight_h){
   #print('here')
   # # link to the function file 
@@ -130,7 +131,7 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   mat_Pkill<<-matrix(NA,1,TS)              # matrix to keep track of what Pkill every bird had at each timestep
   mat_find_food<<-matrix(NA, 1, TS)         # Keep track of how many food items are found 
   mat_flr<<-matrix(NA, 1, TS)               # Keeps track of the fat-change rate 
-  mat_Pdecay<-matrix(NA, 1, TS)             # Keeps track of the probability that caches decay at each timestep 
+  mat_Pdecay<<-matrix(NA, 1, TS)             # Keeps track of the probability that caches decay at each timestep 
   
   
   # fill in some initial values for agent variables  (global)
@@ -611,6 +612,9 @@ retrieve_func<-function(t,i){
   cur_stomach_space<<-(stom_size-mat_sc[i,t])                     # What is the space left in the stomach?
   cur_caches_retrieved<<-((round(cur_stomach_space/food_item)))   # how many caches to fill this back up
   mat_caches[i,t]<<-(mat_caches[i, (t)]-cur_caches_retrieved)     # update the number of cahches that are left
+  if(mat_caches[i,t]<0){                                          # Make sure that the number of caches cannot go below 0
+    mat_caches[i,t]<<-0
+  }
   
   # update the stomach content
   food_g_retrieved<<-cur_caches_retrieved*food_item               # retrieved food in grams
@@ -826,7 +830,7 @@ en_metab_func<-function(t,i){
 ######################
 #     PILFERAGE      #
 ######################
-pilf_func<-function(t,i, lambda){
+pilf_func<-function(i,t, lambda){
   # Calculcate the current lambda for all caches that this bird has 
   cur_lambda<<-(lambda*mat_caches[i,t])
   # calculate the probability of no decay at all
@@ -920,7 +924,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   require(purrr)
   N<-nrow(outputFile)
   
-  for (k in 1:16){
+  for (k in 1:17){
     if (k==1){
       # create a clean list in the first round 
       list_outcome_vars<-list()
@@ -933,7 +937,7 @@ create_df_func<-function(outputFile, modelType, env_type){
   
   
   # Give the dataframes in the 'list_outcome_vars' the correct names 
-  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep', 'temp')
+  variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep', 'cache_decay','temp')
   names(list_outcome_vars)<-variable_names
   
   # create a list of teh raw dataframes 
@@ -975,6 +979,9 @@ plots_12_func<-function(inputdata, modelType){
   
   inputdata[id == "alive", y_min :=0]
   inputdata[id == "alive", y_max :=1]
+  
+  inputdata[id == "cache_decay", y_min:=0]
+  inputdata[id == "cache_decay", y_max:=1]
   
   inputdata[id == "caches",y_min := 0]
   inputdata[id == "caches",y_max := 300]
