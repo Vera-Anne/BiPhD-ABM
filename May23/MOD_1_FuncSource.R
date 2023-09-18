@@ -999,7 +999,7 @@ plots_12_func<-function(inputdata, modelType){
   inputdata[id == "fat_res",y_max := 5]
   
   inputdata[id == "find_food",y_min := 0]
-  inputdata[id == "find_food",y_max := 10]
+  inputdata[id == "find_food",y_max := 5]
   
   inputdata[id == "forage",y_min := 0]
   inputdata[id == "forage",y_max := 1]
@@ -1028,10 +1028,13 @@ plots_12_func<-function(inputdata, modelType){
   inputdata[id == 'fat_loss_r', y_min := -0.6]
   inputdata[id == 'fat_loss_r', y_max := 0.6]
   
+  inputdata[id == 'temp', y_min :=-14]
+  inputdata[id == 'temp', y_max :=14]
+  
   plot<-ggplot(inputdata, aes(x=timestep, y=value)) + 
     geom_line() +
     facet_wrap(.~id, scales='free_y', nrow=5)+
-    ggtitle(paste('output model', modelType, 'N=',N, 'days=',days, 'daylight_h=',daylight_h, 'envType=', env_type))+
+    ggtitle(paste('Output model', modelType, 'N=',N, 'days=',days, 'daylight_h=',daylight_h, 'envType=', env_type))+
     geom_blank(aes(y = y_min)) +
     geom_blank(aes(y = y_max))
   
