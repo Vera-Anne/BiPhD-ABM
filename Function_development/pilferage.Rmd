@@ -26,6 +26,16 @@ Here I use the maths as they are used for radioactive decay curves. https://www.
 I have made a small model that simulates a number of `days` where birds start of with a number of caches (`num_cach_start`). 
 The number of birds (`num_birds`) can be inputted as well. 
 
+$P_{oneOrMore} = 1 - P_{noDecay}$ 
+
+and 
+
+$P_{noDecay} = e^{-lambda}$ 
+
+and 
+
+$lambda = ln(2)/T_{halflife}$
+
 ```{r simulating the formulas to test, include=TRUE, message=FALSE, warning=FALSE}
 # Number of days to simulate 
 days<-90
@@ -91,8 +101,7 @@ mean_df<-total_df%>%
   summarise(mean_samplesize=mean(samplesize))
 ```
 
-The output can be plotted as follows. The green horizontal line shows the starting number of caches. 
-Red vertical lines indicate 1 halflife time to be passed (20 days). The top horizontal line indicates half of the initial caches. 
+The output can be plotted as follows. Below is the result of a simulation of 100 birds, for 90 days that each start with 100 caches. The green horizontal line shows the starting number of caches. Red vertical lines indicate 1 halflife time to be passed (20 days). The top horizontal line indicates half of the initial caches. 
 The second horizontal life indicates 1/4 of the initial caches, etc.  <span style="color:red">Check with Tom if he's happy with this.</span> 
 
 ```{r plot the simulation output, include=TRUE, warning=FALSE, message=FALSE, echo=FALSE}
@@ -112,7 +121,7 @@ abline(h=(num_cach_start/16), col='tomato' ,lwd=1)
 
 Now I need to build a function that can fit into our larger model and test it. 
 
-```{r build the model function, include=TRUE, warning=FALSE, message=FALSE}
+```{r build the model function, include=TRUE, warning=FALSE, message=FALSE, results='hide'}
 # Half life should be set in the general set up 
 cache_halflife<-20*72                             # 15/09/2023: Included in gen setup function 
 # Same for lambda 
@@ -181,19 +190,21 @@ It looks like the function works well. Now I need to include it in the existing 
 * Test 11 singular run <span style="color:green">**Done**.</span> 
 * Test 11 environment parallel run: I had to add the `SciViews` package to the `foreach %dopar%` loop --> will need to happen for all of them. <span style="color:green">**Done**.</span> 
 
-Once the local stuff all works, I'll need to optimize everything again. For this: 
 
-* Update the HPC scripts (curently ony for the 3 threshold models): add the ln() pacackage, read through code to see if anything needs changing. Apart from the R shell, it should pull directly from the updated Sourcefiles 
-* Run on HPC 
-* Repeat for all other models 
-
-I've done the following models (made changes + singular test run + environmental test run): 
+The following models are updated (changes made + single local run + environment local run): 
 
 * model 1.1 
 * model 1.2 
 * model 1.3.1 
 * model 1.3.2 
 
-Next I want to get 1.3.1 running on the HPC so I can start putting jobs through. 
+
+Once the local stuff all works, I'll need to optimize everything again. For this: 
+
+* Update the HPC scripts (curently ony for the 3 threshold models): add the ln() pacackage, read through code to see if anything needs changing. Apart from the R shell, it should pull directly from the updated Sourcefiles 
+* Run on HPC 
+* Repeat for all other models 
+
+Next I want to get 1.3.1 running on the HPC so I can start putting jobs through.<span style="color:red">This needs to wait till I've checked any final model changes with Tom. </span>  
 
 

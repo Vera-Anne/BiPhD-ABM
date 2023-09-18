@@ -160,7 +160,7 @@ system.time({
   source('ModelSource.R')
   
   # run the model 
-  mod_1_3_1(days=30, N=1000, env_type=8, th_forage_sc1=0.1, th_forage_sc2=0.2, th_forage_sc3=0.3, daylight_h=8)
+  mod_1_3_1(days=30, N=1000, env_type=8, th_forage_sc1=0.065306122, th_forage_sc2=0.10612244, th_forage_sc3=0.3836735, daylight_h=8)
   
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_131_list<-list(total_vars_df131, output_df_list_raw131)
@@ -184,7 +184,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run the model 
-  env_func_1_3_1_par(days = 30, N= 1000, th_forage_sc1 = 0.1, th_forage_sc2 = 0.2, th_forage_sc3 = 0.3, daylight_h = 8, modelType = 131)
+  env_func_1_3_1_par(days = 30, N= 1000, th_forage_sc1 = 0.01632653 , th_forage_sc2 = 0.04081633 , th_forage_sc3 = 0.3102041 , daylight_h = 8, modelType = 131)
 })
 
 # Now do an overview image 
