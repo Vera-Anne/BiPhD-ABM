@@ -45,7 +45,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
   # The individual loops need to start now
   # These should be parallelised 
   
-  outcome_1_1<-foreach(icount(N), .packages =c("truncnorm", "SciViews"), .combine='rbind') %do% {
+  outcome_1_1<-foreach(icount(N), .packages =c("truncnorm"), .combine='rbind') %do% {
     
     # link to the function file 
     # setwd("C:/Local_R/BiPhD-ABM/")
@@ -372,7 +372,7 @@ env_func_1_1_par<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   num_env<-18 
   
-  outcome_env_1_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -434,7 +434,7 @@ env_func_1_1_par_hpc<-function(days, N, th_forage_sc, daylight_h, modelType){
   
   num_env<-18 
   
-  outcome_env_1_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
 
     # Run the model 
     mod_1_1_hpc(days = days, N = N, env_type = i, th_forage_sc = th_forage_sc, daylight_h = daylight_h)
@@ -854,7 +854,7 @@ env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, mo
   # hardcode env 
   num_env<-18 
   # start loop
-  outcome_env_1_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # load files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -910,7 +910,7 @@ env_func_1_2_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h
   registerDoParallel(numCores)
   num_env<-18 
   # start parallel loop through environments 
-  outcome_env_1_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     
     # Run the model 
     mod_1_2_hpc(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, daylight_h = daylight_h)
@@ -1171,7 +1171,7 @@ mod_1_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
   # The individual loops need to start now
   # These should be parallelised 
   
-  outcome_1_3_1<- foreach(icount(N), .packages =c( "truncnorm","SciViews"), .combine='rbind') %do% {
+  outcome_1_3_1<- foreach(icount(N), .packages =c( "truncnorm"), .combine='rbind') %do% {
     
     # Do a setup for the individual bird
     # This includes the individual temperature pattern 
@@ -1723,7 +1723,7 @@ env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   # set number of environments 
   num_env<-18 
   # start parallel loop 
-  outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -1781,7 +1781,7 @@ env_func_1_3_1_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forag
   # set number of environments 
   num_env<-18 
   # start the parallel loop 
-  outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # start running single model 
     mod_1_3_1_hpc(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3= th_forage_sc3, daylight_h = daylight_h)
   }
@@ -1827,7 +1827,7 @@ env_func_1_3_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   # set number of environments 
   num_env<-18 
   # start parallel loop 
-  outcome_env_1_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_1_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -2293,7 +2293,7 @@ env_func_2_1_par<-function(days, N, th_forage_fr, daylight_h, modelType){
   # Set the number of environments 
   num_env<-18 
   # Start the parallel loop 
-  outcome_env_2_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Set the source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -2348,7 +2348,7 @@ env_func_2_1_par_hpc<-function(days, N, th_forage_fr, daylight_h, modelType){
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_2_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Start running single model
     mod_2_1_hpc(days = days, N = N, env_type = i, th_forage_fr = th_forage_fr, daylight_h = daylight_h)
   }
@@ -2746,7 +2746,7 @@ env_func_2_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, daylight_h, mo
   # Set number of environments 
   num_env<-18 
   # start parallel loop 
-  outcome_env_2_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Sourcefile 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -2803,7 +2803,7 @@ env_func_2_2_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, daylight_h
   # Set number of environments 
   num_env<-18 
   # start parallel lop 
-  outcome_env_2_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Start single run 
     mod_2_2_hpc(days = days, N = N, env_type = i, th_forage_fr1 = th_forage_fr1, th_forage_fr2 = th_forage_fr2, daylight_h = daylight_h)
   }
@@ -3613,7 +3613,7 @@ env_func_2_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_2_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -3671,7 +3671,7 @@ env_func_2_3_1_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   # Set number of environments 
   num_env<-18 
   # Start parallel run 
-  outcome_env_2_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Start single model run 
     mod_2_3_1_hpc(days = days, N = N, env_type = i, th_forage_fr1 = th_forage_fr1, th_forage_fr2 = th_forage_fr2, th_forage_fr3= th_forage_fr3, daylight_h = daylight_h)
   }
@@ -3712,7 +3712,7 @@ env_func_2_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   # set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_2_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -3769,7 +3769,7 @@ env_func_2_3_2_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_2_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_2_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
       # Start single model run 
       mod_2_3_2_hpc(days = days, N = N, env_type = i, th_forage_fr1 = th_forage_fr1, th_forage_fr2 = th_forage_fr2, th_forage_fr3= th_forage_fr3, daylight_h = daylight_h)
   }
@@ -4147,7 +4147,7 @@ env_func_3_1_par<-function(days, N, th_forage_flr, daylight_h, modelType){
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -4202,7 +4202,7 @@ env_func_3_1_par_hpc<-function(days, N, th_forage_flr, daylight_h, modelType){
   # set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # run single model 
     mod_3_1_hpc(days = days, N = N, env_type = i, th_forage_flr = th_forage_flr, daylight_h = daylight_h)
   }
@@ -4601,7 +4601,7 @@ env_func_3_2_par<-function(days, N, th_forage_flr1, th_forage_flr2, daylight_h, 
   # Set number of environments 
   num_env<-18 
   # start parallel loop 
-  outcome_env_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -4656,7 +4656,7 @@ env_func_3_2_par_hpc<-function(days, N, th_forage_flr1, th_forage_flr2, daylight
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Single model run 
     mod_3_2_hpc(days = days, N = N, env_type = i, th_forage_flr1 = th_forage_flr1, th_forage_flr2 = th_forage_flr2, daylight_h = daylight_h)
   }
@@ -5464,7 +5464,7 @@ env_func_3_3_1_par<-function(days, N, th_forage_flr1, th_forage_flr2, th_forage_
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # set source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -5522,7 +5522,7 @@ env_func_3_3_1_par_hpc<-function(days, N, th_forage_flr1, th_forage_flr2, th_for
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Single model run 
     mod_3_3_1_hpc(days = days, N = N, env_type = i, th_forage_flr1 = th_forage_flr1, th_forage_flr2 = th_forage_flr2, th_forage_flr3= th_forage_flr3, daylight_h = daylight_h)
   }
@@ -5563,7 +5563,7 @@ env_func_3_3_2_par<-function(days, N, th_forage_flr1, th_forage_flr2, th_forage_
   # set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -5621,7 +5621,7 @@ env_func_3_3_2_par_hpc<-function(days, N, th_forage_flr1, th_forage_flr2, th_for
   # Set number of environments 
   num_env<-18 
   # Start parallel loop 
-  outcome_env_3_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_3_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Single run 
     mod_3_3_2_hpc(days = days, N = N, env_type = i, th_forage_flr1 = th_forage_flr1, th_forage_flr2 = th_forage_flr2, th_forage_flr3= th_forage_flr3, daylight_h = daylight_h)
   }
@@ -5836,7 +5836,7 @@ env_func_4_1_par<-function(days, N, th_forage_fr, th_forage_flr, daylight_h, mod
   # Set number of environments 
   num_env<-18 
   # Parallel loop 
-  outcome_env_4_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_4_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -6077,7 +6077,7 @@ env_func_4_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_flr1
   # Set number of environments 
   num_env<-18 
   # parallel loop
-  outcome_env_4_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_4_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Source file 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -6512,7 +6512,7 @@ env_func_4_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   # Number of environments 
   num_env<-18 
   # paralel loop 
-  outcome_env_4_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_4_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Source files
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')
@@ -6571,7 +6571,7 @@ env_func_4_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   # Set number of environments 
   num_env<-18 
   # parallel loop 
-  outcome_env_4_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr", "SciViews")) %dopar% {
+  outcome_env_4_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     # Source files 
     setwd("C:/Local_R/BiPhD-ABM/May23")
     source('MOD_1_FuncSource.R')

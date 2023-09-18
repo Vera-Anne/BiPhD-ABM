@@ -71,7 +71,7 @@ set_up_func_general<-function(days, env_type, daylight_h){
   retrieve_min<<-5    # minimum number of caches needed to make retrieval worth it 
   
   cache_halflife<<-1440            # The halflife as taken from Pravosudov & Lucas 2001. 20 days. 20*72 = 1440 timesteps. 
-  lambda<<-(ln(2)/cache_halflife)   # Calculated as in radioactive decay curves. Lambda = 0.693/T-halftime (check pilferage.Rmd file for details)
+  lambda<<-(log(2)/cache_halflife)   # Calculated as in radioactive decay curves. Lambda = 0.693/T-halftime (check pilferage.Rmd file for details)
   
   # FOOD DISTRIBUTIONS 
   # You know the environment types

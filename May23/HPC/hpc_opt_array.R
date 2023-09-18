@@ -1,6 +1,9 @@
+######################################################################################
 # 22/08/2023
-# Rscript that can go with running things as array 
+# Rscript that can run job arrays where each seperate job runs for 1 threshold combo 
 # Vera Vinken 
+# Last changes: 18/09/2023
+######################################################################################
 
 ##############################
 #      load packages         #
@@ -24,7 +27,8 @@ library(viridis)
 library(foreach)
 library(doParallel)
 library(utils)
-library(SciViews)     
+install.packages('SciViews')
+library('SciViews')     
 # link to the function file 
 source('MOD_1_FuncSource.R')
 source('ModelSource.R')
@@ -95,7 +99,6 @@ if (modelType==00){
     
   # clean up cluster 
   stopImplicitCluster()
-  
   
   # Add some information to the output data 
   # Add the total number of th, the minima and maxima 

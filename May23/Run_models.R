@@ -3,6 +3,7 @@
 # Start date: 16/05/2023
 # Vera Vinken 
 # all models - for running them (singular)
+# Last changes: 19/09/2023
 #################################
 
 ##############################
@@ -36,7 +37,7 @@ library(doParallel)         # For runing code parallel with dopar function
 library(foreach)            # For running code parallel 
 library(ggpubr)             # To arrange plots 
 library(gridExtra)          # for grid.arrange 
-library(SciViews)           # For the easy to use ln() function in the cache decay stuff 
+
 
 # link to the function file 
 # This contains all the general, smaller funcitons needed for the models 
