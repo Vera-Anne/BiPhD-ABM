@@ -19,6 +19,7 @@ library('parallel')     # for parallel computing
 library('doParallel')   # As above 
 library(dplyr)          # merging dataframes 
 library(psych)          # To calculate geometric mean 
+library(ggpubr)         # using ggarrange to grid plots with side legend
 ```
 
 ## Background
@@ -713,7 +714,7 @@ This is in progress but should give similar results now the cluster issue is sol
 
 # Check optimal threshold comb
 opt_comb_HPC_new4<-HPC_131_new4[(which.max(HPC_131_new4$mean)),]
-opt_comb_HPC_new4$Type<-'HPC new 4'
+opt_comb_HPC_new4$type<-'HPC new 4'
 opt_comb_HPC_new4%>%flextable()
 HL_opt%>%flextable()
 ```
@@ -788,7 +789,7 @@ To ask for a meeting. We would like her advice on whether we change the optimiza
 #### **2. Optimization level**
 We are currently optimizing for a mean across all 18 environments. The 'pro' for this was, that we are dealing with a species that has a large range and that could theoretically encounter all these different environments. This gives us 2 main issues 
 
-Firstly, optimization goes across both bonanzas and poisson distributions. This means that only half of the 18 environments have a poisson distribution and the other half is poisson. Hoarding will, as a result of this only be useful in the bonanza scenario's. Because we also have some environments with very high food distributions, optimization will probably go 'against' direct hoarding, because it simply does not benefit the mean across the 18 environments. Therefore, we should consider to optimize over bonanza and poisson scenario's separately. --> investigate this by taking the data from the HPC and the local run and splitting them  up by Bonanza vs Poisson before calculating the mean halflife and optimal thresholds. I want the graph with the black cloud but twice, once for the mean taken over Poisson environments and once for the mean taken over Bonanza environments. I can also look ath the 18 environments and plot 2 lines for survival curves in each of them. <span style="color:red">Note: If we actually go ahead with this, we could consider running Poisson and bonanza multiple times and taking a mean of that.</span>
+Firstly, optimization goes across both bonanzas and poisson distributions. This means that only half of the 18 environments have a poisson distribution and the other half is poisson. Hoarding will, as a result of this only be useful in the bonanza scenario's. Because we also have some environments with very high food distributions, optimization will probably go 'against' direct hoarding, because it simply does not benefit the mean across the 18 environments. Therefore, we should consider to optimize over bonanza and poisson scenario's separately. --> investigate this by taking the data from the HPC and the local run and splitting them  up by Bonanza vs Poisson before calculating the mean halflife and optimal thresholds. I want the graph with the black cloud but twice, once for the mean taken over Poisson environments and once for the mean taken over Bonanza environments. I can also look ath the 18 environments and plot 2 lines for survival curves in each of them. Note: If we actually go ahead with this, we could consider running Poisson and bonanza multiple times and taking a mean of that.
 
 Een tabel met de optimum thresholds for HPC and local, split by bonanza and poisson. Followed by the data split for poisson and bonanza. For ease of plotting I've used both the local and the hpc run. Finally, there is a graph that shows all 18 environments and how the bonanza optimum and the poisson optimum perform under these circumstances. Only for the HPC run. 
 
@@ -1021,7 +1022,7 @@ ggplot(output_b_vs_p, aes(x=output_b_vs_p$timestep, y=output_b_vs_p$value, color
 ```
 
 
-Secondly, along those lines, it might just make more sense to optimize across each environment separately. Especially if the optimal threshold combinations vary a lot between the environments. --> To investigate this, do the same as for the point above; split the HPC and the local data up per environment and select the optimal threshold combination for each of those. <span style="color:red">Note: If we actually go ahead with this, we could consider running each environment multiple times and taking a mean of that as a mean performance of a threshold. </span> Then plot this for the 18 environments with each their own survival curve according to the optimal TH-combination. In addition, again use the black cloud data and highlight the threshold combinations for the 18 environments that are optimal. Can be either HPC or local data, doesn't matter. 
+Secondly, along those lines, it might just make more sense to optimize across each environment separately. Especially if the optimal threshold combinations vary a lot between the environments. --> To investigate this, do the same as for the point above; split the HPC and the local data up per environment and select the optimal threshold combination for each of those. Note: If we actually go ahead with this, we could consider running each environment multiple times and taking a mean of that as a mean performance of a threshold. Then plot this for the 18 environments with each their own survival curve according to the optimal TH-combination. In addition, again use the black cloud data and highlight the threshold combinations for the 18 environments that are optimal. Can be either HPC or local data, doesn't matter. 
 
 ```{r find optimum per environment, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
 
@@ -1078,23 +1079,369 @@ opt_per_env%>%flextable()
 
 #### **3. Pilferage**
 We need to put pilferage into the model as it currently doesn't have it. We want pilferage to happen at the end of each timestep. The halflife should be 20 days as described by Pravosudov & Lucas (2001). Tom and I looked up how to implement this: https://www.britannica.com/science/decay-constant. This shows that the decay constant can be calculated with $lambda = 0.693/T-halflife = 0.693/1440 = 4.8125E^-4$. I need to build this into the model and start rerunning it for the optimizations (once these are decided on how we're doing them --> see previous point). 
+
+<span style="color:green">18/09/2023: I implemented this in all models and in terms of pilferage everything is ready for the HPC </span>
+
+<span style="color:green"> 19/09/2023: Tom confirmed; go ahead </span>
+  
   
 #### **4. Fewer environments & bonanza strength**
-Whichever option we choose, we need to consider to cut down the number of environments we are interested in. If we go down to the 8 (as we did for the ASAB work), we need to consider if we want to bring down Bonanza strength. 24 might be quite extreme. On the other hand, if we split up our optimizations we will be creating birds that are 'specialized' in this type of environment. <span style="color:red">If I change the number of environments i need to check where this is hardcoded. Probably it he environmen tplots. Also in the code for environments (`num_env` just before the parallel loop starts). </span>
+Whichever option we choose, we need to consider to cut down the number of environments we are interested in. If we go down to the 8 (as we did for the ASAB work), we need to consider if we want to bring down Bonanza strength. 24 might be quite extreme. On the other hand, if we split up our optimizations we will be creating birds that are 'specialized' in this type of environment. <span style="color:red">If I change the number of environments i need to check where this is hardcoded. Probably it he environment plots. Also in the code for environments (`num_env` just before the parallel loop starts). </span>
 
-<span style="color:green">14/09/2023: We did decide that we will use fewer environments. My personal idea is to use only medium and high temperature, but to keep all food levels. </span> <span style="color:red">I will discuss this with Tom on monday. </span>
+<span style="color:green">14/09/2023: We did decide that we will use fewer environments. My personal idea is to use only medium and high temperature, but to keep all food levels. </span>
+
+ <span style="color:black">18/09/2023: Emailed Tom with the question and suggested we keep all food levels but lose the coldest temperatures. I also asked about the bonanza situation and suggested that we keep it the way it is, unless he thinks otherwise. Waiting for confirmation. Once we decide I can code this --> get ready for HPC. </span>
+ 
+<span style="color:green">19/09/2023: Tom doesn't mind if we use 12, 8 or 4 environments. The best argument can be made for either 12 or 4 (all food levels, or just the middle one that is used in other models). Disadvantage of doing 12 would be the time it takes to run. I will go ahead with 12 and when we run into problems we can narrow this down to 4?</span> <span style="color:red">14/09/2023: The next step here is to build in that we have fewer environments </span>
+ 
+#### **6. Change in x.3.y models**
+18/09/2023: I'm considering to change the x.3.y models so that foraging & eating also ends in leftover hoarding. Right now, these are completey seperate from the hoarding behaviour, which I think could be unrealistic. A bird that is out to forage and eat will just leave a bonanza to be, because it wasn't 'direct hoarding'. On the other hand, this will make the difference between x.2 and x.3 models smaller, and the model will become more complicated. I've asked Tom in the email what he thinks.  
+
+<span style="color:green">19/09/2023: Tom confirmed that we keep them as they are.</span>
   
-#### **5. Rerunning**
-Once I have built in the pilferage and we have decided on the number of environments and bonanza strength, I can rerun the optimizations. Means can then be taken either across all 18 environments, across Bonanza/Poisson or across each singular environment. 
+#### **7. Rerunning**
+Once I have built in the pilferage and we have decided on the number of environments and bonanza strength, I can rerun the optimizations. 
 
-#### **6. Phase 2 optimization code**
-Once this is all done and we are starting to rerun the optimization on the HPC. Whilst this is going on, I can write the code for phase 2 of the optimizations. At this point we have singular optimizations of each model. We take the top 250 threshold combinations and run these 100 times to see which ones consistently produce a high mean. Note: this might be split up in P/B or the 18/8 environments. To know if this is actually a valid idea I need to explore the following: 
+18/09/2023: Whilst waiting for Tom to respond to my email, I will start making sure that the code is ready for the HPC in terms of shell scripts etc. I have now finished running 1.1 optimization and will prepare for phase 2 of this optimization. --> <span style="color:black">But first I need to check if that plan is valid (see point 8.) </span>
+
+<span style="color:red">19/09/2023: After building in the new environments, I can start rerunning again. </span>
+
+
+#### **8. Phase 2 optimization code**
+Once this is all done and we are starting to rerun the optimization on the HPC. Whilst this is going on, I can write the code for phase 2 of the optimizations. At this point we have singular optimizations of each model. We take the top 250 threshold combinations and run these 100 times to see which ones consistently produce a high mean. To know if this is actually a valid idea I need to explore the following: 
+
   + Take the current black cloud plot with mean HPC vs mean Local. Subset the best 250 in local and the best 250 in HPC. 
   + Combine these and select the group that overlaps. 
   + Plot again with 3 different colours and see if they overlap nicely
   + Repeat this for different numbers (250-500-1000) untill there is a good overlap in the right top corner. 
   
-#### **7. Mean Time**
+```{r subset the best 250 values for hpc and local,include=TRUE, message=FALSE, warning=FALSE, echo=FALSE, fig.width=10, fig.height=7 }
+num_values_vec<-c(250, 500, 1000, 1500)
+graph_list<-list()
+
+for (i in 1:4){
+  # set the num
+  num_values<-num_values_vec[i]
+  best_indicators<-c(rep(1,num_values), rep(0, (19600-num_values)))
+  best_indicators2<-c(rep(2,num_values), rep(0, (19600-num_values)))
+
+  ordered_data_new4<-ordered_data_new4 %>%
+    arrange(desc(mean_hpc)) %>%             # arrange acording to mean HL hpc 
+    mutate(best_HPC=best_indicators)%>%     # indicate the best 250 in 'best HPC' column 
+    arrange(desc(mean_loc))%>%              # arrange accoridng to mean HL local 
+    mutate(best_loc=best_indicators2)%>%     # indicate the best 250 in 'best local' column 
+    mutate(total_best = best_HPC + best_loc)
+
+  # This creates a column that has 
+    # 0 for no best
+    # 1 for best in hpc 
+    # 2 for best in local
+    # 3 for best in both 
+
+  # graph that 
+  # Plot with ggplo t
+  ggp_comp_best<-ggplot(ordered_data_new4, aes(x=mean_hpc, y=mean_loc, col=factor(total_best)))+
+    geom_point()+
+    ggtitle(label=paste('Local vs HPC mean HL ', num_values, 'values' ))+
+    scale_color_manual(values=c('black','gold', 'forestgreen', 'red'), labels=c('No optimal', 'HPC', 'Local', 'Both'))+
+    guides(col=guide_legend(title='Optimal TH combo?'))
+  
+  graph_list[[i]]<-ggp_comp_best
+}
+
+do.call('ggarrange', c(graph_list,ncol=2, nrow=2, common.legend=TRUE, legend='right'))
+
+```
+Just to check how much overlap there actually is for the 1500 value run: 
+```{r check overlap, include=TRUE, message=FALSE, warning=FALSE}
+table(ordered_data_new4$total_best)
+
+```
+  This means that just under 1/3 off the values is missed out. I'm ok with that, as we are looking for the top corner on the right anyway.
+  
+Secondly, I am going to repeat this, but comparing the first HPC run with the second that just finished. To see if overlap is bigger here, as the code might have undergone slight changes since running the local optimization in June. 
+
+<span style="color:black"> 18/09/2023: I'll need to run the concatenation first. This is an overnight task so end of the day :) </span>
+
+<span style="color:green"> 19/09/2023: Concatenated, and added in the graphs below. These show that the results are very similar for the comparison between the two HPC runs. Happy to proceed as is. </span>
+
+```{r load the second 131 hpc run (2023-09-11), include=TRUE, message=FALSE, echo=FALSE, warning=FALSE}
+# Model 1.3.1  HPC optimization output after removing the faulty batch and replacing it with a newly run one
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11")
+      load('opt_outcome_concat_HPC_ 131 _ 2023-09-18_18_52_10 .Rda')
+      HPC_131_2nd<-HL_df
+      rm(HL_df)
+      HPC_131_2nd<-HPC_131_2nd %>% mutate_all(as.numeric)
+
+# Check optimal threshold comb
+
+opt_comb_HPC_2nd<-HPC_131_2nd[(which.max(HPC_131_2nd$mean)),]
+opt_comb_HPC_2nd$type<-'HPC 131 2nd'
+HL_opt<-rbind(HL_opt, opt_comb_HPC_new4, opt_comb_HPC_2nd)
+
+HL_opt%>%flextable()
+
+```
+```{r calculate HPC 131_2nd data on environment level (not just means), message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
+# I'll need to load the HPC new4 data and extract the survival from this as I previously did with the HPC and Local data. #
+
+
+# Set the folder in which the results are (this is the folder that contains the batches with results)
+batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
+# navigate to folder where the 10 folders with the batches are (specified above)
+setwd(paste0(batch_folder))
+# Retrieve the names of the folders 
+batch_names<-list.dirs(full.names=TRUE, recursive = F)
+# create list where the halflife lists from each batch can be stored
+halflife_per_batch_list<-list()
+# for each batch-folder in this list 
+      for (i in 1:length(batch_names)){
+            # set the current folder name 
+            cur_batch<-batch_names[i]
+            # Load the filenames in this folder 
+            filenames <- list.files(paste(cur_batch), pattern="*.Rda", full.names=TRUE)
+            # Do it all on parallel cores to speed it up 
+            numCores<-(detectCores()-1)
+            registerDoParallel(numCores)
+            # Concatenate the outcome of paralel computed halflifes 
+            outcome_concat<- foreach(j=1:length(filenames), .combine=rbind) %dopar% {
+            # call the halflife function (copied from function source file )
+              t_halflife_func<-function(halflife_input){
+                for (i in 1:length(halflife_input)){
+                  if (i==1){
+                    # list for the t_HL
+                    t_HL_list<<-list()
+                    # list for general fit summaries
+                    fit_sum_list<-list()
+                  } 
+                  # Create the dataframe you'll be dealing with 
+                  df<-subset(halflife_input[[i]], halflife_input[[i]]$id=='alive')
+                  # clean up the dataframe
+                  df$timestep<-as.numeric(df$timestep)
+                  df<-df[,2:3]
+                  colnames(df)<-c('y', 't')
+                  # Now fit the model 
+                  # To control the interations in NLS I use the following 
+                  nls.control(maxiter = 100)
+                  # I use a basic exponential decay curve, starting values need to be given 
+                  fit<-nls(y ~ a*exp(-b*t), data=df, 
+                           start=list(a=1, b=0.0000001))
+                  # pull out hte summary --> this has the estimated values for a an db in it 
+                  sum_fit<-summary(fit)
+                  # put in the list 
+                  fit_sum_list[[i]]<-sum_fit$parameters
+                  # Now, where does it cross the x-axis? 
+                  # Set the current a & b 
+                  cur_a<-fit_sum_list[[i]][1]
+                  cur_b<-fit_sum_list[[i]][2]
+                  # set the halflife 
+                  y_halflife<-0.5
+                  # now calculate the timestep at which this will occur 
+                  t_halflife<-(-(log(y_halflife/cur_a)/cur_b))
+                  # calculate y from there (just to check)
+                  #ytest<-(cur_a*exp(-cur_b*t_halflife))
+                  # put in the list 
+                  t_HL_list[i]<<-t_halflife
+                }
+                return(t_HL_list)
+              } # end halflife function 
+
+            # For each of the files in the current batch: extract the halflife 
+            # for (j in 1:length(filenames)){
+                # load the current file 
+                load(filenames[j])
+                # Now I need to calculate the HL per environment 
+                HL_func_out<-as.data.frame(t(as.data.frame(t_halflife_func(halflife_input = env_results[[2]]))))
+                HL_func_out$env<-1:18
+                HL_func_out$th_num<-rep(env_results[[3]]$th_comb_input)
+                colnames(HL_func_out)<-c('HL_HPC', 'env', 'th_num')
+                # To add to concatenation 
+                HL_func_out
+                
+            } # end parallel loop thrat runs through each file 
+            
+            # stop the cluster
+            stopImplicitCluster()
+            
+            HL_func_out_df<-as.data.frame(t(as.data.frame(do.call(rbind, outcome_concat))))
+            
+            # Add this to the list of halflife_per_batches
+            halflife_per_batch_list[[i]]<-HL_func_out_df
+            print(paste('batch done #', i))
+            
+
+        } # end for loop that runs through files in a batch-folder
+
+
+# CONCATENATE THE LIST OF BATCHES 
+HL_HPC_perEnv_131_2nd<-as.data.frame(do.call(rbind, halflife_per_batch_list))
+
+# sAVE THAT DATAFRAME SOMEWHERE 
+setwd(paste0(batch_folder))
+save(HL_HPC_perEnv_131_2nd, file=(paste0('HL_perEnv_HPC_131', '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda')))
+
+```
+
+```{r load the hpc 2nd run file, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
+# Set the folder in which the results are (this is the folder that contains the batches with results)
+batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
+# navigate to folder where the 10 folders with the batches are (specified above)
+setwd(paste0(batch_folder))
+# Make sure to put the correct ime and date in this file name 
+load('HL_perEnv_HPC_131_2023-09-14_12_44_28.Rda')
+# The local equivalent of this dataframe is called 'HL_loc_perEnV' 
+
+```
+
+```{r check clusters after 2nd 131 run, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE, fig.width=10, fig.height=7 }
+# orer the data and attach to dataframe 
+HPC_order_2nd<-HPC_131_2nd[order(HPC_131_2nd$th_num),]
+colnames(HPC_order_2nd)<-c('mean_hpc2', 'sd_hpc2', 'th1_hpc2', 'th2_hpc2', 'th3_hpc2', 'th_num_hpc2')
+ordered_data_new4<-ordered_data_new4[order(ordered_data_new4$th_num_hpc),]
+ordered_data_2nd<-cbind(ordered_data_new4, HPC_order_2nd)
+
+
+# Do the graphs again 
+num_values_vec<-c(250, 500, 1000, 1500)
+graph_list<-list()
+table_list<-list()
+
+for (i in 1:4){
+  # set the num
+  num_values<-num_values_vec[i]
+  best_indicators<-c(rep(1,num_values), rep(0, (19600-num_values)))
+  best_indicators2<-c(rep(2,num_values), rep(0, (19600-num_values)))
+
+  ordered_data_2nd<-ordered_data_2nd %>%
+    arrange(desc(mean_hpc)) %>%             # arrange acording to mean HL hpc 
+    mutate(best_HPC=best_indicators)%>%     # indicate the best 250 in 'best HPC' column 
+    arrange(desc(mean_hpc2))%>%              # arrange accoridng to mean HL HPC 2 
+    mutate(best_HPC2=best_indicators2)%>%     # indicate the best 250 in 'best local' column 
+    mutate(total_best_2 = best_HPC + best_HPC2)
+
+  # This creates a column that has 
+    # 0 for no best
+    # 1 for best in hpc 
+    # 2 for best in local
+    # 3 for best in both 
+
+  # graph that 
+  # Plot with ggplo t
+  ggp_comp_best<-ggplot(ordered_data_2nd, aes(x=mean_hpc, y=mean_hpc2, col=factor(total_best_2)))+
+    geom_point()+
+    ggtitle(label=paste('HPC 1 vs HPC 2 mean HL ', num_values, 'values' ))+
+    scale_color_manual(values=c('black','gold', 'forestgreen', 'red'), labels=c('No optimal', 'HPC 1', 'HPC 2', 'Both'))+
+    guides(col=guide_legend(title='Optimal TH combo?'))
+  
+  graph_list[[i]]<-ggp_comp_best
+  table_list[[i]]<-table(ordered_data_2nd$total_best_2)
+}
+
+do.call('ggarrange', c(graph_list,ncol=2, nrow=2, common.legend=TRUE, legend='right'))
+
+table(ordered_data_2nd$total_best_2)
+
+```
+We can see that this looks good. <span style="color:green">I agreed with Tom that we will use the 1000 values. </span>The plan for the different optimizations will look as follows: 
+
+* **1.1**: <span style="color:red"> TBC </span>
+
+* **1.2**: Can use the best 1000 values 
+
+* **1.3.1**: This is what we will test with. Tom and I have decided that we will take the best 1000 combinations from a single optimization run. The next thing is to decide how many times we will run this. For this, I need to find out after how many times of running a single combination, the mean of all previous runs does not chagne that much anymore. I'll need to go through the following steps: 
+
+  + Identify a combination to try this with: 13331 
+  + Take this combination and run the environment function with it 100 times. I should probably be able to modify the current shell script on the HPC in a way that it just runs the same threshold combination 100 times. 
+  + From that output I make a dataframe that has the mean HL of each of these 100 repeat runs (rows is runs so nrow = 100)
+  + Create a second dataframe where each row takes the mean of all the previous rows. So `row 1 = mean (df1 row1)`. `Row 2 = mean(df1 row 1:2)`. `Row 3 = mean(df 1 row 1:3)`, etc. 
+  + The third data frame will have the difference between the rows in dataframe 2. So `row 1 = df2_row1 - 0`. `Row 2 = df2_row2  - df2_row1`. `Row 3 = df2_row3 - df2_row2`, etc. 
+  + The latter can be plotted easily, with on the Y-axis the difference between each of the rows and on the x-axis the run number. 
+
+```{r upload the 100 x 13331 data, include=TRUE, message=FALSE, warning=FALSE}
+
+# Set working directory to the folder that contains the results 
+batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/phase_2/2023-09-19/'
+setwd(batch_folder)
+
+# Load the filenames in this folder 
+            filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+            # make halflife list
+            halflife_list<-list()
+            # for parallel computing 
+            numCores<-(detectCores()-1)
+            registerDoParallel(numCores)
+            # concatenate the outcome of the loop
+            outcome_concat<- foreach(j=1:length(filenames), .combine='c') %dopar% {
+            
+            # For each of the files in the current batch: extract the halflife 
+            # for (j in 1:length(filenames)){
+                # load the current file 
+                load(filenames[j])
+                # extract the current halflife and put in list 
+                halflife_list[1]<-env_results[1]
+                halflife_list[[1]][3]<-env_results[[3]]$th1
+                halflife_list[[1]][4]<-env_results[[3]]$th2
+                halflife_list[[1]][5]<-env_results[[3]]$th3
+                halflife_list[[1]][6]<-env_results[[3]]$th_comb_input
+                # to add this to teh 'outcome_concat' 
+                halflife_list
+            } # end for loop that runs through files in a batch-folder
+            
+            # stop the cluster
+            stopImplicitCluster()
+            
+            # Turn the list into a dataframe 
+            halflife_df<-as.data.frame(do.call(rbind, outcome_concat))
+            colnames(halflife_df)<-c('mean', 'sd', 'th1', 'th2', 'th3', 'th_num')
+            
+# This should generate a dataframe that has all the mean halflifes per run in it 
+            
+# Add a column that gets the mean for all previous rows 
+# Set the dataframe ot numeric
+halflife_df$mean<-as.numeric(halflife_df$mean)
+# Create a vector first           
+for (i in 1:nrow(halflife_df)){
+  cur_subset<-halflife_df[1:i,]
+  cur_mean_HL<-mean(cur_subset$mean)
+  if(i==1){
+  mean_vector<-cur_mean_HL
+  # I can calculate the difference straight away
+  #cur_difference<-0
+  diff_vector<-0
+  }else{
+  mean_vector<-c(mean_vector, cur_mean_HL)
+  # I can calculate the difference straight away
+  cur_difference<-(mean_vector[i]-mean_vector[i-1])
+  diff_vector<-c(diff_vector, cur_difference)
+  }
+  
+}
+# Add the vectors 
+halflife_df$mean_prev_rows<-mean_vector
+halflife_df$difference<-abs(diff_vector)      # Make absolute as well 
+halflife_df$run<-1:nrow(halflife_df)
+
+# Plot 
+ggplot_hl<-ggplot(halflife_df[2:nrow(halflife_df),], aes(x=run, y=difference))+
+  geom_line()+
+  ggtitle(label='Difference between mean HL when adding runs')+
+  xlab(label='Run number')+
+  ylab(label='Difference HL (in timesteps)')
+
+ggplot_hl
+```
+
+Ok. This looks good from 50 runs onwards. I will repeat the selected 1000 values for 50 times and extract the combination with the highest mean to go forward with. <span style="color:red"> 19/09/2023: Wait for Tom to confirm. </span>
+
+<span style="color:red"> Next, I'll have to repeat this for a few more combinations and see if the 50 holds up or not.
+
+I also need to prioritize building in the new environments and deciding on bonanzas. Afther these are done I can start rerunning.</span>
+
+
+#### **8. Mean Time**
 Probably just run the optimizations as planned, better to have a set of data to work with. I can also keep busy writing these decisions into the text-dump file. 
 
+ 
+ 
+ 
  

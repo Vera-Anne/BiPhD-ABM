@@ -27,8 +27,7 @@ library(viridis)
 library(foreach)
 library(doParallel)
 library(utils)
-install.packages('SciViews')
-library('SciViews')     
+    
 # link to the function file 
 source('MOD_1_FuncSource.R')
 source('ModelSource.R')
@@ -112,7 +111,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste('outcome_1_1_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_1_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
   
 } else if (modelType==12){
   
@@ -138,7 +137,8 @@ if (modelType==00){
   
   # Now determine the current threshold based on the array number
   # This comes from the variable [4] above
-  # For model 12 we have a total of 50*50=2500 possible numbers, so 2500 different jobs will each run for a different th
+  # For model 12 we have a total of 50*50=2500 possible numbers, of which 1225 relevant combinations
+  # so 1225 jobs will be ran on the HPC 
   # Set the current thresholds 
   cur_th1<-th1_th2_relev_comb[th_comb_numb,1]
   cur_th2<-th1_th2_relev_comb[th_comb_numb,2]
@@ -164,9 +164,8 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste('outcome_1_2_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_1_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
 
-  
 } else if (modelType==131){
   
   #Set the number of options for which each trheshold needs to be tested
@@ -215,7 +214,7 @@ if (modelType==00){
   
     # save the data 
   setwd(out_dir)
-  save(env_results, file=paste('outcome_1_3_1_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_1_3_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S_%OS3"),'.Rda'))
   
   
 } else if (modelType==132){
@@ -265,7 +264,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste('outcome_1_3_2_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_1_3_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
   
 } else if (modelType==21){
@@ -308,7 +307,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste('outcome_2_1_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_2_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
   
 } else if (modelType==22){
@@ -361,7 +360,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste('outcome_2_2_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_2_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
   
 } else if(modelType==231) {
@@ -412,7 +411,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste('outcome_2_3_1_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_2_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
 } else if(modelType==232) {
   #Set the number of options for which each trheshold needs to be tested
@@ -460,7 +459,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste('outcome_2_3_2_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_2_3_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
   
 } else if(modelType=='31'){
   
@@ -502,7 +501,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste('outcome_3_1_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
   
 }  else if(modelType=='32'){
@@ -551,7 +550,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste('outcome_3_2_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_3_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
   
 } else if(modelType=='331'){
   #Set the number of options for which each trheshold needs to be tested
@@ -600,7 +599,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste('outcome_3_3_1_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_3_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
 }else if(modelType=='332'){
   
@@ -649,7 +648,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste('outcome_3_3_2_HPC_th', th_comb_numb, '.Rda'))
+  save(env_results, file=paste0('outcome_3_3_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
   
 }else if (modelType=='41'){
   
