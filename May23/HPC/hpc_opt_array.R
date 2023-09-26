@@ -59,7 +59,8 @@ th_comb_numb<-as.numeric(args[4])
 modelType<-as.numeric(args[5])
 # OUTPUT DIR
 out_dir<-args[6]
-
+# repeat number
+rep_num<-args[7]
 ###################################
 #  RUN THE ENVIRONMENT FUNCTION   # 
 ###################################
@@ -69,7 +70,7 @@ out_dir<-args[6]
 
 # set up the values for which you want to optimise 
 # This needs to be different for the different models 
-if (modelType==00){
+if (modelType==0){
   # for testing 
   
 }else if (modelType==11){
@@ -103,7 +104,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th, min_th_val, max_th_val)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'total_num_th', 'th', 'min_th_value', 'max_th_value')
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num','total_num_th', 'th', 'min_th_value', 'max_th_value')
   
   #add this to the output list
   env_results[[3]]<-args
@@ -111,7 +112,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_1_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
+  save(env_results, file=paste0('outcome_1_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
   
 } else if (modelType==12){
   
@@ -147,7 +148,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th,cur_th1, cur_th2, min_th_sc1, min_th_sc2, max_th_sc1, max_th_sc2)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'total_num_per_th', 'th1', 'th2','min_th_sc1', 'min_th_sc2', 'max_th_sc1', 'max_th_sc2' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_per_th', 'th1', 'th2','min_th_sc1', 'min_th_sc2', 'max_th_sc1', 'max_th_sc2' )
   
   
   # No wthe environmnets need to run in parallel 
@@ -164,7 +165,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_1_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
+  save(env_results, file=paste0('outcome_1_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
 
 } else if (modelType==131){
   
@@ -201,7 +202,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th1, cur_th2, cur_th3,min_th_sc1, min_th_sc2, min_th_sc3, max_th_sc1,max_th_sc2, max_th_sc3)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_sc1', 'min_th_sc2', 'min_th_sc3', 'max_th_sc1', 'max_th_sc2', 'max_th_sc3' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'rep_num' , 'total_num_per_th','th1', 'th2', 'th3', 'min_th_sc1', 'min_th_sc2', 'min_th_sc3', 'max_th_sc1', 'max_th_sc2', 'max_th_sc3')
   
 
       # put into the environment fnction 
@@ -214,7 +215,7 @@ if (modelType==00){
   
     # save the data 
   setwd(out_dir)
-  save(env_results, file=paste0('outcome_1_3_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S_%OS3"),'.Rda'))
+  save(env_results, file=paste0('outcome_1_3_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S_%OS3"),'_', rep_num,'.Rda'))
   
   
 } else if (modelType==132){
@@ -251,7 +252,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th1, cur_th2, cur_th3,min_th_sc1, min_th_sc2, min_th_sc3, max_th_sc1,max_th_sc2, max_th_sc3)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_sc1', 'min_th_sc2', 'min_th_sc3', 'max_th_sc1', 'max_th_sc2', 'max_th_sc3' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'rep_num' , 'total_num_per_th','th1', 'th2', 'th3', 'min_th_sc1', 'min_th_sc2', 'min_th_sc3', 'max_th_sc1', 'max_th_sc2', 'max_th_sc3' )
   
   
   # put into the environment fnction 
@@ -264,7 +265,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste0('outcome_1_3_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_1_3_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
   
 } else if (modelType==21){
@@ -299,7 +300,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th, min_th_val, max_th_val)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'total_num_th', 'th', 'min_th_value', 'max_th_value')
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_th', 'th', 'min_th_value', 'max_th_value')
   
   #add this to the output list
   env_results[[3]]<-args
@@ -307,7 +308,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_2_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_2_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
   
 } else if (modelType==22){
@@ -343,7 +344,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th,cur_th1, cur_th2, min_th_fr1, min_th_fr2, max_th_fr1, max_th_fr2)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'total_num_per_th', 'th1', 'th2','min_th_fr1', 'min_th_fr2', 'max_th_fr1', 'max_th_fr2' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir','rep_num', 'total_num_per_th', 'th1', 'th2','min_th_fr1', 'min_th_fr2', 'max_th_fr1', 'max_th_fr2' )
   
   
   # No wthe environmnets need to run in parallel 
@@ -360,7 +361,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_2_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_2_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
   
 } else if(modelType==231) {
@@ -398,7 +399,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th1, cur_th2, cur_th3,min_th_fr1, min_th_fr2, min_th_fr3, max_th_fr1,max_th_fr2, max_th_fr3)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_fr1', 'min_th_fr2', 'min_th_fr3', 'max_th_fr1', 'max_th_fr2', 'max_th_fr3' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'rep_num' , 'total_num_per_th','th1', 'th2', 'th3', 'min_th_fr1', 'min_th_fr2', 'min_th_fr3', 'max_th_fr1', 'max_th_fr2', 'max_th_fr3' )
   
   
   # put into the environment fnction 
@@ -411,7 +412,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste0('outcome_2_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_2_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
 } else if(modelType==232) {
   #Set the number of options for which each trheshold needs to be tested
@@ -447,7 +448,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th1, cur_th2, cur_th3, min_th_fr1, min_th_fr2, min_th_fr3, max_th_fr1, max_th_fr2, max_th_fr3)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_fr1', 'min_th_fr2', 'min_th_fr3', 'max_th_fr1', 'max_th_fr2', 'max_th_fr3' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir' , 'rep_num', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_fr1', 'min_th_fr2', 'min_th_fr3', 'max_th_fr1', 'max_th_fr2', 'max_th_fr3')
   
     # put into the environment fnction 
   env_results<-env_func_2_3_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1, th_forage_fr2=cur_th2, th_forage_fr3=cur_th3, daylight_h = daylight_h, modelType=modelType)
@@ -459,7 +460,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste0('outcome_2_3_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
+  save(env_results, file=paste0('outcome_2_3_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
   
 } else if(modelType=='31'){
   
@@ -493,7 +494,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th, min_th_val, max_th_val)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'total_num_th', 'th', 'min_th_value', 'max_th_value')
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_th', 'th', 'min_th_value', 'max_th_value')
   
   #add this to the output list
   env_results[[3]]<-args
@@ -501,7 +502,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
   
 }  else if(modelType=='32'){
@@ -536,7 +537,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th,cur_th1, cur_th2, min_th_flr1, min_th_flr2, max_th_flr1, max_th_flr2)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'total_num_per_th', 'th1', 'th2','min_th_flr1', 'min_th_flr2', 'max_th_flr1', 'max_th_flr2' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_per_th', 'th1', 'th2','min_th_flr1', 'min_th_flr2', 'max_th_flr1', 'max_th_flr2' )
   
   # put into the environment fnction 
   env_results<-env_func_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1, th_forage_flr2=cur_th2, daylight_h = daylight_h, modelType=modelType)
@@ -550,7 +551,7 @@ if (modelType==00){
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_3_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.Rda'))
+  save(env_results, file=paste0('outcome_3_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
   
 } else if(modelType=='331'){
   #Set the number of options for which each trheshold needs to be tested
@@ -586,7 +587,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th1, cur_th2, cur_th3, min_th_flr1, min_th_flr2, min_th_flr3, max_th_flr1, max_th_flr2, max_th_flr3)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_flr1', 'min_th_flr2', 'min_th_flr3', 'max_th_flr1', 'max_th_flr2', 'max_th_flr3' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'rep_num', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_flr1', 'min_th_flr2', 'min_th_flr3', 'max_th_flr1', 'max_th_flr2', 'max_th_flr3' )
   
   
   # put into the environment fnction 
@@ -599,7 +600,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste0('outcome_3_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_3_3_1_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
 }else if(modelType=='332'){
   
@@ -636,7 +637,7 @@ if (modelType==00){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th1, cur_th2, cur_th3, min_th_flr1, min_th_flr2, min_th_flr3, max_th_flr1, max_th_flr2, max_th_flr3)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_flr1', 'min_th_flr2', 'min_th_flr3', 'max_th_flr1', 'max_th_flr2', 'max_th_flr3' )
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type',  'output_dir', 'rep_num', 'total_num_per_th','th1', 'th2', 'th3', 'min_th_flr1', 'min_th_flr2', 'min_th_flr3', 'max_th_flr1', 'max_th_flr2', 'max_th_flr3' )
   
   # put into the environment fnction 
   env_results<-env_func_3_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1, th_forage_flr2=cur_th2, th_forage_flr3=cur_th3, daylight_h = daylight_h, modelType=modelType)
@@ -648,7 +649,7 @@ if (modelType==00){
   
   # save the data 
   setwd(out_dir)
-  save(env_results, file=paste0('outcome_3_3_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  save(env_results, file=paste0('outcome_3_3_2_HPC_th', th_comb_numb,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num, '.Rda'))
   
 }else if (modelType=='41'){
   

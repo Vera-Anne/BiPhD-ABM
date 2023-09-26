@@ -18,20 +18,176 @@ library(ggplot2)
 
 
 
+# set opt_type
+opt_type=11
+
+
 # Set the folder in which the results are (this is the folder that contains the batches with results)
 batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
-  # 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
-  # 131 second time: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
-  # 132:  'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/2023-08-29/'
-  # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
-
-# set opt_type
-opt_type=131
+# 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
+# 131 second time: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
+# 132:  'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/2023-08-29/'
+# 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
 
 
-############################
-# FOR X.3.X OPTIMIZATIONS  #
-############################
+# Set the folder where the sperate files are (for x.1 and x.2)
+file_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/11/12_environments/2023-09-24/'
+  
+  # 11 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/11/12_environments/2023-09-24/'
+  # 12 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/'
+  
+
+if (opt_type==11){
+  print('1.1')
+  # navigate to folder where the seperate files are
+  setwd(paste0(file_folder))
+  # Load the filenames in this folder 
+  filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+  
+  # make halflife list
+  halflife_list<-list()
+  
+  numCores<-(detectCores()-1)
+  registerDoParallel(numCores)
+  
+  outcome_concat<- foreach(j=1:length(filenames), .combine='c') %dopar% {
+    
+    # For each of the files in the current batch: extract the halflife 
+    # for (j in 1:length(filenames)){
+    # load the current file 
+    load(filenames[j])
+    # extract the current halflife and put in list 
+    halflife_list[1]<-env_results[1]
+    halflife_list[[1]][3]<-env_results[[3]]$th
+    halflife_list[[1]][4]<-env_results[[3]]$th_comb_input
+    #print(paste('batch',i ,'file', j))
+    # to add this to teh 'outcome_concat' 
+    halflife_list
+  } # end for loop that runs through files in a batch-folder
+  
+  # stop the cluster
+  stopImplicitCluster()
+  
+  # Turn the list into a dataframe 
+  halflife_df<-as.data.frame(do.call(rbind, outcome_concat))
+  colnames(halflife_df)<-c('mean', 'sd', 'th', 'th_num')
+  
+  # rename for rest of code
+  HL_df<-halflife_df
+  
+  # Calculate the best value 
+  HL_best<-HL_df[(which.max(HL_df$mean)),]
+  
+  # Turn to numeric 
+  HL_df$th<-as.numeric(HL_df$th)
+  HL_df$mean<-as.numeric(HL_df$mean)
+  HL_df$th_num<-as.numeric(HL_df$th_num)
+  
+  # order in order of performance 
+  HL_df<-HL_df %>%
+    arrange(desc(mean))
+  
+  # save
+  setwd(paste0(file_folder, '/concat_results'))
+  # Save in the folder
+  save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+  
+  # SAve the best 1000 threshold values in a vector 
+  best_1000<-head(HL_df, 50)
+  best_1000<-t(best_1000[,4])
+  # save it 
+  write.table(best_1000, file=paste('best_50_', opt_type, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names = F, col.names = F)
+  
+  # order the data 
+  HL_df_ordered<-HL_df[order(HL_df$th_num),]
+  
+  print('end 1.1')
+  
+} else if (opt_type==12){
+      
+      print('start 1.2')
+  
+      # navigate to folder where the seperate files are
+      setwd(paste0(file_folder))
+      # Load the filenames in this folder 
+      filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+      
+      # make halflife list
+      halflife_list<-list()
+      
+      numCores<-(detectCores()-1)
+      registerDoParallel(numCores)
+      
+      outcome_concat<- foreach(j=1:length(filenames), .combine='c') %dopar% {
+        
+        # For each of the files in the current batch: extract the halflife 
+        # for (j in 1:length(filenames)){
+        # load the current file 
+        load(filenames[j])
+        # extract the current halflife and put in list 
+        halflife_list[1]<-env_results[1]
+        halflife_list[[1]][3]<-env_results[[3]]$th1
+        halflife_list[[1]][4]<-env_results[[3]]$th2
+        halflife_list[[1]][5]<-env_results[[3]]$th_comb_input
+        #print(paste('batch',i ,'file', j))
+        # to add this to teh 'outcome_concat' 
+        halflife_list
+      } # end for loop that runs through files in a batch-folder
+      
+      # stop the cluster
+      stopImplicitCluster()
+      
+      # Turn the list into a dataframe 
+      halflife_df<-as.data.frame(do.call(rbind, outcome_concat))
+      colnames(halflife_df)<-c('mean', 'sd', 'th1', 'th2', 'th_num')
+      
+      # rename for rest of code
+      HL_df<-halflife_df
+      
+      # Calculate the best value 
+      HL_best<-HL_df[(which.max(HL_df$mean)),]
+      
+      # Turn to numeric 
+      HL_df$th1<-as.numeric(HL_df$th1)
+      HL_df$th2<-as.numeric(HL_df$th2)
+      HL_df$mean<-as.numeric(HL_df$mean)
+      HL_df$th_num<-as.numeric(HL_df$th_num)
+      
+      # order in order of performance 
+      HL_df<-HL_df %>%
+        arrange(desc(mean))
+      
+      # save
+      setwd(paste0(file_folder, '/concat_results'))
+      # Save in the folder
+      save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+      
+      # SAve the best 1000 threshold values in a vector 
+      best_1000<-head(HL_df, 1000)
+      best_1000<-t(best_1000[,5])
+      # save it 
+      write.table(best_1000, file=paste('best_1000_', opt_type, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names = F, col.names = F)
+      
+      # order the data 
+      HL_df_ordered<-HL_df[order(HL_df$th_num),]
+      
+      # halflife
+      # plot_ly(HL_df_ordered, x = ~th1, y = ~th2, z = ~th3, color = ~mean) %>%
+      #   add_markers(size=~mean, marker=list(sizeref=0.02, sizemode='area')) %>%
+      #   layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
+      #                       yaxis = list(range=c(0, 0.4),title = 'TH2'),
+      #                       zaxis = list(range=c(0, 0.4),title = 'TH3')),
+      #          title = list(text='1.3.1 HPC Mean Halflife - 3 thresholds ', y=0.95))  
+      # 
+      
+      print('end 1.2')
+  
+}  else if(opt_type==131){
+    
+    print ('1.3 start')
+    ############################
+    # FOR X.3.X OPTIMIZATIONS  #
+    ############################
 
       # navigate to folder where the 10 folders with the batches are (specified above)
       setwd(paste0(batch_folder))
@@ -91,8 +247,6 @@ opt_type=131
             
       } # end for loop through all batch-folder names 
       
-
-      
       # The result should be a list that has (in the case of 131) 10 lists inside with the halflifes 
       
       # concatenate them all 
@@ -120,3 +274,6 @@ opt_type=131
                             yaxis = list(range=c(0, 0.4),title = 'TH2'),
                             zaxis = list(range=c(0, 0.4),title = 'TH3')),
                title = list(text='1.3.1 HPC Mean Halflife - 3 thresholds ', y=0.95))    
+} else {
+  print(paste('mistake'))
+}

@@ -42,24 +42,21 @@ set_up_func_general<-function(days, env_type, daylight_h){
   #  TEMPERATURES 
   # You know the environment type 
   # Set the temperatures accordingly 
-  if (env_type==1|env_type==4|env_type==7|env_type==10|env_type==13|env_type==16){
-    # low temperatures 
-    Tmax_range_low<<- -13
-    Tmax_range_high<<- -7
-    Tmin_range_low<<- -23
-    Tmin_range_high<<- -17
-  } else if (env_type==2|env_type==5|env_type==8|env_type==11|env_type==14|env_type==17){
-    # mid temperatures 
+  if (env_type==1|env_type==3|env_type==5|env_type==7|env_type==9|env_type==11){
+    # Low temperatures (the 'old' medium)
     Tmax_range_low<<- -3
     Tmax_range_high<<- 3
     Tmin_range_low<<- -13
     Tmin_range_high<<- -7
-  } else{
+  } else if (env_type==2|env_type==4|env_type==6|env_type==8|env_type==10|env_type==12){
     # high temperatures 
     Tmax_range_low<<- 7
     Tmax_range_high<<- 13
     Tmin_range_low<<- -3
     Tmin_range_high<<- 3
+  } else{
+    print('error with environment types')
+
   }
   
   # CACHES / FOOD DISTRIBUTIONS SET UP 
@@ -76,23 +73,23 @@ set_up_func_general<-function(days, env_type, daylight_h){
   # FOOD DISTRIBUTIONS 
   # You know the environment types
   # Set the food distributions accordingly 
-  if(env_type<4){
+  if(env_type<3){
     # Low food and poisson distributions 
     num_food_mean<<-2
     prob_b_forage<<-0
-  } else if (env_type>3 && env_type<7){
+  } else if (env_type>2 && env_type<5){
     num_food_mean<<-2
     prob_b_forage<<-0.5
-  } else if (env_type>6 && env_type<10){
+  } else if (env_type>4 && env_type<7){
     num_food_mean<<-3
     prob_b_forage<<-0
-  } else if (env_type>9 && env_type<13){
+  } else if (env_type>6 && env_type<9){
     num_food_mean<<-3
     prob_b_forage<<-0.5
-  } else if (env_type>12 && env_type<16){
+  } else if (env_type>8 && env_type<11){
     num_food_mean<<-4
     prob_b_forage<<-0
-  } else if (env_type>15){
+  } else if (env_type>10){
     num_food_mean<<-4
     prob_b_forage<<-0.5
   } else{
@@ -934,8 +931,6 @@ create_df_func<-function(outputFile, modelType, env_type){
     # add this to the empty list created 
     list_outcome_vars<-append(list_outcome_vars, list(cur_df))
   }
-  
-  
   # Give the dataframes in the 'list_outcome_vars' the correct names 
   variable_names<<-c('eat', 'eat_hoard', 'forage', 'dir_hoard', 'alive', 'caches', 'find_food', 'fat_res', 'stom_con', 'fat_loss_r', 'mass',  'predation', 'rest', 'retrieve', 'sleep', 'cache_decay','temp')
   names(list_outcome_vars)<-variable_names
@@ -1075,7 +1070,7 @@ plot_env_18_surv<-function(output_env_func, modelType){
   # Then assign this some useful name 
   assign(paste0('plot_list_env_'), plot_list, envir=.GlobalEnv)
   #ggarrange(plot_list, ncol=3)
-  do.call(grid.arrange, c(plot_list, ncol=3))
+  do.call(grid.arrange, c(plot_list, ncol=2))
   
 }
 

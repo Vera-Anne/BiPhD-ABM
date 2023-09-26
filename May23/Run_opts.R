@@ -110,7 +110,7 @@ system.time({
     outcome_opt_df_11<<-outcome_opt_df
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/12_environments/Optimization")
     save(outcome_opt_df_11, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     halflife_col<-"#69b3a2"
@@ -193,7 +193,7 @@ system.time({
     outcome_opt_df_12<<-outcome_opt_df
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/12_environments/Optimization")
     save(outcome_opt_df_12, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     # create a matrix with the values for ES
@@ -277,7 +277,7 @@ system.time({
     outcome_opt_df_131<<-outcome_opt_df 
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/12_environments/Optimization")
     save(outcome_opt_df_131, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
@@ -364,7 +364,7 @@ system.time({
     outcome_opt_df_132<<-outcome_opt_df 
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/12_environments/Optimization")
     save(outcome_opt_df_132, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
@@ -420,7 +420,7 @@ system.time({
     outcome_opt_df_21<<-outcome_opt_df
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/12_environments/Optimization")
     save(outcome_opt_df_21, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     # colour for the graph 
@@ -502,7 +502,7 @@ system.time({
     outcome_opt_df_22<<-outcome_opt_df
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/12_environments/Optimization")
     save(outcome_opt_df_22, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
     
     # create a matrix with the values for ES
@@ -580,7 +580,7 @@ system.time({
     outcome_opt_df_231<<-outcome_opt_df
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/12_environments/Optimization")
     save(outcome_opt_df_231, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
@@ -670,7 +670,7 @@ system.time({
     outcome_opt_df_232<<-outcome_opt_df 
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/12_environments/Optimization")
     save(outcome_opt_df_232, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     
@@ -723,7 +723,7 @@ system.time({
       
       outcome_opt_df_31<<-outcome_opt_df
       # save the data 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/Optimization")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/12_environments/Optimization")
       save(outcome_opt_df_31 , file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
       
       # Put the colour 
@@ -804,7 +804,7 @@ system.time({
         outcome_opt_df_32<<-outcome_opt_df
         
         # save the data 
-        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/Optimization")
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/12_environments/Optimization")
         save(outcome_opt_df_32, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
         
         # create a matrix with the values for HL
@@ -885,7 +885,7 @@ system.time({
         outcome_opt_df_331<<-outcome_opt_df
         
         # save the data 
-        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/Optimization")
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/12_environments/Optimization")
         save(outcome_opt_df_331, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
         
         
@@ -974,7 +974,7 @@ system.time({
     outcome_opt_df_332<<-outcome_opt_df
     
     # save the data 
-    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/Optimization")
+    setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/12_environments/Optimization")
     save(outcome_opt_df_332, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'num_th', num_th,  '.Rda'))
     
     # Change the dataframe so that 'NA' for both HL and ES are not plotted
@@ -1042,7 +1042,7 @@ system.time({
       # Rename so when I import it back in, it is clear which model this is
       outcome_opt_df_41<<-outcome_opt_df
       # save the data 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/Optimization")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/12_environments/Optimization")
       save(outcome_opt_df_41, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
       
       # create a matrix with the values for HL
@@ -1129,7 +1129,7 @@ system.time({
         outcome_opt_df_42<<-outcome_opt_df
         
         # save the data 
-        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/Optimization")
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/12_environments/Optimization")
         save(outcome_opt_df_42, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
         
         # create a matrix with the values for HL
@@ -1223,7 +1223,7 @@ system.time({
         outcome_opt_df_431<<-outcome_opt_df
         
         # save the data 
-        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/Optimization")
+        setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/12_environments/Optimization")
         save(outcome_opt_df_431, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
         
         # create a matrix with the values for HL
@@ -1317,7 +1317,7 @@ system.time({
       outcome_opt_df_431<<-outcome_opt_df
       
       # save the data 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/Optimization")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/12_environments/Optimization")
       save(outcome_opt_df_432, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_opt_out', modelType, 'd', days, 'N', N, 'dayh', daylight_h, 'numTh', num_th,  '.Rda'))
       
       # create a matrix with the values for HL

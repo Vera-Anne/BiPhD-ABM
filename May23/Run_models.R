@@ -42,9 +42,9 @@ library(gridExtra)          # for grid.arrange
 # link to the function file 
 # This contains all the general, smaller funcitons needed for the models 
 #setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
-setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
-source('MOD_1_FuncSource.R')
-source('ModelSource.R')
+# setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+# source('MOD_1_FuncSource.R')
+# source('ModelSource.R')
 
 #################################################################
 ##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
@@ -55,6 +55,8 @@ source('ModelSource.R')
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
@@ -65,7 +67,7 @@ system.time({
   save_11_list<-list(total_vars_df11, output_df_list_raw11)
   # save the data 
   beep()
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/12_environments")
   save(save_11_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run11', 'd', days, 'N', N,'env_t', env_type, 'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
 })
 
@@ -103,16 +105,18 @@ plot_env_18_surv(output_env_func, modelType=11)
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run model 
-  mod_1_2(days= 30, N= 1000, env_type=13, th_forage_sc1=0.05714286, th_forage_sc2=0.06530612 , daylight_h=8)
+  mod_1_2(days= 30, N= 1000, env_type=6, th_forage_sc1=0.05714286, th_forage_sc2=0.06530612 , daylight_h=8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_12_list<-list(total_vars_df12, output_df_list_raw12)
   #  save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/12_environments")
   save(save_12_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run12', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'dayh', daylight_h,   '.Rda'))
 })
 
@@ -144,6 +148,8 @@ plot_env_18_surv(output_env_func, modelType=12)
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
@@ -153,7 +159,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_131_list<-list(total_vars_df131, output_df_list_raw131)
   #  save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/12_environments")
   save(save_131_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run131', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'th_sc3', th_forage_sc3, 'dayh', daylight_h,   '.Rda'))
 })
 
@@ -185,6 +191,8 @@ plot_env_18_surv(output_env_func, modelType=131)
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") 
   source('MOD_1_FuncSource.R')
@@ -194,7 +202,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_132_list<-list(total_vars_df132, output_df_list_raw132)
   # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/12_environments")
   save(save_132_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run132', 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 'th_sc2', th_forage_sc2, 'th_sc3', th_forage_sc3, 'dayh', daylight_h,   '.Rda'))
 })
 
@@ -229,6 +237,8 @@ plot_env_18_surv(output_env_func, modelType='132')
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
@@ -238,7 +248,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_21_list<-list(total_vars_df21, output_df_list_raw21)
   # save the results 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/12_environments")
   save(save_21_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run21', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
 })
 
@@ -271,6 +281,8 @@ plot_env_18_surv(output_env_func, modelType='21')
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
@@ -280,7 +292,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_22_list<-list(total_vars_df22, output_df_list_raw22)
   # save the results 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/12_environments")
   save(save_22_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run22', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'dayh', daylight_h,   '.Rda'))
 })
 
@@ -313,6 +325,8 @@ plot_env_18_surv(output_env_func, modelType='22')
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
@@ -322,7 +336,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_231_list<-list(total_vars_df231, output_df_list_raw231)
   # save the results 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/12_environments")
   save( save_231_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run231', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
   }) 
 
@@ -355,6 +369,8 @@ plot_env_18_surv(output_env_func, modelType=231)
 system.time({
   # clear workspace
   rm(list=ls())
+  # temporary solution to locked binding of days()
+  days<-1
   # load everything 
   setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
   source('MOD_1_FuncSource.R')
@@ -364,7 +380,7 @@ system.time({
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_232_list<-list(total_vars_df232, output_df_list_raw232)
   # save the results 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/")
+  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/12_environments")
   save(save_232_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run232', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_fr3', th_forage_fr3, 'dayh', daylight_h,   '.Rda'))
   print('run 2.3.2 single done')
   })
@@ -401,17 +417,19 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
       source('ModelSource.R')
       # Run the model 
       # Range of FLR: -0.6 to 0.6
-      mod_3_1(days=30, N=1000, env_type = 13, th_forage_flr = 0.2326531 , daylight_h = 8)
+      mod_3_1(days=30, N=1000, env_type = 8, th_forage_flr = 0.2326531 , daylight_h = 8)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_31_list<-list(total_vars_df31, output_df_list_raw31)
       # save the results 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/12_environments")
       save(save_31_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run31', 'd', days, 'N', N,'env_t', env_type, 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
       # Mark the end of the simulation
       print('single run 3.1 done')
@@ -425,6 +443,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -447,6 +467,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -456,7 +478,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_32_list<-list(total_vars_df32, output_df_list_raw32)
       # save the results 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/12_environments")
       save(save_32_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run32', 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
       # mark end of simulation 
       beep()
@@ -495,6 +517,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23")
       source('MOD_1_FuncSource.R')
@@ -504,7 +528,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_331_list<-list(total_vars_df331, output_df_list_raw331)
       # save the results 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/12_environments")
       save( save_331_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run331', 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,   '.Rda'))
       # mark that the simulation is done
       print('run single 3.3.1 done ')
@@ -540,6 +564,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -549,7 +575,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_332_list<-list(total_vars_df332, output_df_list_raw332)
       # save the results 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/12_environments")
       save(save_332_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run332', 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'th_flr3', th_forage_flr3, 'dayh', daylight_h,   '.Rda'))
       # mark the end of the simulation 
       print('run 3.3.2 single done')
@@ -589,6 +615,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -598,7 +626,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_41_list<-list(total_vars_df41, output_df_list_raw41)
       #  save the data 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/12_environments")
       save(save_41_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run41', 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr , 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
     })
     # create plots 
@@ -631,6 +659,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -640,7 +670,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_42_list<-list(total_vars_df42, output_df_list_raw42)
       #  save the data 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/12_environments")
       save(save_42_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run42', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
     })
     
@@ -672,6 +702,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -681,7 +713,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_431_list<-list(total_vars_df431, output_df_list_raw431)
       # save the results 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/12_environments")
       save( save_431_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run431', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', round(th_forage_fr1, digits=3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits = 3), 'th_flr1', round(th_forage_flr1, digits = 3), 'th_flr2', round(th_forage_flr2, digits = 3), 'th_flr3', round(th_forage_flr3, digits = 3), 'dayh', daylight_h,   '.Rda'))
       # mark that the simulation is done
       print('run single 4.3.1 done ')
@@ -718,6 +750,8 @@ plot_env_18_surv(output_env_func, modelType=232)
     system.time({
       # clear workspace
       rm(list=ls())
+      # temporary solution to locked binding of days()
+      days<-1
       # load everything 
       setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
       source('MOD_1_FuncSource.R')
@@ -727,7 +761,7 @@ plot_env_18_surv(output_env_func, modelType=232)
       # First put together some relevant dataframes (we want both individual data and mean data)
       save_432_list<-list(total_vars_df432, output_df_list_raw432)
       # save the results 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/")
+      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/12_environments")
       save( save_432_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run432', 'd', days, 'N', N,'env_t', env_type, 'th_fr1', round(th_forage_fr1, digits=3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits = 3), 'th_flr1', round(th_forage_flr1, digits = 3), 'th_flr2', round(th_forage_flr2, digits = 3), 'th_flr3', round(th_forage_flr3, digits = 3), 'dayh', daylight_h,   '.Rda'))
       # mark the end of the simulation 
       print('run 4.3.2 single done')
