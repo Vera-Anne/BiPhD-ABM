@@ -703,6 +703,57 @@ if (modelType==0){
   
 }else if(modelType=='42'){
   
+  # Set the number of options for which each threshold needs to be tested 
+  num_th<-50
+  # set the minima 
+  # For 4.1 the first energy proxy is FR
+  # For 4.1 the second energy proxy is FLR 
+  min_th_11<-0
+  min_th_12<-0
+  min_th_21<-(-0.6)
+  min_th_22<-(-0.6)
+  # set the maxima
+  max_th_11<-4
+  max_th_12<-4
+  max_th_21<-0.6
+  max_th_22<-0.6
+  # create the vectors
+  th11_vec<-linspace(x1=min_th_11, x2=max_th_11, n=num_th)
+  th12_vec<-linspace(x1=min_th_12, x2=max_th_12, n=num_th)
+  th21_vec<-linspace(x1=min_th_21, x2=max_th_21, n=num_th)
+  th22_vec<-linspace(x1=min_th_22, x2=max_th_22, n=num_th)
+  # create a matrix that contains all possible combinations 
+  th_comb_4<-as.data.frame(as.matrix(expand.grid(th11_vec, th12_vec, th21_vec, th22_vec)))
+  colnames(th_comb_4)<-c('th11', 'th12', 'th21', 'th22')
+  # Select the relevant combinations
+  relev_th_comb_4<-th_comb_4[(th_comb_4$th11<th_comb_4$th12 & th_comb_4$th21<th_comb_4$th22),]
+  
+  # Set the current thresholds 
+  cur_th11<-th11_th21_comb[th_comb_numb,1]
+  cur_th21<-th11_th21_comb[th_comb_numb,2]
+  
+  # Add some information to the output data 
+  # Add the total number of th, the minima and maxima 
+  args<-c(args, num_th,cur_th11, cur_th21, min_th_11, min_th_21, max_th_11, max_th_21)
+  args<-as.data.frame(t(args))
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_per_th', 'th11', 'th21','min_th_11', 'min_th_21', 'max_th_11', 'max_th_21' )
+  
+  
+  # No wthe environmnets need to run in parallel 
+  
+  # put into the environment fnction 
+  env_results<-env_func_4_1_par_hpc(days = days, N= N, th_forage_fr = cur_th11, th_forage_flr=cur_th21, daylight_h = daylight_h, modelType=modelType)
+  
+  # This contains the results for the current threshold, through all 18 environments 
+  env_results
+  
+  #add this to the output list
+  env_results[[3]]<-args
+  
+  # save the data 
+  setwd(out_dir)
+  # make sure to attach the threshold to the dataframe 
+  save(env_results, file=paste0('outcome_4_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
   
 }else if (modelType=='431'){
   
