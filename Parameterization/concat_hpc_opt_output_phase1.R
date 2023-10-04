@@ -19,26 +19,28 @@ library(ggplot2)
 
 
 # set opt_type
-opt_type=11
+opt_type=22
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results)
-batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
+batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
+# 131 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/12_environments/phase_1/2023-09-25'
 # 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
 # 131 second time: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
 # 132:  'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/2023-08-29/'
 # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/2023-08-29/"
-
+# 21: 
 
 # Set the folder where the sperate files are (for x.1 and x.2)
-file_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/11/12_environments/2023-09-24/'
-  
-  # 11 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/11/12_environments/2023-09-24/'
-  # 12 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/'
-  
+file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/22/12_environments/2023-10-03/phase_1"
 
-if (opt_type==11){
-  print('1.1')
+  # 11 ---->
+  # 12 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/'
+  # 21:"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/21/12_environments/2023-10-03/phase_1"
+  # 22: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/22/12_environments/2023-10-03/phase_1"
+
+if (opt_type==11 | opt_type==21){
+  print(paste(opt_type, "has started"))
   # navigate to folder where the seperate files are
   setwd(paste0(file_folder))
   # Load the filenames in this folder 
@@ -101,11 +103,11 @@ if (opt_type==11){
   # order the data 
   HL_df_ordered<-HL_df[order(HL_df$th_num),]
   
-  print('end 1.1')
+  print(paste(opt_type, " has ended"))
   
-} else if (opt_type==12){
+} else if (opt_type==12 | opt_type==22){
       
-      print('start 1.2')
+      print(paste('start concatenation phase 1 for opt type = ', opt_type))
   
       # navigate to folder where the seperate files are
       setwd(paste0(file_folder))
@@ -180,9 +182,9 @@ if (opt_type==11){
       #          title = list(text='1.3.1 HPC Mean Halflife - 3 thresholds ', y=0.95))  
       # 
       
-      print('end 1.2')
+      print(paste('end concatenation phase 1 opt type', opt_type))
   
-}  else if(opt_type==131){
+} else if(opt_type==131 | opt_type==132){
     
     print ('1.3 start')
     ############################
@@ -255,14 +257,17 @@ if (opt_type==11){
       # Calculate the best value 
       HL_best<-HL_df[(which.max(HL_df$mean)),]
       
-      # Save in the folder
-      save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
-      
+
       HL_df$th1<-as.numeric(HL_df$th1)
       HL_df$th2<-as.numeric(HL_df$th2)
       HL_df$th3<-as.numeric(HL_df$th3)
       HL_df$mean<-as.numeric(HL_df$mean)
       HL_df$th_num<-as.numeric(HL_df$th_num)
+      
+
+      # Save in the folder
+      save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+      
       
       # order the data 
       HL_df_ordered<-HL_df[order(HL_df$th_num),]
@@ -273,7 +278,15 @@ if (opt_type==11){
         layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
                             yaxis = list(range=c(0, 0.4),title = 'TH2'),
                             zaxis = list(range=c(0, 0.4),title = 'TH3')),
-               title = list(text='1.3.1 HPC Mean Halflife - 3 thresholds ', y=0.95))    
+               title = list(text='1.3.x HPC Mean Halflife - 3 thresholds ', y=0.95))    
+      
+      HL_df_best_mean<-HL_df[order(HL_df$mean, decreasing=T),]
+      
+      # SAve the best 1000 threshold values in a vector 
+      best_1000<-head(HL_df_best_mean, 1000)
+      best_1000<-t(best_1000[,6])
+      # save it 
+      write.table(best_1000, file=paste('best_1000_', opt_type, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names = F, col.names = F)
 } else {
   print(paste('mistake'))
 }

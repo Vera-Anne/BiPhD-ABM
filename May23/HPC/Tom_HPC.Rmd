@@ -1,0 +1,38 @@
+---
+title: "Tom & HPC"
+author: "Vera Vinken"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### **Getting into the HPC** 
+Following steps to access the HPC: 
+
+* Open MobaXterm 
+* On the left side of the screen, open the last session (or start a new session using `rocket.hpc.ncl.ac.uk` and your username/password (university) by clicking on the `new session` button in the top left corner)
+* Enter the MobaXterm specific password 
+* This should now access the HPC 
+* Type the following code to get to our project folder: `cd /nobackup/proj/tsabmfhb/`
+* Use `ls` to know what is in the folder 
+* Use `cd /September23` to open the folder with the scripts 
+
+
+### **Set script parameters** 
+The following steps to run optimization scripts: 
+
+* When in the folder `September23` type `nano multi_batch_arrary.sh`. This will open the bash script that will submit the different jobs, each running their own Rscript.
+* If running x.1 models, set `#SBATCH --array=.....` to `#SBATCH --array=1-50`. If running x.2 models set this to `#SBATCH --array=1-1225`. If running x.3.y models set this to `#SBATCH --array=1-1960`. 
+* Set  the batch number (always `1` for x.1 and x.2)
+* Set the model type (`11`, `12`, `131`, `132`, `21`, `22`, `231`, etc.)
+* Leave the script by using `ctrl+X` and then `Y` to save your changes.
+
+### **Submit the job to the HPC** 
+Finally, to actually submit the job: 
+
+* When you are back in the `September23` folder, submit the job by doing `sbatch multi_batch_arrary.sh`
+* If you want (not necessary) you can check if the job is queued by using `squeue -u yourUserName`. For me this is `squeue -u c0070955`. 
+* Done :) - You will receive an email when the job is queued, when it starts and when it ends. If you could forward these to me that would be great. 
