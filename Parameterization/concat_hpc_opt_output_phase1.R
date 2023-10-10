@@ -15,15 +15,13 @@ library(dplyr)
 library(plotly)         # For the 3D scatterplot 
 library(ggplot2)
 
-
-
-
 # set opt_type
-opt_type=31
+opt_type=231
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results)
-batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
+batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_1"
+# 132"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
 # 131 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/12_environments/phase_1/2023-09-25'
 # 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
 # 131 second time: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-09-11/'
@@ -32,12 +30,13 @@ batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/M
 # 21: 
 
 # Set the folder where the sperate files are (for x.1 and x.2)
-file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/31/12_environments/2023-10-03/phase_1"
+file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/32/12_environments/2023-10-03/phase_1"
 
   # 11 ---->
   # 12 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/'
   # 21:"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/21/12_environments/2023-10-03/phase_1"
   # 22: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/22/12_environments/2023-10-03/phase_1"
+  # 31: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/31/12_environments/2023-10-03/phase_1"
 
 if (opt_type==11 | opt_type==21 | opt_type==31){
   print(paste(opt_type, "concatenation phase 1 has started"))
@@ -105,7 +104,7 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
   
   print(paste(opt_type, " concatenation phase 1 has ended"))
   
-} else if (opt_type==12 | opt_type==22){
+} else if (opt_type==12 | opt_type==22 | opt_type==32){
       
       print(paste('start concatenation phase 1 for opt type = ', opt_type))
   
@@ -182,9 +181,9 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
       #          title = list(text='1.3.1 HPC Mean Halflife - 3 thresholds ', y=0.95))  
       # 
       
-      print(paste('end concatenation phase 1 opt type', opt_type))
+      print(paste('end concatenation phase 1 opt type = ', opt_type))
   
-} else if(opt_type==131 | opt_type==132){
+} else if(opt_type==131 | opt_type==132 | opt_type==231){
     
     print ('1.3 start')
     ############################
@@ -264,7 +263,8 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
       HL_df$mean<-as.numeric(HL_df$mean)
       HL_df$th_num<-as.numeric(HL_df$th_num)
       
-
+      # save
+      setwd(paste0(file_folder, '/concat_results'))
       # Save in the folder
       save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
       

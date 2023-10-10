@@ -1,0 +1,121 @@
+---
+title: "Comparing HPC and local output"
+author: "Vera Vinken"
+date: "09/10/2022"
+output: html_document
+---
+  
+ 
+
+```{r packages, include=FALSE, message=FALSE, warning=FALSE}
+# library(ggplot2)
+# library(tidyverse)
+# library(flextable)      # Doing normal looking tables 
+# library(plotly)         # For the 3D scatterplot 
+ library(gridExtra)      # grids of ggplots 
+# library(grid)     
+# library(viridis)        # for colours 
+# library('parallel')     # for parallel computing
+# library('doParallel')   # As above 
+# library(dplyr)          # merging dataframes 
+# library(psych)          # To calculate geometric mean 
+# library(ggpubr)         # using ggarrange to grid plots with side legend
+library(purrr)            # To use the dataframe mapping functions 
+```
+
+## Background 
+With this script, I want to be able to input which models to run and what type of output I want. The rest should be automated and pull from the sorucefiles that I have built my models from. 
+
+## Set working directories & Load sourcefiles 
+If you are running this on a different device, make sure to specify the source file working directory and the parent folder where results need saving. 
+```{r set wd and load sourcefiles, include=TRUE, message=FALSE, echo=TRUE, warning=FALSE}
+# Set directories 
+sourcefile_wd<- "C:/Local_R/BiPhD-ABM/May23"
+parent_saving_wd<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/Post_param_results_October23"
+
+# Load the sourcefiles 
+  setwd(sourcefile_wd)
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+
+```
+
+
+## Individual Model 
+
+### Set which model to run 
+For information about an individual model, set the model number here. 
+```{r set which model to run, include=TRUE, warning=FALSE, message=FALSE}
+model<-11
+subset<-1
+```
+
+```{r set the correct thresholds for each model, include=FALSE, message=FALSE, warning=FALSE}
+if (subset == 1){
+  
+    th1_1<-0.008163265  
+    
+    th1_2<-0.0244898
+    th2_2<-0.03265306
+    
+    th1_31<-0.01632653
+    th2_31<-0.03265306
+    th3_31<-0.3591837
+    
+    th1_32<-0.008163265
+    th2_32<-0.01632653
+    th3_32<-0.03265306
+
+} else if (subset == 2){
+  
+    th1_1<-1.714286           
+    
+    th1_2<-0.6530612
+    th2_2<-1.061224
+    
+    th1_31<-0
+    th2_31<-0
+    th3_31<-0
+    
+    th1_32<-0
+    th2_32<-0
+    th3_32<-0
+
+} else if (subset == 3){
+  
+    th1_1<-0     
+    
+    th1_2<-0
+    th2_2<-0
+    
+    th1_31<-0
+    th2_31<-0
+    th3_31<-0
+    
+    th1_32<-0
+    th2_32<-0
+    th3_32<-0
+  
+}
+
+```
+
+### Surivival across environments 
+```{r run single model and show survival per environment, include=FALSE, message=TRUE, warning=FALSE}
+
+if (model==11){
+  # Run the model 
+  env_func_1_1_par(days = 30, N= 100, th_forage_sc = th1_1, daylight_h = 8, modelType = model)
+} else if (model==12){
+  env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = th1_2, th_forage_sc2 = th2_2 , daylight_h = 8, modelType = model)
+} else if (model == 131){
+  env_func_1_3_1_par(days = 30, N= 1000, th_forage_sc1 = th1_31 , th_forage_sc2 = th2_31 , th_forage_sc3 = th3_31 , daylight_h = 8, modelType = model)
+} else if (model == 132){
+  env_func_1_3_2_par(days = 30, N= 1000, th_forage_sc1 =th1_32, th_forage_sc2 =th2_32, th_forage_sc3 = th3_32, daylight_h = 8, modelType = model)
+}
+```
+
+```{r print graph, include=FALSE, message=TRUE, warning=FALSE}
+plot_env_18_surv(output_env_func, modelType=model)
+
+```

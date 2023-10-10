@@ -104,7 +104,7 @@ if (modelType==0){
   # Add the total number of th, the minima and maxima 
   args<-c(args, num_th, cur_th, min_th_val, max_th_val)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num','total_num_th', 'th', 'min_th_value', 'max_th_value')
+  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num','total_num_per_th', 'th', 'min_th_value', 'max_th_value')
   
   #add this to the output list
   env_results[[3]]<-args
