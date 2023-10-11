@@ -16,11 +16,12 @@ library(plotly)         # For the 3D scatterplot
 library(ggplot2)
 
 # set opt_type
-opt_type=231
+opt_type=232
 
 
-# Set the folder in which the results are (this is the folder that contains the batches with results)
-batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_1"
+# Set the folder in which the results are (this is the folder that contains the batches with results) - for .x.3.y models 
+batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/12_environments/2023-10-06/phase_1"
+# 231: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_1"
 # 132"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
 # 131 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/12_environments/phase_1/2023-09-25'
 # 131: 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/2023-08-26/'
@@ -183,9 +184,9 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
       
       print(paste('end concatenation phase 1 opt type = ', opt_type))
   
-} else if(opt_type==131 | opt_type==132 | opt_type==231){
+} else if(opt_type==131 | opt_type==132 | opt_type==231 | opt_type==232 | opt_type==331 | opt_type==332){
     
-    print ('1.3 start')
+    print(paste('1.3 start phase 1 opt_type = ', opt_type))
     ############################
     # FOR X.3.X OPTIMIZATIONS  #
     ############################
@@ -195,6 +196,7 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
       
       # Retrieve the names of the folders 
       batch_names<-list.dirs(full.names=TRUE, recursive = F)
+      batch_names<-batch_names[grep("batch", batch_names, ignore.case=T)]
       
       # create list where the halflife lists from each batch can be stored
       halflife_per_batch_list<-list()
@@ -264,7 +266,7 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
       HL_df$th_num<-as.numeric(HL_df$th_num)
       
       # save
-      setwd(paste0(file_folder, '/concat_results'))
+      setwd(paste0(batch_folder, '/concat_results'))
       # Save in the folder
       save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
       
