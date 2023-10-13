@@ -646,7 +646,7 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
     } # end timestep loop
     
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count, decay_count,mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr, mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count, mat_temp)
     
   } # end of the foreach loop (individuals) 
   
@@ -1128,7 +1128,7 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     } # end timestep loop
 
     # Alternatively, I could try to create lists with the output 
-    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count,decay_count,mat_temp)
+    list(eat_count, eat_hoard_count, forage_count, hoard_count, mat_alive, mat_caches, mat_find_food, mat_fr, mat_sc, mat_flr,mat_mass,  predation_count, rest_count, retrieve_count, sleep_count, decay_count,mat_temp)
     
   } # end of the foreach loop (individuals) 
   

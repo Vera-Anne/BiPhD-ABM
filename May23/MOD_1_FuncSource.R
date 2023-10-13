@@ -1074,6 +1074,102 @@ plot_env_18_surv<-function(output_env_func, modelType){
   
 }
 
+# For the Rmarkdown file that runs with minimal input vars ('split' setting )
+plot_env_12_comp_func<-function(env_func_out_list, models, int_var){
+  
+  # Loop through the models to extract the correct variable 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+    cur_out<-env_func_out_list[[i]]
+    # Now subset for the variable of interest 
+    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
+    # Add the environment number to the dataframes 
+    for (j in 1:length(cur_out_filtered)){
+      cur_out_filtered[[j]]$env_id<-j
+      cur_out_filtered[[j]]$mod_id<-models[i]
+    }
+    output_per_model_list[[i]]<-cur_out_filtered
+    
+  }
+  # for the individual dataframes 
+  total_all_models<-list()
+  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
+  for (sublist in output_per_model_list) {
+    for (df in sublist) {
+      total_all_models <- rbind(total_all_models, df)
+    }
+  }
+
+  
+  # Now you want to produce a grid of plots, where data is split per environment 
+    # On your x-axis you want time "timestep" 
+    # On you y-axis you want the value of the chosen variable 'value' 
+      plot_12<-ggplot(total_all_models, aes(x=timestep, y=value))+
+        geom_line(aes( col=mod_id))+
+        facet_wrap(.~env_id,  nrow=6)+
+        ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(size=25, face='bold'), 
+              axis.title.x = element_text(size=20, face='bold' ), 
+              axis.title.y=element_text(size=20, face='bold'), 
+              strip.text=element_text(size=20), 
+              legend.text=element_text(size=20))
+      plot_12
+}
+
+
+
+
+# For the Rmarkdown file that runs with minimal input vars ('mean' setting)
+plot_mean_12_env_func<-function(env_func_out_list, models, int_var){
+  # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-env_func_out_list[[i]]
+    
+      # create empty list
+      cur_mod_df<-list()
+      
+      # Concatenate the dataframes in the list 
+      for (df in cur_out[[2]]){
+        cur_mod_df<-rbind(cur_mod_df, df)
+      }
+      # summarize them by variable and timestep 
+      cur_mod_df_sum<-cur_mod_df%>%
+        group_by(timestep, id)%>%
+        summarise(mean_val = mean(value, na.rm=T))%>%
+        mutate(mod_id=models[i])
+
+      output_per_model_list[[i]]<-cur_mod_df_sum
+  }
+  
+  mean_var_per_model_total<-bind_rows(output_per_model_list)
+  
+    
+  # Now you want to produce a grid of plots, where data is split per environment 
+  # On your x-axis you want time "timestep" 
+  # On you y-axis you want the value of the chosen variable 'value' 
+  plot_var<-ggplot(mean_var_per_model_total, aes(x=timestep, y=mean_val))+
+    geom_line(aes( col=mod_id))+
+    facet_wrap(.~id, scales='free_y', nrow=6)+
+    ggtitle(label=paste("Average across all environments per interest variable" ))+
+    theme(plot.title=element_text(size=25, face='bold'), 
+          axis.title.x = element_text(size=20, face='bold' ), 
+          axis.title.y=element_text(size=20, face='bold'), 
+          strip.text=element_text(size=20), 
+          legend.text=element_text(size=20))
+  plot_var
+
+    
+  }
+  
+  
+
 
 ###############################
 #      HALFLIFE FUNCTION      #
