@@ -112,7 +112,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run model 
-  mod_1_2(days= 30, N= 1000, env_type=6, th_forage_sc1=0.05714286, th_forage_sc2=0.06530612 , daylight_h=8)
+  mod_1_2(days= 30, N= 1000, env_type=6, th_forage_sc1=0.0244898, th_forage_sc2=0.03265306 , daylight_h=8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_12_list<-list(total_vars_df12, output_df_list_raw12)
   #  save the data 
@@ -134,7 +134,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # now run environments 
-  env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.05714286, th_forage_sc2 = 0.06530612 , daylight_h = 8, modelType = 12)
+  env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = 0.0244898, th_forage_sc2 = 0.03265306 , daylight_h = 8, modelType = 12)
 })
 
 # Now do an overview image 
@@ -288,7 +288,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run the model 
-  mod_2_2(days=30, N=1000, env_type=8, th_forage_fr1=0.6530612, th_forage_fr2= 1.061224, daylight_h = 8)
+  mod_2_2(days=30, N=1000, env_type=8, th_forage_fr1=0.6530612, th_forage_fr2= 1.142857, daylight_h = 8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_22_list<-list(total_vars_df22, output_df_list_raw22)
   # save the results 
@@ -310,7 +310,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # run the model 
-  env_func_2_2_par(days = 30, N= 1000, th_forage_fr1 = 0.6530612, th_forage_fr2 = 1.0612242 , daylight_h = 8, modelType = 22)
+  env_func_2_2_par(days = 30, N= 1000, th_forage_fr1 = 0.6530612, th_forage_fr2 = 1.142857, daylight_h = 8, modelType = 22)
 })
 
 # Now do an overview image 

@@ -4,7 +4,7 @@
 # Vera Vinken 
 ###########################################
 
-# packages 
+# packages t5656
 library(gridExtra)
 library(ggplot2)
 
@@ -28,7 +28,7 @@ sc_fr_1_2<-read.csv('beh_loop_sc_fr_1_2_df_2023-03-20_17_29_36.csv')
 
 # get survival - behaviour and fr/sc from model 1.3 (hoarding - sc )
 setwd(paste0(mainDir, '/MOD_1_3/5-beh_loop//')) 
-survival_1_3<-read.csv('beh_loop_surv_1_3_df_2023-03-20_17_39_54.csv') # survival data 
+survival_1_3<-read.csv('beh_loop_surv_1_3_df_2023-03-20_17_39_54.csv') # survival data 6
 beh_1_3<-read.csv('beh_loop_beh_1_3_df_2023-03-20_17_39_54.csv')
 sc_fr_1_3<-read.csv('beh_loop_sc_fr_1_3_df_2023-03-20_17_39_54.csv')
 

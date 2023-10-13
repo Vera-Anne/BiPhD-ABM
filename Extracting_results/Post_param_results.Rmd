@@ -1,37 +1,63 @@
 ---
 title: "Comparing HPC and local output"
 author: "Vera Vinken"
-date: "09/10/2022"
+date: "`r Sys.Date()`"
 output: html_document
 ---
   
  
 
-```{r packages, include=FALSE, message=FALSE, warning=FALSE}
-# library(ggplot2)
-# library(tidyverse)
-# library(flextable)      # Doing normal looking tables 
-# library(plotly)         # For the 3D scatterplot 
- library(gridExtra)      # grids of ggplots 
-# library(grid)     
-# library(viridis)        # for colours 
-# library('parallel')     # for parallel computing
-# library('doParallel')   # As above 
-# library(dplyr)          # merging dataframes 
-# library(psych)          # To calculate geometric mean 
-# library(ggpubr)         # using ggarrange to grid plots with side legend
-library(purrr)            # To use the dataframe mapping functions 
+```{r packages, include=FALSE, message=T, warning=T}
+
+# If Tom (or someone else ) wants to use this on their computer --> any packages that are not installed need to be installed 
+    # List of needed packages
+    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr")
+    # find which packages are needed 
+    new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
+    # install ones that were missing 
+    if(length(new_packages)>0){
+      install.packages(new_packages)
+      }
+
+# Load packages 
+  library(ggplot2)
+  # library(tidyverse)
+  # library(flextable)      # Doing normal looking tables 
+  # library(plotly)         # For the 3D scatterplot 
+   library(gridExtra)      # grids of ggplots 
+  # library(grid)     
+  # library(viridis)        # for colours 
+  library('parallel')     # for parallel computing
+  library('doParallel')   # As above 
+  library(dplyr)          # merging dataframes, using mutate etc. 
+  # library(psych)          # To calculate geometric mean 
+  # library(ggpubr)         # using ggarrange to grid plots with side legend
+  library(purrr)            # To use the dataframe mapping functions 
+  library(truncnorm)        # creating normal distributions 
+  library(data.table)
+  # library(tidyverse)
+  # library(viridis)
+  library(foreach)
+  library(doParallel)
+  library(ggpubr)             # To arrange plots 
+  library(gridExtra)          # for grid.arrange 
+  library(pracma)
+  library(stringr)
+
 ```
 
 ## Background 
-With this script, I want to be able to input which models to run and what type of output I want. The rest should be automated and pull from the sorucefiles that I have built my models from. 
+With this script, I want to be able to input which models to run and what type of output I want. The rest should be automated and pull from the sorucefiles that I have built my models from. Ideally, I want this to be the file that Tom can use in future, zipped up with all the dependencies so it is very easy to extract data. 
+
 
 ## Set working directories & Load sourcefiles 
-If you are running this on a different device, make sure to specify the source file working directory and the parent folder where results need saving. 
-```{r set wd and load sourcefiles, include=TRUE, message=FALSE, echo=TRUE, warning=FALSE}
+If this is running from the shared Rproject, this should all be automated. 
+```{r set wd and load sourcefiles, include=TRUE, message=FALSE, echo=F, warning=FALSE}
 # Set directories 
-sourcefile_wd<- "C:/Local_R/BiPhD-ABM/May23"
-parent_saving_wd<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/Post_param_results_October23"
+  # # Where are the sourcefiles located? 
+  sourcefile_wd<- "C:/Local_R/BiPhD-ABM/May23"      
+  # # Specify the parent folder where you want to save results 
+  # #parent_saving_wd<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/Post_param_results_October23" 
 
 # Load the sourcefiles 
   setwd(sourcefile_wd)
@@ -41,81 +67,278 @@ parent_saving_wd<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-proje
 ```
 
 
-## Individual Model 
+## Comparing model results 
 
-### Set which model to run 
-For information about an individual model, set the model number here. 
-```{r set which model to run, include=TRUE, warning=FALSE, message=FALSE}
-model<-11
-subset<-1
+### Specify what data you are interested in 
+
+* `models`: Here you can input which models you want to compare with each other, make sure to put them between `""` and don't include `,` or `.` in the model numbers. E.g. use `11`, `12` and `332`.  If you are just interested in 1 model, this is fine as well. Models x.1 are the non-hoarding models. x.2 are the left-over hoarders. models x.3.1 are direct hoarders that have hoarding as the 'top' behaviour (above highest threshold). Models x.3.2 are direct hoarders that have resting as the 'top' behaviour (above the highest threshold)
+
+
+* `int_var`: Here you specify your variable of interest. These are only relevant for the graphs that are split per enviornment, where you will visualise the chosen variable across the 12 environments 
+    * `eat` = proportion of alive birds that are eating at any given timestep
+    * `eat_hoard` = proportion of alive birds that are doing the 'eat and hoard leftovers' behaviour at any given timestep. Note that this is only an option for X.2 models. 
+    * `forage` = proportion of alive birds that goes out to forage. Foraging happens before the 'eating' behaviour, before the 'direct hoarding' behaviour and before 'eat_haording' behaviour. 
+    * `dir_hoard`= the proportion of alive birds that does the 'direct hoarding' behaviour at any given timestep. Note that only X.3.Y models can do this. 
+    * `alive` = The percentage of birds that is alive at any given timestep 
+    * `caches` = The number of caches birds have at any give timestep. Note that non-hoarding species do get a starting level of cahches, they just cannot access them. 
+    * `find_food` = The number of food items that are found in each step 
+    * `fat_res` = The fat reserve of alive birds in each timestep 
+    * `stom_con`= The stomach content of alive birds in each timestep 
+    * `fat_loss_r` = The fat loss rate of alive birds in each timestep 
+    * `mass`= The mass of alive birds in each timestep 
+    * `predation` = Average of successful predation attempts in each timestep 
+    * `rest` = The proportion of alive birds that is resting in each timestep 
+    * `retrieve` = The proportion of alive birds that is retrieving in each timestep. Note this is only possible for hoarding models (X.2 and X.3.Y)
+    * `sleep`= The proportion of alive birds that is sleeping in any given timestep 
+    * `cache_decay` = The average of decayed caches in every given timestep 
+    * `temp` = Temperature in degrees Celcius 
+    
+* `num_birds`: specify the number of individual birds you want to run each model for (default = 1000)
+
+* `daylight_h`: specify how many daylight hours you want (default = 8)
+
+* `days`: specify how many days you want in your simulation (default = 30)
+
+
+```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
+models<-c("32")#c("11", "21", "31", "12", "22", "32")
+int_var<-"temp"
+
+num_birds<-1000
+daylight_h<-8
+days<-30 
 ```
 
-```{r set the correct thresholds for each model, include=FALSE, message=FALSE, warning=FALSE}
-if (subset == 1){
-  
-    th1_1<-0.008163265  
-    
-    th1_2<-0.0244898
-    th2_2<-0.03265306
-    
-    th1_31<-0.01632653
-    th2_31<-0.03265306
-    th3_31<-0.3591837
-    
-    th1_32<-0.008163265
-    th2_32<-0.01632653
-    th3_32<-0.03265306
+### Repeat current settings 
+The current run includes the following settings: 
 
-} else if (subset == 2){
-  
-    th1_1<-1.714286           
-    
-    th1_2<-0.6530612
-    th2_2<-1.061224
-    
-    th1_31<-0
-    th2_31<-0
-    th3_31<-0
-    
-    th1_32<-0
-    th2_32<-0
-    th3_32<-0
+* **Models to be evaluated** = `r models`
+* **Variable of interest** (if we are looking at split environments) = `r int_var`
+* **Number of birds** = `r num_birds`
+* **Daylight hours** = `r daylight_h`
+* **Number of days in simulation** = `r days`
 
-} else if (subset == 3){
+
+Then follows the code that loops through each of the models specified and runs them for 30 days and 1000 individuals. In future, I'll make this flexible at the top as well, but for now it is hard coded. The code is not printed here, but you can look at it in the Rmarkdown file. This is followed by code for the visualization. What is visualized depends on the above input variables. 
+
+```{r loop through models to run, include=F, warning=F, message=F, eval=T}
+for (i in 1:length(models)){
   
-    th1_1<-0     
+  if (i==1){
+    env_func_out_list<-list()
+  }
+  
+  if (models[i]==11){
+    # Code that runs 11
+    env_func_1_1_par(days = days, N= num_birds, th_forage_sc = 0.008163265, daylight_h = daylight_h, modelType = 11) 
+  }else if (models[i]==12){
+    # Code that runs 12 
+    env_func_1_2_par(days = days, N= num_birds, th_forage_sc1 = 0.0244898, th_forage_sc2 = 0.03265306 , daylight_h = daylight_h, modelType = 12)
+  } else if (models[i]==131){
+    # Code that runs 131 
+      env_func_1_3_1_par(days = days, N= num_birds, th_forage_sc1 = 0.01632653 , th_forage_sc2 = 0.03265306, th_forage_sc3 = 0.3591837 , daylight_h = daylight_h, modelType = 131)
+  } else if (models[i]==132){
+    # Code that runs 132
+        env_func_1_3_2_par(days = days, N= num_birds, th_forage_sc1 =0.008163265, th_forage_sc2 =0.01632653, th_forage_sc3 =0.03265306, daylight_h = daylight_h, modelType = 132)
+  } else if (models[i]==21){
+    # Code that runs 21 
+    env_func_2_1_par(days = days, N= num_birds, th_forage_fr = 1.714286, daylight_h = daylight_h, modelType = 21)
+  } else if (models[i]==22){
+    # Code that runs 22 
+    env_func_2_2_par(days = days, N= num_birds, th_forage_fr1 = 0.6530612, th_forage_fr2 = 1.142857 , daylight_h = daylight_h, modelType = 22)
+  } else if (models[i]==231){
+    # Code that runs 231 
+      env_func_2_3_1_par(days = days, N= num_birds, th_forage_fr1 = 0.5714286, th_forage_fr2 =1.306122 , th_forage_fr3 = 1.877551 , daylight_h = daylight_h, modelType = 231)
+  } else if (models[i]==232){
+    # Code that runs 232 
+  
+  } else if (models[i]==31){
+    # Code that runs 31 
+    env_func_3_1_par(days = days, N= num_birds, th_forage_flr = 0.2326531, daylight_h = daylight_h, modelType = 31)
+  } else if (models[i]==32){
+    # Code that runs 32 
+    env_func_3_2_par(days = days, N= num_birds, th_forage_flr1 = -0.06122449, th_forage_flr2 = 0.2081633, daylight_h = daylight_h, modelType = 32)
+  } else if (models[i]==331){
+    # Code that runs 331 
     
-    th1_2<-0
-    th2_2<-0
     
-    th1_31<-0
-    th2_31<-0
-    th3_31<-0
+  } else if (models[i]==332){
+    # Code that runs 332
     
-    th1_32<-0
-    th2_32<-0
-    th3_32<-0
+  }
+  
+  # Now save the result of this iteration in a meaningful way 
+  cur_out<-list(output_env_func, paste(models[i]))
+  env_func_out_list[i]<-cur_out
+  
   
 }
 
+#save(env_func_out_list, file="results.Rda")
+
 ```
 
-### Surivival across environments 
-```{r run single model and show survival per environment, include=FALSE, message=TRUE, warning=FALSE}
+```{r pull existing results, include=T, warning=F, message=F, eval=F}
+setwd("C:/Local_R/BiPHD-ABM/")
+load( "results.Rda" )
+```
 
-if (model==11){
-  # Run the model 
-  env_func_1_1_par(days = 30, N= 100, th_forage_sc = th1_1, daylight_h = 8, modelType = model)
-} else if (model==12){
-  env_func_1_2_par(days = 30, N= 1000, th_forage_sc1 = th1_2, th_forage_sc2 = th2_2 , daylight_h = 8, modelType = model)
-} else if (model == 131){
-  env_func_1_3_1_par(days = 30, N= 1000, th_forage_sc1 = th1_31 , th_forage_sc2 = th2_31 , th_forage_sc3 = th3_31 , daylight_h = 8, modelType = model)
-} else if (model == 132){
-  env_func_1_3_2_par(days = 30, N= 1000, th_forage_sc1 =th1_32, th_forage_sc2 =th2_32, th_forage_sc3 = th3_32, daylight_h = 8, modelType = model)
+
+```{r prepare df for limits in graphs, include=F, warning=F, error=F}
+# Create the dataframe with the limits for all variables 
+int_var_names<-c("eat", "eat_hoard", "forage", "dir_hoard", "alive", "caches", "find_food", "fat_res", "stom_con", "fat_loss_r", "mass", "predation", "rest", "retrieve", "sleep", "cache_decay", "temp")
+min<-c(0, 0, 0, 0, 0, 0, 0, 0, 0, -0.65, 0, 0, 0, 0, 0, 0, -15)
+max<-c(1, 1, 1, 1, 1, 100, 1, 4.1, 0.45, 0.65, 15, 1, 1, 1, 1, 3, 15)
+lim_df<-as.data.frame(cbind(int_var_names, min, max))
+
+# Create dataframe with current variable of interest 
+int_var_df<-as.data.frame(int_var)
+colnames(int_var_df)<-c("int_var_names")
+
+# Select the relevant row for future using 
+lim_df_int<-lim_df%>%
+  right_join(int_var_df, by="int_var_names")
+
+```
+
+### Survival across the selected models 
+The following graph shows how the different models survive across the environments. Survival is hte proportion of birds alive at any given timestep. 
+
+```{r visualise the outcome survival , include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+
+# First determine if you wanted the output split by environment or not 
+# I think it makes sense to always print the survival (as you will alwasy be interested in this)
+   plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive")
+```
+
+### Mean variable values across all environments 
+This graph shows the average of each ofthe variables on each timestep. These averages are taken across all environments. 
+```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+plot_mean_12_env_func(env_func_out_list, models, int_var)
+
+```
+
+### Variable of interest, split per enviornment
+These graphs show the chosen variable of interest (see above) for each of the environments. The averages are taken across all alive birds in the simulation
+```{r visualise split or mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+
+  plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var)
+```
+
+### Daily patterns 
+With this code I want to do the following: 
+
+* Aggregate over daily patterns 
+* Omit the first 3 days 
+* Compare the pattern of fat-loss, SC and FLR 
+
+```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
+# Input here will be the env_func_out_list 
+
+for (i in 1:length(env_func_out_list)){
+  
+  if (i==1){
+    agg_list<-list()
+  }
+  # Select hte current list with the 12 dataframes 
+  cur_mod<-env_func_out_list[[i]][[2]]
+  # add the env row 
+  for (j in 1:length(cur_mod)){
+    cur_mod[[j]]$env_id<-j
+  }
+  # bind it all together 
+  cur_mod<-bind_rows(cur_mod)
+  # add the timestep within day 
+  cur_mod<-cur_mod%>%
+    mutate(timestep_within_day=timestep%%72)
+    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
+  
+  # Now summarise the dataframe by timestep within day 
+  agg_cur_mod<-cur_mod%>%
+    group_by(id, timestep_within_day, env_id)%>%
+    summarise(mean_value_day=mean(value, na.rm=T), 
+              mean_ts_within_day=mean(timestep_within_day))%>%
+    mutate(mod_id=rep(models[i]))
+  
+  # Now add to list
+  agg_list[[i]]<-agg_cur_mod
 }
+
+# bind them all together in a dataframe 
+agg_day_df<-bind_rows(agg_list)
+
 ```
 
-```{r print graph, include=FALSE, message=TRUE, warning=FALSE}
-plot_env_18_surv(output_env_func, modelType=model)
+```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+
+plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
+        geom_line(aes( col=mod_id))+
+        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
+        facet_wrap(.~env_id, nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
+        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(size=25, face='bold'), 
+              axis.title.x = element_text(size=20, face='bold' ), 
+              axis.title.y=element_text(size=20, face='bold'), 
+              strip.text=element_text(size=20), 
+              legend.text=element_text(size=20), 
+              legend.title = element_text(size=20, face='bold'))
+plot
+
+int_var_df<-agg_day_df[agg_day_df$id==int_var,]
 
 ```
+
+
+```{r check mean across environment for all values, include=T, echo=F,warning=F, message=F}
+
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      mean_vars_day_pat_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id)%>%
+        summarise(mean_new=mean(mean_value_day), n=n())
+      
+    # Add to list 
+      mean_vars_day_pat_list[[i]]<-cur_mean_out
+  }
+  
+  all_vars_day_pat_tot<-bind_rows(mean_vars_day_pat_list)
+  
+
+
+```
+
+```{r plot all variables across enviornments in daily patterns, include=T, warning=F, message=F , fig.width=17, fig.height=15}
+
+plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=mod_id))+
+        facet_wrap(.~id, scales='free_y',nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        ggtitle(label="All variables - Daily patterns - Across all environments")+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(size=25, face='bold'), 
+              axis.title.x = element_text(size=20, face='bold' ), 
+              axis.title.y=element_text(size=20, face='bold'), 
+              strip.text=element_text(size=20), 
+              legend.text=element_text(size=20), 
+              legend.title = element_text(size=20, face='bold'))
+plot
+
+
+
+
+
+
+
+```
+
+
