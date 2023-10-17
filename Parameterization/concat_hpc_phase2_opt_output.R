@@ -16,10 +16,11 @@ library(ggplot2)
 library(pracma)# linspace 
 
 # set opt type 
-opt_type<-32
+opt_type<-331
 
 # Set the folder 
-working_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/32/12_environments/2023-10-03/phase_2"
+working_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/331/12_environments/2023-10-10/phase_2/"
+  # 32: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/32/12_environments/2023-10-03/phase_2"
   # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_2"
   # 22: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/22/12_environments/2023-10-03/phase_2/"
   # 132: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_2"
@@ -235,75 +236,4 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
   
 
   
-  #############################################################################
-  ## output some graphics for 11 
-#   act_th<-pracma::linspace(0, 0.4, 50)
-#   
-# sum_HL_df<-sum_HL_df%>%
-#     arrange((th_num))%>%
-#     mutate(act_th=act_th)%>%
-#     mutate(survival=sum_HL/25)
-#   
-#   highlight_df<-sum_HL_df%>%
-#     filter(survival==max(survival))
-#   
-#   old_max<-sum_HL_df%>%
-#     filter(th_num==13)
-# 
-#   ggplot_11_opt<-ggplot(data=sum_HL_df, aes(x=act_th, y=survival))+
-#     geom_point()+
-#     ggtitle(label='Survival in TS for model 1.1 across 50 thresholds (mean over 25 reps)')+
-#     geom_point(data = highlight_df, aes(x=act_th, y=survival), color='tomato', size=3)+
-#     geom_point(data =old_max, aes(x=act_th, y=survival), color='darkseagreen', size=3)
-#   ggplot_11_opt  
-###############################################################################
-  # Sorting out what went wrong with 12 
- ## count_th_df<-as.data.frame(table(halflife_df$th_num))
-  # We see that threshold 20, 14 and 21 didnt run properly
   
-  # # To visualise this, we need to retrieve the original file with the best thresholds 
-  # setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/phase1/concat_results")
-  # best_1000_12<-as.data.frame(t(read.table("best_1000_ 12 _ 2023-09-25_14_27_16 .csv", sep=" " )))
-  # 
-  # # we also need to create the grid with trhesholds 
-  # th1<-linspace(0, 0.4, 50)
-  # th2<-linspace(0, 0.4, 50)
-  # th_grid_12<-expand.grid(th1, th2)  
-  # th_grid_12<-th_grid_12%>%filter(Var2>Var1)
-  # th_grid_12$th_num<-1:nrow(th_grid_12)
-  # 
-  # # phase 2 outcome 
-  # phase_2_out<-phase2_concat_outcome[[1]]
-  # 
-  # # Now link the threshold number sin the phase 2 outcome to the actual threshold numbers that came out of phase 1 
-  # phase_2_out$th_num<-best_1000_12$V1
-  # 
-  # # now merge 
-  # phase_2_out<-merge(phase_2_out, th_grid_12, by="th_num")
-  # 
-  
-  # Visualise the situation? 
-  # create a matrix with the values for HL
-  #HL_matrix<-matrix(data=sum_HL_df$mean_HL, ncol=length(sum_HL_df$th1))
-  # plot it 
-  #HL_plot<-persp3D(z=HL_matrix, xlab='th_sc1', ylab='th_sc2', zlab='Timesteps at 50% alive', main='Optimal survival for th_sc1 and th_sc2 - Halflife') #, zlim= c(0, (days*72)))
-  
-  # sum_HL_df$th1<-as.numeric(sum_HL_df$th1)
-  # sum_HL_df$th2<-as.numeric(sum_HL_df$th2)
-  # library(reshape2)
-  # plot_matrix<-t(acast(sum_HL_df, th1~th2, value.var='mean_HL'))  
-  # plot_matrix
-  # 
-  # x<-sum_HL_df$th1
-  # y<-sum_HL_df$th2
-  # z<-plot_matrix
-  # 
-  # persp(x,y,z)
-  # 
-  # 
-  # plot_ly(HL_df_ordered, x = ~th1, y = ~th2, z = ~th3, color = ~mean) %>%
-  #   add_markers(size=~mean, marker=list(sizeref=0.02, sizemode='area')) %>%
-  #   layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
-  #                       yaxis = list(range=c(0, 0.4),title = 'TH2'),
-  #                       zaxis = list(range=c(0, 0.4),title = 'TH3')),
-  #          title = list(text='1.3.1 HPC Mean Halflife - 3 thresholds ', y=0.95))   

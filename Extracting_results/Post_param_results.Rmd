@@ -71,7 +71,7 @@ If this is running from the shared Rproject, this should all be automated.
 
 ### Specify what data you are interested in 
 
-* `models`: Here you can input which models you want to compare with each other, make sure to put them between `""` and don't include `,` or `.` in the model numbers. E.g. use `11`, `12` and `332`.  If you are just interested in 1 model, this is fine as well. Models x.1 are the non-hoarding models. x.2 are the left-over hoarders. models x.3.1 are direct hoarders that have hoarding as the 'top' behaviour (above highest threshold). Models x.3.2 are direct hoarders that have resting as the 'top' behaviour (above the highest threshold)
+* `models`: Here you can input which models you want to compare with each other, make sure to put them between `""` and don't include `,` or `.` in the model numbers. E.g. use `11`, `12` and `332`.  If you are just interested in 1 model, this is fine as well. Models x.1 are the non-hoarding models. x.2 are the left-over hoarders. models x.3.1 are direct hoarders that have hoarding as the 'top' behaviour (above highest threshold). Models x.3.2 are direct hoarders that have resting as the 'top' behaviour (above the highest threshold). As a default, this is set to all models, if you want to change this you need to run the code from scratch, which will take more time. 
 
 
 * `int_var`: Here you specify your variable of interest. These are only relevant for the graphs that are split per enviornment, where you will visualise the chosen variable across the 12 environments 
@@ -93,17 +93,18 @@ If this is running from the shared Rproject, this should all be automated.
     * `cache_decay` = The average of decayed caches in every given timestep 
     * `temp` = Temperature in degrees Celcius 
     
-* `num_birds`: specify the number of individual birds you want to run each model for (default = 1000)
+* `num_birds`: specify the number of individual birds you want to run each model for (default = 1000). Only change this if you want to run the models from scratch. You also need to change which code chunks are running in that case. 
 
-* `daylight_h`: specify how many daylight hours you want (default = 8)
+* `daylight_h`: specify how many daylight hours you want (default = 8). Only change this if you want to run the models from scratch. You also need to change which code chunks are running in that case. 
 
-* `days`: specify how many days you want in your simulation (default = 30)
+* `days`: specify how many days you want in your simulation (default = 30). Only change this if you want to run the models from scratch. You also need to change which code chunks are running in that case. 
 
 
 ```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
-models<-c("32")#c("11", "21", "31", "12", "22", "32")
-int_var<-"temp"
+models<-c("11", "21", "31", "12", "22", "32", "131", "231", "132", "232") # Keep this as is (unless runnig models from scratch)
+int_var<-"stom_con"  # This is hte variable you can chagne in order to inspect specific variables! 
 
+# If you are using the previously generated data, do not change these the code will use teh default settings 
 num_birds<-1000
 daylight_h<-8
 days<-30 
@@ -121,7 +122,7 @@ The current run includes the following settings:
 
 Then follows the code that loops through each of the models specified and runs them for 30 days and 1000 individuals. In future, I'll make this flexible at the top as well, but for now it is hard coded. The code is not printed here, but you can look at it in the Rmarkdown file. This is followed by code for the visualization. What is visualized depends on the above input variables. 
 
-```{r loop through models to run, include=F, warning=F, message=F, eval=T}
+```{r loop through models to run, include=F, warning=F, message=F, eval=F}
 for (i in 1:length(models)){
   
   if (i==1){
@@ -151,7 +152,7 @@ for (i in 1:length(models)){
       env_func_2_3_1_par(days = days, N= num_birds, th_forage_fr1 = 0.5714286, th_forage_fr2 =1.306122 , th_forage_fr3 = 1.877551 , daylight_h = daylight_h, modelType = 231)
   } else if (models[i]==232){
     # Code that runs 232 
-  
+    env_func_2_3_2_par(days = days, N= num_birds, th_forage_fr1 = 0.5714286, th_forage_fr2 = 1.22449, th_forage_fr3 = 1.306122, daylight_h = daylight_h, modelType = 232)
   } else if (models[i]==31){
     # Code that runs 31 
     env_func_3_1_par(days = days, N= num_birds, th_forage_flr = 0.2326531, daylight_h = daylight_h, modelType = 31)
@@ -167,18 +168,22 @@ for (i in 1:length(models)){
     
   }
   
-  # Now save the result of this iteration in a meaningful way 
-  cur_out<-list(output_env_func, paste(models[i]))
-  env_func_out_list[i]<-cur_out
+  output_env_func[[3]]<-models[i]
   
+  # Now save the result of this iteration in a meaningful way 
+  env_func_out_list[[i]]<-output_env_func
+  
+  print(paste("model done=", models[i]))
   
 }
 
+# make sure that the lists inside the list have the right name 
+names(env_func_out_list)<-models
 #save(env_func_out_list, file="results.Rda")
 
 ```
 
-```{r pull existing results, include=T, warning=F, message=F, eval=F}
+```{r pull existing results, include=T, warning=F, message=F, eval=T}
 setwd("C:/Local_R/BiPHD-ABM/")
 load( "results.Rda" )
 ```
@@ -229,21 +234,25 @@ These graphs show the chosen variable of interest (see above) for each of the en
 With this code I want to do the following: 
 
 * Aggregate over daily patterns 
-* Omit the first 3 days 
+* Omit the first 3 days --> This does cause some models to not show up, or show up half way. The number of datapoints in each aggregation will also differ due to survival. We need to consider how we want to deal with that. 
 * Compare the pattern of fat-loss, SC and FLR 
 
 ```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
 # Input here will be the env_func_out_list 
 
-for (i in 1:length(env_func_out_list)){
+for (i in 1:length(models)){
   
   if (i==1){
     agg_list<-list()
   }
   # Select hte current list with the 12 dataframes 
-  cur_mod<-env_func_out_list[[i]][[2]]
+  cur_mod<-env_func_out_list[[models[i]]][[2]]
+  
+  # Cut off the first 5 days 
+  
   # add the env row 
   for (j in 1:length(cur_mod)){
+    cur_mod[[j]]<-cur_mod[[j]]%>%filter(timestep>216)
     cur_mod[[j]]$env_id<-j
   }
   # bind it all together 
@@ -255,9 +264,9 @@ for (i in 1:length(env_func_out_list)){
   
   # Now summarise the dataframe by timestep within day 
   agg_cur_mod<-cur_mod%>%
-    group_by(id, timestep_within_day, env_id)%>%
+    group_by(id, env_id, timestep_within_day)%>%
     summarise(mean_value_day=mean(value, na.rm=T), 
-              mean_ts_within_day=mean(timestep_within_day))%>%
+              mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
     mutate(mod_id=rep(models[i]))
   
   # Now add to list
@@ -292,7 +301,7 @@ int_var_df<-agg_day_df[agg_day_df$id==int_var,]
 ```
 
 
-```{r check mean across environment for all values, include=T, echo=F,warning=F, message=F}
+```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
 
  # loop through each of the models 
   for (i in 1:length(models)){
@@ -332,12 +341,6 @@ plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+
               legend.text=element_text(size=20), 
               legend.title = element_text(size=20, face='bold'))
 plot
-
-
-
-
-
-
 
 ```
 

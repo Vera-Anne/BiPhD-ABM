@@ -1083,7 +1083,7 @@ plot_env_12_comp_func<-function(env_func_out_list, models, int_var){
       output_per_model_list<-list()
     }
     # Set the current model from the env_func_out_list (input to this function)
-    cur_out<-env_func_out_list[[i]]
+    cur_out<-env_func_out_list[[models[i]]]
     # Now subset for the variable of interest 
     cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
     # Add the environment number to the dataframes 
@@ -1119,9 +1119,6 @@ plot_env_12_comp_func<-function(env_func_out_list, models, int_var){
       plot_12
 }
 
-
-
-
 # For the Rmarkdown file that runs with minimal input vars ('mean' setting)
 plot_mean_12_env_func<-function(env_func_out_list, models, int_var){
   # loop through each of the models 
@@ -1130,7 +1127,7 @@ plot_mean_12_env_func<-function(env_func_out_list, models, int_var){
       output_per_model_list<-list()
     }
     # Set the current model from the env_func_out_list (input to this function)
-      cur_out<-env_func_out_list[[i]]
+      cur_out<-env_func_out_list[[models[i]]]
     
       # create empty list
       cur_mod_df<-list()

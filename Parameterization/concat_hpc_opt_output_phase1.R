@@ -16,11 +16,12 @@ library(plotly)         # For the 3D scatterplot
 library(ggplot2)
 
 # set opt_type
-opt_type=232
+opt_type=332
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results) - for .x.3.y models 
-batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/12_environments/2023-10-06/phase_1"
+batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/332/12_environments/2023-10-10/phase_1"
+# 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/12_environments/2023-10-06/phase_1"
 # 231: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_1"
 # 132"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
 # 131 'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/12_environments/phase_1/2023-09-25'
@@ -292,3 +293,4 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
 } else {
   print(paste('mistake'))
 }
+
