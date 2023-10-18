@@ -1,0 +1,312 @@
+---
+title: "Exploring GA package"
+author: "Vera Vinken"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+### Background 
+Script to explore the functionality of teh GA package for genetic algorithms. I am considering this method for finding optimal threshold combinations in my more complex 2-proxy models. Running through each of the possible combinations will currently result in `50*50*50*50*50*50` combinations, for which I do not have the computational power. Using a genetic algorithm could help me explore a smaller parameter space and still find optimal solutions. 
+
+https://luca-scr.github.io/GA/articles/GA.html#miscellanea
+
+
+### Packages 
+
+```{r packages, include=T, message=F, warning=F}
+
+# Code to check if packages are there, if not install them 
+    packages_to_install <- c("GA", "purr", "doParallel", "foreach", "iterators")
+    # find which packages are needed 
+    new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
+    # install ones that were missing 
+    if(length(new_packages)>0){
+      install.packages(new_packages)
+      }
+
+# Load packages 
+  library(GA)
+  library(purrr)
+  library(doParallel)
+  library(foreach)
+  library(iterators)
+```
+
+### Working example 
+In order to understand the basic functionality of the package, I worked through one of their online examples. It considers a one dimensional function where the only 'unknown' variable is x. The curve looks as followed within the -10 to 10 range for x. Basically, we are looking for the optimal value of x, that generates us the highest 'fitness' on the y-axis of this graph. 
+
+```{r online example define curve , include=T, message=F, warning=T}
+f <- function(x)  (x^2+x)*cos(x)
+lbound <- -10; ubound <- 10
+curve(f, from = lbound, to = ubound, n = 1000)
+
+```
+
+Now, we define a genetic algorithm and we input the function. We use the `ga()` function from the `GA` package. The type we use here is 'real valued' (not sure yet what that means). We consider the fitness (value) that we want to maximise to be our function `f` that we defined above. Then, we define the bounds for which we explore `x`. The GA will take a random value of x and check the y for the function (fitness value), with every generation it will take a slightly different value of x in order to increase the fitness value. The graph shows the generations on the x-axis and the fitness value on the y-axis. 
+
+Note there (in the GA settings) that the population size is 50, which means we have 50 possible combinations in each generation, so 50 values of x. There are 100 generations ran, to find the optimum. The mean stipulated is the mean survival of the 50 'individuals' in the population. The 'best' is of the value for x that had the highest fitness value. 
+
+Elitism is set to 2, which I think means that 2 of the best values for x are retained across each generation to the next. 
+
+The crossover probability is a parameter that controls the likelihood that crossover will occur between two parent solutions. 
+
+The mutation probability is the genetic operation that introduces genetic material in a population. This prevents the genetic algorith m from getting stuck in a local minimum or convergence on a suboptimal solution. 
+
+```{r online example implement GA, include=T, message=F, warning=T}
+GA <- ga(type = "real-valued", fitness = f, lower = c(th = lbound), upper = ubound)
+summary(GA)
+plot(GA)
+```
+
+Now, we can plot the best 'solution' found with the GA onto the curve we had originally. 
+
+
+
+```{r online example plot outcome on og curve, include=T, message=F, warning=T}
+curve(f, from = lbound, to = ubound, n = 1000)
+points(GA@solution, GA@fitnessValue, col = 2, pch = 19)
+```
+
+Now, the same can be done for two-dimensional functions. The example taken here is the Rastrigin function that has lots of local optimums and is therefore very difficult to solve. 
+```{r online example 2d plot the curve , include=T, message=F, warning=T}
+Rastrigin <- function(x1, x2)
+{
+  20 + x1^2 + x2^2 - 10*(cos(2*pi*x1) + cos(2*pi*x2))
+}
+
+x1 <- x2 <- seq(-5.12, 5.12, by = 0.1)
+f <- outer(x1, x2, Rastrigin)
+persp3D(x1, x2, f, theta = 50, phi = 20, col.palette = bl2gr.colors)
+```
+
+Have a look at the top-view as well : 
+```{r online example 2d plot the curve top view , include=T, message=F, warning=T}
+filled.contour(x1, x2, f, color.palette = bl2gr.colors)
+```
+
+Now we run the GA with similar settings as before. Here you can see that it takes some more iterations to actualy find the well performing solutions. 
+```{r online example 2d run GA , include=T, message=F, warning=T}
+GA <- ga(type = "real-valued", 
+         fitness =  function(x) -Rastrigin(x[1], x[2]),
+         lower = c(-5.12, -5.12), upper = c(5.12, 5.12), 
+         popSize = 50, maxiter = 1000, run = 100)
+summary(GA)
+plot(GA)
+```
+Again, we can show where this combinations is located in the original plot. 
+
+
+```{r online example 2d locate opt , include=T, message=F, warning=T}
+filled.contour(x1, x2, f, color.palette = bl2gr.colors, 
+  plot.axes = { axis(1); axis(2); 
+                points(GA@solution[,1], GA@solution[,2], 
+                       pch = 3, cex = 2, col = "white", lwd = 2) }
+)
+```
+
+Monitoring the process: (does not knit by default)
+
+```{r online example 2d monitor process, include=F, message=F, warning=T, echo=F}
+monitor <- function(obj) 
+{ 
+  contour(x1, x2, f, drawlabels = FALSE, col = grey(0.5))
+  title(paste("iteration =", obj@iter), font.main = 1)
+  points(obj@population, pch = 20, col = 2)
+  Sys.sleep(0.2)
+}
+
+GA <- ga(type = "real-valued", 
+         fitness =  function(x) -Rastrigin(x[1], x[2]),
+         lower = c(-5.12, -5.12), upper = c(5.12, 5.12), 
+         popSize = 50, maxiter = 100, 
+         monitor = monitor)
+```
+
+You can use the `suggestions` argument to provide a matrix of solutions to be included in the initial population. I think this is what I should use to give my matrix of threshold combinations. Here is the example code from the online example: 
+
+
+```{r online example 2d suggestion matrix, include=T, message=F, warning=T}
+suggestedSol <- matrix(c(0.2,1.5,-1.5,0.5), nrow = 2, ncol = 2, byrow = TRUE)
+GA1 <- ga(type = "real-valued", 
+          fitness =  function(x) -Rastrigin(x[1], x[2]),
+          lower = c(-5.12, -5.12), upper = c(5.12, 5.12), 
+          suggestions = suggestedSol,
+          popSize = 50, maxiter = 1)
+head(GA1@population)
+```
+
+As it can be seen, the first two solutions considered are those provided, whereas the rest is filled randomly as usual. A full search can be obtained as follows:
+
+
+```{r online example 2d suggestion matrix full search, include=T, message=F, warning=T}
+GA <- ga(type = "real-valued", 
+         fitness =  function(x) -Rastrigin(x[1], x[2]),
+         lower = c(-5.12, -5.12), upper = c(5.12, 5.12), 
+         suggestions = suggestedSol,
+         popSize = 50, maxiter = 100)
+summary(GA)
+```
+
+Constrained optimization. This might be useful to me, as it looks like you can set constraints to how the variables should be related to eachother. The example uses an inequality constraint. I could for example specify that my second paramter (lets call it X[2]) needs to be larger than my first parameter (X[1]). Something like: X[2]-X[1]>0
+
+The following code initializes the function (CAM) as well as the constraint functions 
+
+```{r online example 2d constrained optimization, include=T, message=F, warning=T}
+f <- function(x)
+  { 100 * (x[1]^2 - x[2])^2 + (1 - x[1])^2 }
+
+c1 <- function(x) 
+  { x[1]*x[2] + x[1] - x[2] + 1.5 }
+
+c2 <- function(x) 
+  { 10 - x[1]*x[2] }
+
+```
+
+Now plot the function and the feasible regions: 
+
+```{r online example 2d constrained optimization feasible regions, include=T, message=F, warning=T}
+ngrid <- 250
+x1 <- seq(0, 1, length = ngrid)
+x2 <- seq(0, 13, length = ngrid)
+x12 <- expand.grid(x1, x2)
+col <- adjustcolor(bl2gr.colors(4)[2:3], alpha = 0.2)
+plot(x1, x2, type = "n", xaxs = "i", yaxs = "i")
+image(x1, x2, matrix(ifelse(apply(x12, 1, c1) <= 0, 0, NA), ngrid, ngrid), 
+      col = col[1], add = TRUE)
+image(x1, x2, matrix(ifelse(apply(x12, 1, c2) <= 0, 0, NA), ngrid, ngrid), 
+      col = col[2], add = TRUE)
+contour(x1, x2, matrix(apply(x12, 1, f), ngrid, ngrid), 
+        nlevels = 21, add = TRUE)
+
+```
+To obtain a GA solution that satisfied the inequality constraints, we can use a penalised fitness function. Previously, we just used 'f' or straight forward function as the fitness function. Now we need to include penalty in here. I think we make this negative because we are minimizing a function (so we want the maximum minimum). Then we set the penalty term for each of teh inequality constraints that we have set. In both these cases they need to be smaller or equal to 0 (not sure if this is set here, but I think so). 
+
+The penalisations take the 'current' x and calculate for all the other x's what the maximum value is and then multiply this with the penalty term? - I'm confused. 
+So we run the c1 function (which we said should be lower than 0). So I guess that when this is higher than 0, a positive value will cuase a positive panalty and a negative one will cause a negative penalty (which I guess is a reward? )
+--> I need to look into this further. 
+
+Ok, I think it works like this: the max function takes te maximum between the outcome of the constraint function (input x1 and x2 and calculate the outcome) and 0. If the outcome is lower than 0 (which is whwat we want), we take 0 as the highest value and no penalty results. If the output is higher, we take that value, which will result in a penalty. 
+```{r online example 2d constrained optimization peanalised fitness, include=T, message=F, warning=T}
+fitness <- function(x) 
+{ 
+  f <- -f(x)                         # we need to maximise -f(x)
+  pen <- sqrt(.Machine$double.xmax)  # penalty term
+  penalty1 <- max(c1(x),0)*pen       # penalisation for 1st inequality constraint
+  penalty2 <- max(c2(x),0)*pen       # penalisation for 2nd inequality constraint
+  f - penalty1 - penalty2            # fitness function value
+}
+
+GA <- ga("real-valued", fitness = fitness, 
+         lower = c(0,0), upper = c(1,13), 
+         # selection = GA:::gareal_lsSelection_R,
+         maxiter = 1000, run = 200, seed = 123)
+summary(GA)
+
+```
+
+Visualise the outcome: 
+
+```{r online example 2d constrained optimization peanalised fitness visualise, include=T, message=F, warning=T}
+plot(x1, x2, type = "n", xaxs = "i", yaxs = "i")
+image(x1, x2, matrix(ifelse(apply(x12, 1, c1) <= 0, 0, NA), ngrid, ngrid), 
+      col = col[1], add = TRUE)
+image(x1, x2, matrix(ifelse(apply(x12, 1, c2) <= 0, 0, NA), ngrid, ngrid), 
+      col = col[2], add = TRUE)
+contour(x1, x2, matrix(apply(x12, 1, f), ngrid, ngrid), 
+        nlevels = 21, add = TRUE)
+points(GA@solution[1], GA@solution[2], col = "dodgerblue3", pch = 3)  # GA solution
+
+```
+
+### My own example 
+Now, I want to try and put one of my models into this. 
+
+```{r load the modelfunctions, include=T, message=F, warning=F}
+# Set directories 
+  # # Where are the sourcefiles located? 
+  sourcefile_wd<- "C:/Local_R/BiPhD-ABM/May23"      
+
+# Load the sourcefiles 
+  setwd(sourcefile_wd)
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+
+
+```
+
+The next step is to write the function in a way that my output is a measure of fitness. As an example, I will take the 1.2 12-environment function. 
+
+```{r rewrite the enviornment function, include=T, warning=F, message=F}
+# Set the default variables 
+days=30
+num_birds=100
+daylight_h=8
+
+x<-c(0.0244898, 0.03265306)
+
+f<-function(x){
+env_func_1_2_par(days = days, N= num_birds, th_forage_sc1 = x[1], th_forage_sc2 = x[2] , daylight_h = daylight_h, modelType = 12)
+  return(output_env_func[[1]][1])
+}
+
+f(x)
+
+
+```
+
+
+This seems to work, lets try to put it into a GA
+
+```{r put environment function into GA, include=T, warning=F, message=F}
+GA<-ga(type = "real-valued", 
+       fitness=f, 
+       lower=c(0, 0), 
+       upper=c(0.4, 0.4), 
+       popSize = 10, 
+       maxiter=10)
+summary(GA)
+
+```
+```{r plot the first GA, include=T, warning=F, message=F}
+plot(GA)
+
+```
+So what would this look like with the constrictions in place? 
+I've split up penalty 1 and 2 because I couldn't quickly figure out how to give larger penalties to 'more wrong' answers, apart from this way. 
+Consider this again. 
+
+```{r put constrictions onto my own GA, include=T, message=F, warning=F}
+# For constriction 1 I want x1 to be smaller than x2 
+c1<-function(x){
+  x[1]-x[2]
+}
+
+
+fitness <- function(x) 
+{ 
+  f <- f(x)                   # we need to maximise -f(x)
+  pen <- sqrt(.Machine$double.xmax)  # penalty term
+  penalty1 <- max(c1(x),0)*pen       # penalisation for 1st inequality constraint that needs X2 to be larger or equal to X1 
+  if (c1(x)==0){pentalty2<-pen} else{penalty2<-0}
+  
+  f - penalty1 - penalty2     # fitness function value
+}
+
+GA <- ga("real-valued", 
+         fitness = fitness, 
+         lower = c(0,0), 
+         upper = c(0.4, 0.4), 
+         maxiter = 10,
+         popSize = 10)
+summary(GA)
+```
+
+
+Next steps: 
+
+* input the constrictions 
+* make this parallel, cause computing will take way to long if we want combinations that are actually good
+
+
