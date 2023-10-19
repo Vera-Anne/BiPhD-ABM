@@ -11,7 +11,7 @@ output: html_document
 
 # If Tom (or someone else ) wants to use this on their computer --> any packages that are not installed need to be installed 
     # List of needed packages
-    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr")
+    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr", "plotly", "hrbrthemes")
     # find which packages are needed 
     new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
     # install ones that were missing 
@@ -21,28 +21,21 @@ output: html_document
 
 # Load packages 
   library(ggplot2)
-  # library(tidyverse)
-  # library(flextable)      # Doing normal looking tables 
-  # library(plotly)         # For the 3D scatterplot 
-   library(gridExtra)      # grids of ggplots 
-  # library(grid)     
-  # library(viridis)        # for colours 
-  library('parallel')     # for parallel computing
-  library('doParallel')   # As above 
-  library(dplyr)          # merging dataframes, using mutate etc. 
-  # library(psych)          # To calculate geometric mean 
-  # library(ggpubr)         # using ggarrange to grid plots with side legend
+   library(gridExtra)       # grids of ggplots 
+  library('parallel')       # for parallel computing
+  library('doParallel')     # As above 
+  library(dplyr)            # merging dataframes, using mutate etc. 
   library(purrr)            # To use the dataframe mapping functions 
   library(truncnorm)        # creating normal distributions 
   library(data.table)
-  # library(tidyverse)
-  # library(viridis)
   library(foreach)
   library(doParallel)
   library(ggpubr)             # To arrange plots 
   library(gridExtra)          # for grid.arrange 
   library(pracma)
   library(stringr)
+  library(plotly)
+  library(hrbrthemes)
 
 ```
 
@@ -101,7 +94,7 @@ If this is running from the shared Rproject, this should all be automated.
 
 
 ```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
-models<-c("11", "21", "31", "12", "22", "32", "131", "231", "132", "232") # Keep this as is (unless runnig models from scratch)
+models<-c("11", "21", "31", "12", "22", "32", "131", "231", "331", "132", "232") # Keep this as is (unless runnig models from scratch)
 int_var<-"stom_con"  # This is hte variable you can chagne in order to inspect specific variables! 
 
 # If you are using the previously generated data, do not change these the code will use teh default settings 
@@ -161,7 +154,7 @@ for (i in 1:length(models)){
     env_func_3_2_par(days = days, N= num_birds, th_forage_flr1 = -0.06122449, th_forage_flr2 = 0.2081633, daylight_h = daylight_h, modelType = 32)
   } else if (models[i]==331){
     # Code that runs 331 
-    
+    env_func_3_3_1_par(days = days, N= num_birds, th_forage_flr1 = -0.1346939, th_forage_flr2 = 0.2081633, th_forage_flr3 = 0.3795918, daylight_h = daylight_h, modelType = 331)
     
   } else if (models[i]==332){
     # Code that runs 332
@@ -204,6 +197,23 @@ colnames(int_var_df)<-c("int_var_names")
 lim_df_int<-lim_df%>%
   right_join(int_var_df, by="int_var_names")
 
+# Determine the colour list 
+all_models<-c("11", "12", "131", "132", "21", "22", "231", "232", "31", "32", "331", "332")
+all_colours<-c("#000000", "#3636A2", "#1094D6", "#5656FF", "#882255", "#FF685D", "#CC6677", "#FFBAB5", "#91CC60",  "#A7B398", "#9BA042", "#E2CA26")
+colours_hoard_foc<-c("#797979", "#167D4D", "#FFCE67", "#DC7A89", "#000000", "#51BF66", "#DED191", "#882255", "#D6D6D6", "#79A793", "#CC9B35", "#AA4499" )
+colours_prox_foc<-c("#167D4D", "#83B35B", "#08A6DA", "#022586", "#FFCE67",  "#CC9B35", "#FFB166", "#A48C12", "#882255", "#AA4499", "#D08C96", "#FF3F5C" )
+# add linteype as well
+linetype<-c(1, 2, 3, 4)
+col_df<-as.data.frame(cbind(all_models, all_colours, colours_hoard_foc, colours_prox_foc, linetype))
+
+# Now select the relevant ones 
+mod_df<-as.data.frame(models)
+colnames(mod_df)<-c("all_models")
+
+# no wuse joining to selec thtem from the colour dataframe 
+lim_col_df<-col_df%>%
+  right_join(mod_df, by="all_models")
+
 ```
 
 ### Survival across the selected models 
@@ -213,13 +223,13 @@ The following graph shows how the different models survive across the environmen
 
 # First determine if you wanted the output split by environment or not 
 # I think it makes sense to always print the survival (as you will alwasy be interested in this)
-   plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive")
+   plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
 ```
 
 ### Mean variable values across all environments 
 This graph shows the average of each ofthe variables on each timestep. These averages are taken across all environments. 
 ```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
-plot_mean_12_env_func(env_func_out_list, models, int_var)
+plot_mean_12_env_func(env_func_out_list, models, int_var, focus="all_colours")
 
 ```
 
@@ -227,7 +237,7 @@ plot_mean_12_env_func(env_func_out_list, models, int_var)
 These graphs show the chosen variable of interest (see above) for each of the environments. The averages are taken across all alive birds in the simulation
 ```{r visualise split or mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
 
-  plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var)
+  plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var, focus="all_colours")
 ```
 
 ### Daily patterns 
@@ -237,7 +247,7 @@ With this code I want to do the following:
 * Omit the first 3 days --> This does cause some models to not show up, or show up half way. The number of datapoints in each aggregation will also differ due to survival. We need to consider how we want to deal with that. 
 * Compare the pattern of fat-loss, SC and FLR 
 
-```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
+```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=8}
 # Input here will be the env_func_out_list 
 
 for (i in 1:length(models)){
@@ -248,7 +258,7 @@ for (i in 1:length(models)){
   # Select hte current list with the 12 dataframes 
   cur_mod<-env_func_out_list[[models[i]]][[2]]
   
-  # Cut off the first 5 days 
+  # Cut off the first 3 days 
   
   # add the env row 
   for (j in 1:length(cur_mod)){
@@ -267,7 +277,8 @@ for (i in 1:length(models)){
     group_by(id, env_id, timestep_within_day)%>%
     summarise(mean_value_day=mean(value, na.rm=T), 
               mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
-    mutate(mod_id=rep(models[i]))
+    mutate(mod_id=rep(models[i]))%>%
+     mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
   
   # Now add to list
   agg_list[[i]]<-agg_cur_mod
@@ -278,10 +289,19 @@ agg_day_df<-bind_rows(agg_list)
 
 ```
 
-```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=10}
+focus<-'all_colours'
+if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
 
 plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
-        geom_line(aes( col=mod_id))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=1)+
         #ylim(lim_df_int[1,2], lim_df_int[1,3])+
         facet_wrap(.~env_id, nrow=6)+
         coord_cartesian(xlim=c(0, 25))+
@@ -293,7 +313,9 @@ plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=m
               axis.title.y=element_text(size=20, face='bold'), 
               strip.text=element_text(size=20), 
               legend.text=element_text(size=20), 
-              legend.title = element_text(size=20, face='bold'))
+              legend.title = element_text(size=20, face='bold'))+
+    scale_color_manual(values=colours)
+plot<-ggplotly(plot)
 plot
 
 int_var_df<-agg_day_df[agg_day_df$id==int_var,]
@@ -314,7 +336,8 @@ int_var_df<-agg_day_df[agg_day_df$id==int_var,]
     # Do the transformations so we get means across all environments 
       cur_mean_out<-cur_out%>%
         group_by(id, timestep_within_day, mod_id)%>%
-        summarise(mean_new=mean(mean_value_day), n=n())
+        summarise(mean_new=mean(mean_value_day), n=n())%>%
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
       
     # Add to list 
       mean_vars_day_pat_list[[i]]<-cur_mean_out
@@ -326,10 +349,10 @@ int_var_df<-agg_day_df[agg_day_df$id==int_var,]
 
 ```
 
-```{r plot all variables across enviornments in daily patterns, include=T, warning=F, message=F , fig.width=17, fig.height=15}
+```{r plot all variables across enviornments in daily patterns, include=T, warning=F, message=F}
 
 plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+
-        geom_line(aes( col=mod_id))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=1)+
         facet_wrap(.~id, scales='free_y',nrow=6)+
         coord_cartesian(xlim=c(0, 25))+
         ggtitle(label="All variables - Daily patterns - Across all environments")+
@@ -339,9 +362,55 @@ plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+
               axis.title.y=element_text(size=20, face='bold'), 
               strip.text=element_text(size=20), 
               legend.text=element_text(size=20), 
-              legend.title = element_text(size=20, face='bold'))
-plot
+              legend.title = element_text(size=20, face='bold'))+
+  scale_color_manual(values=colours)
+
+
+p<-ggplotly(plot)
+p
 
 ```
 
+```{r aggregate for daily patterns 3 day graph, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
+# Input here will be the env_func_out_list 
 
+for (i in 1:length(models)){
+  
+  if (i==1){
+    pattern_list<-list()
+  }
+  # Select hte current list with the 12 dataframes 
+  cur_mod<-env_func_out_list[[models[i]]][[2]]
+  
+  # Cut off the first 3 days 
+  
+  # add the env row 
+  for (j in 1:length(cur_mod)){
+    cur_mod[[j]]$env_id<-j
+  }
+  # bind it all together 
+  cur_mod<-bind_rows(cur_mod)
+  day_in_sim<-rep(c(1:days), each=72)
+  day_in_sim<-rep(day_in_sim, times=204)
+  # add the timestep within day 
+  cur_mod<-cur_mod%>%
+    mutate(timestep_within_day=timestep%%72)%>%
+    mutate(day_within_sim=day_in_sim)
+    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
+  
+  # Now summarise the dataframe by timestep within day 
+  agg_cur_mod<-cur_mod%>%
+    group_by(id, env_id, timestep_within_day)%>%
+    summarise(mean_value_day=mean(value, na.rm=T), 
+              mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
+    mutate(mod_id=rep(models[i]))%>%
+     mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+  
+  # Now add to list
+  agg_list[[i]]<-agg_cur_mod
+}
+
+# bind them all together in a dataframe 
+agg_day_df<-bind_rows(agg_list)
+
+```

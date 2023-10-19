@@ -19,6 +19,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
   env_type<<-env_type
   th_forage_sc<<-th_forage_sc
   daylight_h<<-daylight_h
+  mod_type<<-"11"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -61,7 +62,7 @@ mod_1_1<-function(days, N, env_type, th_forage_sc, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -200,6 +201,7 @@ mod_1_1_hpc<-function(days, N, env_type, th_forage_sc, daylight_h){
   env_type<<-env_type
   th_forage_sc<<-th_forage_sc
   daylight_h<<-daylight_h
+  mod_type<<-"11"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -228,7 +230,7 @@ mod_1_1_hpc<-function(days, N, env_type, th_forage_sc, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -486,6 +488,7 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
   th_forage_sc1<<-th_forage_sc1
   th_forage_sc2<<-th_forage_sc2
   daylight_h<<-daylight_h
+  mod_type<<-"12"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -515,7 +518,7 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -668,6 +671,7 @@ mod_1_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_
   th_forage_sc1<<-th_forage_sc1
   th_forage_sc2<<-th_forage_sc2
   daylight_h<<-daylight_h
+  mod_type<<-"12"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -694,7 +698,7 @@ mod_1_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -958,6 +962,7 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
   th_forage_sc2<<-th_forage_sc2
   th_forage_sc3<<-th_forage_sc3
   daylight_h<<-daylight_h
+  mod_type<<-"131"
   
   # load packages if needed 
   require(doParallel)
@@ -989,7 +994,7 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -1152,6 +1157,7 @@ mod_1_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
   th_forage_sc2<<-th_forage_sc2
   th_forage_sc3<<-th_forage_sc3
   daylight_h<<-daylight_h
+  mod_type<<-"131"
   
   # load packages if needed 
   require(doParallel)
@@ -1179,7 +1185,7 @@ mod_1_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -1339,6 +1345,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
   th_forage_sc2<<-th_forage_sc2
   th_forage_sc3<<-th_forage_sc3
   daylight_h<<-daylight_h
+  mod_type<<-"131"
   
   # load packages if needed 
   require(doParallel)
@@ -1370,7 +1377,7 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -1532,6 +1539,7 @@ mod_1_3_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
   th_forage_sc2<<-th_forage_sc2
   th_forage_sc3<<-th_forage_sc3
   daylight_h<<-daylight_h
+  mod_type<<-"131"
   
   # load packages if needed 
   require(doParallel)
@@ -1559,7 +1567,7 @@ mod_1_3_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -1932,7 +1940,7 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
   env_type<<-env_type
   th_forage_fr<<-th_forage_fr
   daylight_h<<-daylight_h
-  modelType<<-21
+  mod_type<<-"21"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -1966,7 +1974,7 @@ mod_2_1<-function(days, N, env_type, th_forage_fr, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -2098,7 +2106,7 @@ mod_2_1_hpc<-function(days, N, env_type, th_forage_fr, daylight_h){
   env_type<<-env_type
   th_forage_fr<<-th_forage_fr
   daylight_h<<-daylight_h
-  modelType<<-21
+  model_type<<-"21"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -2128,7 +2136,7 @@ mod_2_1_hpc<-function(days, N, env_type, th_forage_fr, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -2366,6 +2374,7 @@ mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
   th_forage_fr1<<-th_forage_fr1
   th_forage_fr2<<-th_forage_fr2
   daylight_h<<-daylight_h
+  mod_type<<-"22"
   
   # Voor parralel if needed 
   require(foreach)
@@ -2395,7 +2404,7 @@ mod_2_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_h){
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -2545,6 +2554,7 @@ mod_2_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_
   th_forage_fr1<<-th_forage_fr1
   th_forage_fr2<<-th_forage_fr2
   daylight_h<<-daylight_h
+  mod_type<<-"22"
   
   # Voor parralel if needed 
   require(foreach)
@@ -2570,7 +2580,7 @@ mod_2_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, daylight_
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -2822,6 +2832,7 @@ mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   th_forage_fr2<<-th_forage_fr2
   th_forage_fr3<<-th_forage_fr3
   daylight_h<<-daylight_h
+  mod_type<<-"231"
   
   require(doParallel)
   require(foreach)
@@ -2851,7 +2862,7 @@ mod_2_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -3017,6 +3028,7 @@ mod_2_3_1_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
   th_forage_fr2<<-th_forage_fr2
   th_forage_fr3<<-th_forage_fr3
   daylight_h<<-daylight_h
+  mod_type<<-"231"
   
   require(doParallel)
   require(foreach)
@@ -3042,7 +3054,7 @@ mod_2_3_1_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -3205,6 +3217,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   th_forage_fr2<<-th_forage_fr2
   th_forage_fr3<<-th_forage_fr3
   daylight_h<<-daylight_h
+  mod_type<<-"232"
   
   # load packages if needed 
   require(doParallel)
@@ -3236,7 +3249,7 @@ mod_2_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -3396,6 +3409,7 @@ mod_2_3_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
   th_forage_fr2<<-th_forage_fr2
   th_forage_fr3<<-th_forage_fr3
   daylight_h<<-daylight_h
+  mod_type<<-"232"
   
   # load packages if needed 
   require(doParallel)
@@ -3423,7 +3437,7 @@ mod_2_3_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -3789,6 +3803,7 @@ mod_3_1<-function(days, N, env_type, th_forage_flr, daylight_h){
   env_type<<-env_type
   th_forage_flr<<-th_forage_flr
   daylight_h<<-daylight_h
+  mod_type<<-"31"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -3822,7 +3837,7 @@ mod_3_1<-function(days, N, env_type, th_forage_flr, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -3956,6 +3971,7 @@ mod_3_1_hpc<-function(days, N, env_type, th_forage_flr, daylight_h){
   env_type<<-env_type
   th_forage_flr<<-th_forage_flr
   daylight_h<<-daylight_h
+  mod_type<<-"31"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -3984,7 +4000,7 @@ mod_3_1_hpc<-function(days, N, env_type, th_forage_flr, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -4218,6 +4234,7 @@ mod_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, daylight_h)
   th_forage_flr1<<-th_forage_flr1
   th_forage_flr2<<-th_forage_flr2
   daylight_h<<-daylight_h
+  mod_type<<-"32"
   
   # Voor parralel if needed 
   require(foreach)
@@ -4247,7 +4264,7 @@ mod_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, daylight_h)
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -4397,6 +4414,7 @@ mod_3_2_hpc<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, dayligh
   th_forage_flr1<<-th_forage_flr1
   th_forage_flr2<<-th_forage_flr2
   daylight_h<<-daylight_h
+  mod_type<<-"32"
   
   # Voor parralel if needed 
   require(foreach)
@@ -4423,7 +4441,7 @@ mod_3_2_hpc<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, dayligh
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -4673,6 +4691,7 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"331"
   
   require(doParallel)
   require(foreach)
@@ -4702,7 +4721,7 @@ mod_3_3_1<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -4866,6 +4885,7 @@ mod_3_3_1_hpc<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_fo
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"331"
   
   require(doParallel)
   require(foreach)
@@ -4892,7 +4912,7 @@ mod_3_3_1_hpc<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_fo
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -5054,6 +5074,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"332"
   
   # load packages if needed 
   require(doParallel)
@@ -5085,7 +5106,7 @@ mod_3_3_2<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_forage
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -5246,6 +5267,7 @@ mod_3_3_2_hpc<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_fo
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"332"
   
   # load packages if needed 
   require(doParallel)
@@ -5273,7 +5295,7 @@ mod_3_3_2_hpc<-function(days, N, env_type, th_forage_flr1, th_forage_flr2, th_fo
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -5641,6 +5663,7 @@ mod_4_1<-function(days, N, env_type, th_forage_fr, th_forage_flr, daylight_h){
   th_forage_fr<<-th_forage_fr
   th_forage_flr<<-th_forage_flr
   daylight_h<<-daylight_h
+  mod_type<<-"41"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -5671,7 +5694,7 @@ mod_4_1<-function(days, N, env_type, th_forage_fr, th_forage_flr, daylight_h){
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -5805,6 +5828,7 @@ mod_4_1_hpc<-function(days, N, env_type, th_forage_fr, th_forage_flr, daylight_h
   th_forage_fr<<-th_forage_fr
   th_forage_flr<<-th_forage_flr
   daylight_h<<-daylight_h
+  mod_type<<-"41"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
@@ -5830,7 +5854,7 @@ mod_4_1_hpc<-function(days, N, env_type, th_forage_fr, th_forage_flr, daylight_h
     
     # And individual matrices 
     #print('here')
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -6069,6 +6093,7 @@ mod_4_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_flr
   th_forage_flr1<<-th_forage_flr1
   th_forage_flr2<<-th_forage_flr2
   daylight_h<<-daylight_h
+  mod_type<<-"42"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -6098,7 +6123,7 @@ mod_4_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_flr
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -6246,6 +6271,7 @@ mod_4_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage
   th_forage_flr1<<-th_forage_flr1
   th_forage_flr2<<-th_forage_flr2
   daylight_h<<-daylight_h
+  mod_type<<-"42"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -6271,7 +6297,7 @@ mod_4_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -6529,6 +6555,7 @@ mod_4_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"431"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -6554,7 +6581,7 @@ mod_4_3_1<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -6713,6 +6740,7 @@ mod_4_3_1_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"431"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -6735,7 +6763,7 @@ mod_4_3_1_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -6894,6 +6922,7 @@ mod_4_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"432"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -6919,7 +6948,7 @@ mod_4_3_2<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_forage_f
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 
@@ -7077,6 +7106,7 @@ mod_4_3_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
   th_forage_flr2<<-th_forage_flr2
   th_forage_flr3<<-th_forage_flr3
   daylight_h<<-daylight_h
+  mod_type<<-"432"
   
   # load packages for parallel if needed 
   require(foreach)
@@ -7099,7 +7129,7 @@ mod_4_3_2_hpc<-function(days, N, env_type, th_forage_fr1, th_forage_fr2, th_fora
     temp_func(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_range_high, days, daylight_h, n_daylight_timestep)
     
     # And individual matrices 
-    set_up_func_indiv(days, env_type, daylight_h)
+    set_up_func_indiv(days, env_type, daylight_h, mod_type)
     
     # As we are running this in parallele, there is no 'i' for the number of indivuals 
     # So we can use the same functions, but just need to make sure i is always set to 1 

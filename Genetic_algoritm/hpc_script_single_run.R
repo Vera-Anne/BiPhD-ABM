@@ -30,23 +30,28 @@ days=30
 num_birds=100
 daylight_h=8
 
-
+# set the running function for model 1.2
+  f<-function(x){
+    env_func_1_2_par_hpc(days = days, N= num_birds, th_forage_sc1 = x[1], th_forage_sc2 = x[2] , daylight_h = daylight_h, modelType = 12)
+    return(output_env_func[[1]][1])
+  }
 # For constriction 1 I want x1 to be smaller than x2 
-c1<-function(x){
-  x[1]-x[2]
-}
+  c1<-function(x){
+    x[1]-x[2]
+  }
 
 # Write the fitness function 
 fitness <- function(x) 
-{ 
-  f <- f(x)                   # we need to maximise -f(x)
-  pen <- sqrt(.Machine$double.xmax)  # penalty term
-  penalty1 <- max(c1(x),0)*pen       # penalisation for 1st inequality constraint that needs X2 to be larger or equal to X1 
-  if (c1(x)==0){pentalty2<-pen} else{penalty2<-0}
-  
-  f - penalty1 - penalty2     # fitness function value
-}
+  { 
+    f <- f(x)                   # we need to maximise -f(x)
+    pen <- sqrt(.Machine$double.xmax)  # penalty term
+    penalty1 <- max(c1(x),0)*pen       # penalisation for 1st inequality constraint that needs X2 to be larger or equal to X1 
+    if (c1(x)==0){pentalty2<-pen} else{penalty2<-0}
+    
+    f - penalty1 - penalty2     # fitness function value
+  }
 
+# now run the GA with the right bounds 
 GA <- ga("real-valued", 
          fitness = fitness, 
          lower = c(0,0), 

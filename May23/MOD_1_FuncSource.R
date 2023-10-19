@@ -108,7 +108,7 @@ set_up_func_general<-function(days, env_type, daylight_h){
 } # end set up general function 
 
 # Individual bird 
-set_up_func_indiv<-function(days, env_type, daylight_h){
+set_up_func_indiv<-function(days, env_type, daylight_h, mod_type){
   #print('here')
   # # link to the function file 
   # setwd("C:/Local_R/BiPhD-ABM/")
@@ -137,7 +137,15 @@ set_up_func_indiv<-function(days, env_type, daylight_h){
   sc_init<<-0 #+(rtruncnorm(1, a=0, b=stom_size, mean=(stom_size/2), sd=0.01))  # gives initial stomach content from equal distribution
   fr_init<<-0+(rtruncnorm(1, a=0, b=fat_max, mean=(fat_max/2), sd=1))         # gives initial fat reserves for random number between 0-4
   alive_init<<-rep(1, 1 )                                                     # all birds are alive at the start 
-  caches_init<<-round(0+(rtruncnorm(1, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
+
+  # for non hoarders, there should not be any initial caches. For the other models this needs to be set
+  if (mod_type=="11" |mod_type=="21" |mod_type=="31"){
+    caches_init<<-0
+  } else{
+    caches_init<<-round(0+(rtruncnorm(1, a=num_cache_min, b=num_cache_max, mean=((num_cache_min+num_cache_max)/2), sd=25))) # initial cache numbers for birds rounded to closest integer
+    
+  }
+  
   
   # Put these in first column of the matrices  
   mat_alive[,1]<<-alive_init
@@ -547,23 +555,31 @@ forage_function<-function(t, i){
 eat_func<-function(t ,i){
   
   # At this point, the bird has a 'known' number of food items found 
-  # Add this to the stomach content 
-  mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
   
-  # Now check if this doesn't exceed the stomach size. If so, set the stomach content to stomach size
-  if (mat_sc[i,(t)]>stom_size){
-    mat_sc[i,(t)]<<-stom_size
+  # First check if any food was found 
+  # Set the eating matrix 
+  if (food_item_found_gram==0){
+    # if the bird went foraging but did not actually find anything
+    eat_count[i,t]<<-0
+  } else {
+    # Add this to the stomach content 
+    mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
+    
+    # Now check if this doesn't exceed the stomach size. If so, set the stomach content to stomach size
+    if (mat_sc[i,(t)]>stom_size){
+      mat_sc[i,(t)]<<-stom_size
+    }
+    # set the eating matrix 
+    eat_count[i,t]<<-1
   }
+  
   
   # Set the BMR to the right level: cost of foraging
   BMR_multi<<-8
   
   #set the predation risk
   Patt_cur<<-Patt_for
-  
-  # Set the eating matrix 
-  eat_count[i,t]<<-1
-  
+
   # update the other matrices 
   eat_hoard_count[i,t]<<-0
   retrieve_count[i,t]<<-0
@@ -644,6 +660,22 @@ retrieve_func<-function(t,i){
 
 eat_hoard_func<-function(t,i){
   
+  # Check if the bird actually found a food item 
+  
+  # NO FOOD ITEM FOUND 
+  if (food_item_found_gram==0){
+    eat_hoard_count[i,t]<<-0
+    rest_count[i,t]<<-0
+    eat_count[i,t]<<-0
+    retrieve_count[i,t]<<-0
+    hoard_count[i,t]<<-0
+    # update BMR multi
+    BMR_multi<<-8
+    # Set the predation risk 
+    Patt_cur<<-Patt_for
+
+  } else{
+  
   # Fill the stomach with whatever food items are found 
   mat_sc[i,(t)]<<-(mat_sc[i,t])+(food_item_found_gram)
   
@@ -699,7 +731,9 @@ eat_hoard_func<-function(t,i){
     retrieve_count[i,t]<<-0
     hoard_count[i,t]<<-0
     
-  }
+  } # END THE NORMAL EATING PART 
+  } # END THE FOOD ITEM FOUND PART 
+  
   
 } # end of the eat-hoard function 
 
@@ -708,17 +742,25 @@ eat_hoard_func<-function(t,i){
 #############################
 
 dir_hoard_func<-function(t,i){
-  # Just add the number of food items that were found to the matrix with caches in 
-  mat_caches[i,t]<<-((mat_caches[i,t])+food_item_found)
+  
+  # NO FOOD ITEM FOUND 
+  if (food_item_found_gram==0){
+    # update the eat-hoard matrix 
+    hoard_count[i,t]<<-0
+  } else{
+    # Just add the number of food items that were found to the matrix with caches in 
+    mat_caches[i,t]<<-((mat_caches[i,t])+food_item_found)
+    # update the eat-hoard matrix 
+    hoard_count[i,t]<<-1
+    
+  } # end items were found 
+    
   
   # update BMR multi
   BMR_multi<<-8
   
   # Set the predation risk 
   Patt_cur<<-Patt_for
-  
-  # update the eat-hoard matrix 
-  hoard_count[i,t]<<-1
   
   # update the global counters
   eat_count[i,t]<<-0
@@ -1075,7 +1117,7 @@ plot_env_18_surv<-function(output_env_func, modelType){
 }
 
 # For the Rmarkdown file that runs with minimal input vars ('split' setting )
-plot_env_12_comp_func<-function(env_func_out_list, models, int_var){
+plot_env_12_comp_func<-function(env_func_out_list, models, int_var, focus){
   
   # Loop through the models to extract the correct variable 
   for (i in 1:length(models)){
@@ -1090,6 +1132,7 @@ plot_env_12_comp_func<-function(env_func_out_list, models, int_var){
     for (j in 1:length(cur_out_filtered)){
       cur_out_filtered[[j]]$env_id<-j
       cur_out_filtered[[j]]$mod_id<-models[i]
+      cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
     }
     output_per_model_list[[i]]<-cur_out_filtered
     
@@ -1107,20 +1150,34 @@ plot_env_12_comp_func<-function(env_func_out_list, models, int_var){
   # Now you want to produce a grid of plots, where data is split per environment 
     # On your x-axis you want time "timestep" 
     # On you y-axis you want the value of the chosen variable 'value' 
+  
+  # select colours
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
       plot_12<-ggplot(total_all_models, aes(x=timestep, y=value))+
-        geom_line(aes( col=mod_id))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=1)+
         facet_wrap(.~env_id,  nrow=6)+
         ggtitle(label=paste(int_var, "- Variable per environment type" ))+
         theme(plot.title=element_text(size=25, face='bold'), 
               axis.title.x = element_text(size=20, face='bold' ), 
               axis.title.y=element_text(size=20, face='bold'), 
               strip.text=element_text(size=20), 
-              legend.text=element_text(size=20))
+              legend.text=element_text(size=20))+
+        scale_color_manual(values=colours)
+
       plot_12
 }
 
+
+
+
 # For the Rmarkdown file that runs with minimal input vars ('mean' setting)
-plot_mean_12_env_func<-function(env_func_out_list, models, int_var){
+plot_mean_12_env_func<-function(env_func_out_list, models, int_var, focus){
   # loop through each of the models 
   for (i in 1:length(models)){
     if (i==1){
@@ -1140,28 +1197,36 @@ plot_mean_12_env_func<-function(env_func_out_list, models, int_var){
       cur_mod_df_sum<-cur_mod_df%>%
         group_by(timestep, id)%>%
         summarise(mean_val = mean(value, na.rm=T))%>%
-        mutate(mod_id=models[i])
+        mutate(mod_id=models[i])%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
 
       output_per_model_list[[i]]<-cur_mod_df_sum
   }
   
   mean_var_per_model_total<-bind_rows(output_per_model_list)
   
-    
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
   # Now you want to produce a grid of plots, where data is split per environment 
   # On your x-axis you want time "timestep" 
   # On you y-axis you want the value of the chosen variable 'value' 
   plot_var<-ggplot(mean_var_per_model_total, aes(x=timestep, y=mean_val))+
-    geom_line(aes( col=mod_id))+
+    geom_line(aes( col=mod_id, linetype=line_id), size=1)+
     facet_wrap(.~id, scales='free_y', nrow=6)+
     ggtitle(label=paste("Average across all environments per interest variable" ))+
     theme(plot.title=element_text(size=25, face='bold'), 
           axis.title.x = element_text(size=20, face='bold' ), 
           axis.title.y=element_text(size=20, face='bold'), 
           strip.text=element_text(size=20), 
-          legend.text=element_text(size=20))
+          legend.text=element_text(size=20))+
+    scale_color_manual(values=colours)
+ 
   plot_var
-
     
   }
   
