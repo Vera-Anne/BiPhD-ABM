@@ -1,5 +1,5 @@
 ---
-title: "Comparing HPC and local output"
+title: "Extracting model results"
 author: "Vera Vinken"
 date: "`r Sys.Date()`"
 output: html_document
@@ -219,7 +219,7 @@ lim_col_df<-col_df%>%
 ### Survival across the selected models 
 The following graph shows how the different models survive across the environments. Survival is hte proportion of birds alive at any given timestep. 
 
-```{r visualise the outcome survival , include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+```{r visualise the outcome survival , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
 
 # First determine if you wanted the output split by environment or not 
 # I think it makes sense to always print the survival (as you will alwasy be interested in this)
@@ -289,7 +289,7 @@ agg_day_df<-bind_rows(agg_list)
 
 ```
 
-```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=10}
+```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
 focus<-'all_colours'
 if(focus=="colours_hoard_foc"){
     colours<-lim_col_df$colours_hoard_foc
@@ -301,19 +301,19 @@ if(focus=="colours_hoard_foc"){
 
 
 plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
-        geom_line(aes( col=mod_id, linetype=line_id), size=1)+
+        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
         #ylim(lim_df_int[1,2], lim_df_int[1,3])+
         facet_wrap(.~env_id, nrow=6)+
         coord_cartesian(xlim=c(0, 25))+
         #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
         ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
         labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
-        theme(plot.title=element_text(size=25, face='bold'), 
-              axis.title.x = element_text(size=20, face='bold' ), 
-              axis.title.y=element_text(size=20, face='bold'), 
-              strip.text=element_text(size=20), 
-              legend.text=element_text(size=20), 
-              legend.title = element_text(size=20, face='bold'))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text(face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text( face='bold'))+
     scale_color_manual(values=colours)
 plot<-ggplotly(plot)
 plot
@@ -323,7 +323,7 @@ int_var_df<-agg_day_df[agg_day_df$id==int_var,]
 ```
 
 
-```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
+```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
 
  # loop through each of the models 
   for (i in 1:length(models)){
@@ -349,20 +349,20 @@ int_var_df<-agg_day_df[agg_day_df$id==int_var,]
 
 ```
 
-```{r plot all variables across enviornments in daily patterns, include=T, warning=F, message=F}
+```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=12}
 
 plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+
-        geom_line(aes( col=mod_id, linetype=line_id), size=1)+
+        geom_line(aes( col=mod_id, linetype=line_id))+
         facet_wrap(.~id, scales='free_y',nrow=6)+
         coord_cartesian(xlim=c(0, 25))+
         ggtitle(label="All variables - Daily patterns - Across all environments")+
         labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
-        theme(plot.title=element_text(size=25, face='bold'), 
-              axis.title.x = element_text(size=20, face='bold' ), 
-              axis.title.y=element_text(size=20, face='bold'), 
-              strip.text=element_text(size=20), 
-              legend.text=element_text(size=20), 
-              legend.title = element_text(size=20, face='bold'))+
+        theme(plot.title=element_text( face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text(face='bold'))+
   scale_color_manual(values=colours)
 
 
@@ -371,7 +371,7 @@ p
 
 ```
 
-```{r aggregate for daily patterns 3 day graph, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=15}
+```{r aggregate for daily patterns 3 day graph, include=TRUE, message=F, warning=F, echo=F,fig.width=17}
 # Input here will be the env_func_out_list 
 
 for (i in 1:length(models)){
@@ -395,22 +395,107 @@ for (i in 1:length(models)){
   # add the timestep within day 
   cur_mod<-cur_mod%>%
     mutate(timestep_within_day=timestep%%72)%>%
-    mutate(day_within_sim=day_in_sim)
+    mutate(day_within_sim=day_in_sim)%>%
+    mutate(mod_id=rep(models[i]))#%>%
     #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
-  
-  # Now summarise the dataframe by timestep within day 
-  agg_cur_mod<-cur_mod%>%
-    group_by(id, env_id, timestep_within_day)%>%
-    summarise(mean_value_day=mean(value, na.rm=T), 
-              mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
-    mutate(mod_id=rep(models[i]))%>%
-     mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
-  
-  # Now add to list
-  agg_list[[i]]<-agg_cur_mod
+  # add to list 
+  pattern_list[[i]]<-cur_mod
 }
 
 # bind them all together in a dataframe 
-agg_day_df<-bind_rows(agg_list)
+pattern_df<-bind_rows(pattern_list)
 
 ```
+
+#### **Possibility to plot variables both within and between days**
+I'm not sure if this is a useful way of showing the variables. It could be to show if there are 'extremes' at the start/end or if things are pretty consisten throughout the simulation. 
+```{r plot the ridgeline plots, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17}
+# Set the variables of interest 
+#env_type_cur<-"6"
+mod_id_cur<-"31"
+
+plot_list<-list()
+
+for (i in 1:12){
+  cur_env_type<-i
+  # set the current env_type
+  # Make the graph 
+  df<-pattern_df[pattern_df$id==int_var,]
+  df<-df%>%filter(mod_id==mod_id_cur)%>%
+    filter(env_id==cur_env_type)%>%
+    filter(timestep_within_day<26)
+  
+  # Now reformat this into a matrix with the right values 
+  mat<-matrix(NA, nrow=26, ncol=days)
+  mat[1:26, 1:days]<-df$value
+  #mat<-as.data.frame(mat)
+  
+  axx<-list(title="Day in Sim")
+  axy<-list(title="Ts in day")
+  axz<-list(title=paste(int_var))
+  
+  surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur)))
+  surPlot<-surPlot%>%add_surface(showscale=FALSE)
+  #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur)))
+  #surPlot  
+  #print(i)
+  plot_list[[cur_env_type]]<-plotly_build(surPlot)
+}
+
+#fig<-subplot(plot_list, nrows=6, margin=0.05)
+
+
+
+fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>%
+  layout(
+        scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+          scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+        scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'))
+
+#, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])
+
+#fit
+
+fig
+
+```
+
+
+
+
+
+
+

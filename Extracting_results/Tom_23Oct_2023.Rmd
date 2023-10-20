@@ -1,0 +1,932 @@
+---
+title: "Extracting model results - Meeting Tom 23-10-2023"
+author: "Vera Vinken"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+  
+ 
+
+```{r packages, include=FALSE, message=T, warning=T}
+
+# If Tom (or someone else ) wants to use this on their computer --> any packages that are not installed need to be installed 
+    # List of needed packages
+    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr", "plotly", "hrbrthemes")
+    # find which packages are needed 
+    new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
+    # install ones that were missing 
+    if(length(new_packages)>0){
+      install.packages(new_packages)
+      }
+
+# Load packages 
+  library(ggplot2)
+   library(gridExtra)       # grids of ggplots 
+  library('parallel')       # for parallel computing
+  library('doParallel')     # As above 
+  library(dplyr)            # merging dataframes, using mutate etc. 
+  library(purrr)            # To use the dataframe mapping functions 
+  library(truncnorm)        # creating normal distributions 
+  library(data.table)
+  library(foreach)
+  library(doParallel)
+  library(ggpubr)             # To arrange plots 
+  library(gridExtra)          # for grid.arrange 
+  library(pracma)
+  library(stringr)
+  library(plotly)
+  library(hrbrthemes)
+
+```
+
+
+```{r set wd and load sourcefiles, include=TRUE, message=FALSE, echo=F, warning=FALSE}
+# Set directories 
+  # # Where are the sourcefiles located? 
+  sourcefile_wd<- "C:/Local_R/BiPhD-ABM/May23"      
+  # # Specify the parent folder where you want to save results 
+  # #parent_saving_wd<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/Post_param_results_October23" 
+
+# Load the sourcefiles 
+  setwd(sourcefile_wd)
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+
+```
+
+
+```{r pull existing results, include=T, warning=F, message=F, eval=T, echo=F}
+setwd("C:/Local_R/BiPHD-ABM/")
+load( "results.Rda" )
+```
+
+
+## **Background** 
+Optimization is almost finished. I'm still waiting on the results for 3.3.2, but it keeps crashing due to HPC issues (one of the nodes is lagging). Once I have these results subset 1 (birds with access to 1 energy proxy) will be finished. 
+
+```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
+models<-c("11", "21", "31", "12", "22", "32", "131", "231", "331", "132", "232") # Keep this as is (unless runnig models from scratch)
+int_var<-"stom_con"  # This is hte variable you can chagne in order to inspect specific variables! 
+
+# If you are using the previously generated data, do not change these the code will use teh default settings 
+num_birds<-1000
+daylight_h<-8
+days<-30 
+```
+
+### Repeat current settings 
+The current run includes the following settings: 
+
+* **Models to be evaluated** = `r models`
+* **Number of birds** = `r num_birds`
+* **Daylight hours** = `r daylight_h`
+* **Number of days in simulation** = `r days`
+
+## **Survival** 
+First, I want to inspect the survival of the different models. This is the most straightforward way to look at model performance. 
+```{r prepare df for limits in graphs, include=F, warning=F, error=F}
+# Create the dataframe with the limits for all variables 
+int_var_names<-c("eat", "eat_hoard", "forage", "dir_hoard", "alive", "caches", "find_food", "fat_res", "stom_con", "fat_loss_r", "mass", "predation", "rest", "retrieve", "sleep", "cache_decay", "temp")
+min<-c(0, 0, 0, 0, 0, 0, 0, 0, 0, -0.65, 0, 0, 0, 0, 0, 0, -15)
+max<-c(1, 1, 1, 1, 1, 100, 1, 4.1, 0.45, 0.65, 15, 1, 1, 1, 1, 3, 15)
+lim_df<-as.data.frame(cbind(int_var_names, min, max))
+
+# Create dataframe with current variable of interest 
+int_var_df<-as.data.frame(int_var)
+colnames(int_var_df)<-c("int_var_names")
+
+# Select the relevant row for future using 
+lim_df_int<-lim_df%>%
+  right_join(int_var_df, by="int_var_names")
+
+# Determine the colour list 
+all_models<-c("11", "12", "131", "132", "21", "22", "231", "232", "31", "32", "331", "332")
+all_colours<-c("#000000", "#3636A2", "#1094D6", "#5656FF", "#882255", "#FF685D", "#CC6677", "#FFBAB5", "#91CC60",  "#A7B398", "#9BA042", "#E2CA26")
+colours_hoard_foc<-c("#797979", "#167D4D", "#FFCE67", "#DC7A89", "#000000", "#51BF66", "#DED191", "#882255", "#D6D6D6", "#79A793", "#CC9B35", "#AA4499" )
+colours_prox_foc<-c("#167D4D", "#83B35B", "#08A6DA", "#022586", "#FFCE67",  "#CC9B35", "#FFB166", "#A48C12", "#882255", "#AA4499", "#D08C96", "#FF3F5C" )
+# add linteype as well
+linetype<-c(1, 2, 3, 4)
+col_df<-as.data.frame(cbind(all_models, all_colours, colours_hoard_foc, colours_prox_foc, linetype))
+
+# Now select the relevant ones 
+mod_df<-as.data.frame(models)
+colnames(mod_df)<-c("all_models")
+
+# no wuse joining to selec thtem from the colour dataframe 
+lim_col_df<-col_df%>%
+  right_join(mod_df, by="all_models")
+
+```
+
+### Survival for each model - average over all environments 
+In general survival is best for models with `line_id = 2`. These are the leftover-hoarding models. These are generally followed by the direct-hoarding models (`linetype = 3 or 4`). The non-hoarding models do worst in general. The best performing model over all is 1.2, which is the stomach-content leftover hoarder. This graph, however, is not very informative as results are averaged across all 12 environments of which the temperatures, food distibutions and food predictability vary. 
+```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
+
+focus<-"all_colours"
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-env_func_out_list[[models[i]]]
+    
+      # create empty list
+      cur_mod_df<-list()
+      
+      # Concatenate the dataframes in the list 
+      for (df in cur_out[[2]]){
+        cur_mod_df<-rbind(cur_mod_df, df)
+      }
+      # summarize them by variable and timestep 
+      cur_mod_df_sum<-cur_mod_df%>%
+        group_by(timestep, id)%>%
+        summarise(mean_val = mean(value, na.rm=T))%>%
+        mutate(mod_id=models[i])%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+
+      output_per_model_list[[i]]<-cur_mod_df_sum
+  }
+  
+  mean_var_per_model_total<-bind_rows(output_per_model_list)
+  
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+  
+  
+  plot_var<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+
+    geom_line(aes( col=mod_id, linetype=line_id))+
+    ggtitle(label=paste("Survival  - Average across 12 env. " ))+
+    theme(plot.title=element_text(face='bold'), 
+          axis.title.x = element_text(face='bold' ), 
+          axis.title.y=element_text(face='bold'), 
+          strip.text=element_text(), 
+          legend.text=element_text())+
+    ylim(c(0,1))+
+    scale_color_manual(values=colours)
+ 
+  plot_var<-ggplotly(plot_var)
+  plot_var
+
+```
+
+### Survival for each model - across the 12 environments 
+The following graph splits survival up across the 12 environments. Each line still represents 1 model which is a run of 1000 individuals across 30 days (2160 timesteps). Note that you can use the mouse cursor to find exact values. Use the buttons in the right top corner to zoom in/out, etc. I've made the following initial observations: 
+
+* Survival is worse under cold temperatures then under warmer temperatures (expected)
+* Survival is worse under low food availability than under high food (expected) 
+* Survival is worse for bonanza scenario’s than for Poisson (expected) – Here, non-hoarders suffer more. 
+* Leftover hoarding models do best in bonanza scenario’s specifically (3, 4, 7, 8, 11) 
+* Non-hoarders do not struggle as much when temperature is high and food is abundant
+* In colder scenario’s with predictable food abundancy, SC models (blue-ish) seem to out-do FR (red-ish) and FLR models (green/yellow-ish) 
+* It looks like performance in environment 2 is better than in environment 10. This might just be stochasticity, but I need to check this. 
+
+```{r visualise the outcome survival , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+
+# First determine if you wanted the output split by environment or not 
+# I think it makes sense to always print the survival (as you will alwasy be interested in this)
+   plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
+```
+
+As a next step, it would be interesting to look at when birds die: do they die at the start of the day, at night, or at the end of the day. 
+I could generate graphs that show the proportion of birds alive at any given timepoint, seperated by timstep in the day and day within the simulation. 
+I've done an example for model `1.2`. I don't think these type of graphs are useful for the thesis, but they should be checked for variability within the day (e.g.; are daily patterns consistent?). 
+
+```{r aggregate for daily patterns 3 day graph, include=TRUE, message=F, warning=F, echo=F,fig.width=17}
+# Input here will be the env_func_out_list
+
+for (i in 1:length(models)){
+
+  if (i==1){
+    pattern_list<-list()
+  }
+  # Select hte current list with the 12 dataframes
+  cur_mod<-env_func_out_list[[models[i]]][[2]]
+
+  # Cut off the first 3 days
+
+  # add the env row
+  for (j in 1:length(cur_mod)){
+    cur_mod[[j]]$env_id<-j
+  }
+  # bind it all together
+  cur_mod<-bind_rows(cur_mod)
+  day_in_sim<-rep(c(1:days), each=72)
+  day_in_sim<-rep(day_in_sim, times=204)
+  # add the timestep within day
+  cur_mod<-cur_mod%>%
+    mutate(timestep_within_day=timestep%%72)%>%
+    mutate(day_within_sim=day_in_sim)%>%
+    mutate(mod_id=rep(models[i]))#%>%
+    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
+  # add to list
+  pattern_list[[i]]<-cur_mod
+}
+
+# bind them all together in a dataframe
+pattern_df<-bind_rows(pattern_list)
+
+```
+
+```{r plot the ridgeline plots - survival, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17}
+# Set the variables of interest
+#env_type_cur<-"6"
+mod_id_cur<-"12"
+int_var<-"alive"
+
+plot_list<-list()
+
+for (i in 1:12){
+  cur_env_type<-i
+  # set the current env_type
+  # Make the graph
+  df<-pattern_df[pattern_df$id==int_var,]
+  df<-df%>%filter(mod_id==mod_id_cur)%>%
+    filter(env_id==cur_env_type)%>%
+    filter(timestep_within_day<26)
+
+  # Now reformat this into a matrix with the right values
+  mat<-matrix(NA, nrow=26, ncol=days)
+  mat[1:26, 1:days]<-df$value
+  #mat<-as.data.frame(mat)
+
+  axx<-list(title="Day in Sim")
+  axy<-list(title="Ts in day")
+  axz<-list(title=paste(int_var))
+
+  surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur)))
+  surPlot<-surPlot%>%add_surface(showscale=FALSE)
+  #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur)))
+  #surPlot
+  #print(i)
+  plot_list[[cur_env_type]]<-plotly_build(surPlot)
+}
+
+#fig<-subplot(plot_list, nrows=6, margin=0.05)
+
+
+
+fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>%
+  layout(
+        scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+          scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+        scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'))
+
+#, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])
+
+#fit
+
+fig
+
+```
+
+
+## **Energy proxy**
+After survival, it is relevant to look at how the 3 energy proxies that we use (SC, FR and FLR) behave throughout the simulations. 
+
+### Energy proxies - average across all 12 environments 
+To start with, I have aggregated the data across the 30 days in order to get daily patterns. This means that I've taken the average value of SC across all the 1st tiemsteps of the day within the 30 days. The same for the second timestep of each day, etc. The first 3 days have been filtered out (as in Pravosudov & Lucas, 2001 and other publications) to allow for 'setteling in' after the initial values are set. Note that these graphs only show the 'day' part of each 24 hours. Sunset happens at timestep 26. 
+
+My observations: 
+
+* I'm not sure why some of the lines stop early. Even if there is lots of missing data for these models, an average should be taken ignoring the 'NA's. I need to check this. 
+* Fat-loss-rate is very similar throughouth all models. Birds are losing fat in the morning, bu twill gain fat later in the afternoon. The placement of the dip in the afternoon seems to be slightly different for some of the models. Some models show an increase (fat gaining) at the end of the day. These are mostly the leftover-hoarding models. Furhter inpsection is needed. 
+* Fat-reserves increase throughout the day for all models, but the levels differ and seem to be split up by energy-proxy-type, more than by hoarding-type. 
+* Stomach content is different across the models. SC seems fairly stable for SC-proxy models. A pattern of higher stomach content in the morning with ah drop in the afternoon is visible for the FR and FLR models. Leftover-hoarding models seem to perform better than their non-hoarding or direct-hoarding equivalents within the proxy-group (SC, FR or FLR)
+
+```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=8}
+# Input here will be the env_func_out_list 
+
+for (i in 1:length(models)){
+  
+  if (i==1){
+    agg_list<-list()
+  }
+  # Select hte current list with the 12 dataframes 
+  cur_mod<-env_func_out_list[[models[i]]][[2]]
+  
+  # Cut off the first 3 days 
+  
+  # add the env row 
+  for (j in 1:length(cur_mod)){
+    cur_mod[[j]]<-cur_mod[[j]]%>%filter(timestep>216)
+    cur_mod[[j]]$env_id<-j
+  }
+  # bind it all together 
+  cur_mod<-bind_rows(cur_mod)
+  # add the timestep within day 
+  cur_mod<-cur_mod%>%
+    mutate(timestep_within_day=timestep%%72)
+    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
+  
+  # Now summarise the dataframe by timestep within day 
+  agg_cur_mod<-cur_mod%>%
+    group_by(id, env_id, timestep_within_day)%>%
+    summarise(mean_value_day=mean(value, na.rm=T), 
+              mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
+    mutate(mod_id=rep(models[i]))%>%
+     mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+  
+  # Now add to list
+  agg_list[[i]]<-agg_cur_mod
+}
+
+# bind them all together in a dataframe 
+agg_day_df<-bind_rows(agg_list)
+
+```
+
+```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
+
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      mean_vars_day_pat_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id)%>%
+        summarise(mean_new=mean(mean_value_day), n=n(), na.rm=T)%>%
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+      
+    # Add to list 
+      mean_vars_day_pat_list[[i]]<-cur_mean_out
+  }
+  
+  all_vars_day_pat_tot<-bind_rows(mean_vars_day_pat_list)
+  
+
+
+```
+
+```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+
+plot<-ggplot(all_vars_day_pat_tot[all_vars_day_pat_tot$id=="stom_con"|all_vars_day_pat_tot$id=="fat_res"|all_vars_day_pat_tot$id=="fat_loss_r", ], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=mod_id, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y',nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text( face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text(face='bold'))+
+  scale_color_manual(values=colours)
+
+
+p<-ggplotly(plot)
+p
+
+```
+### Energy proxies - split per 12 environments - SC 
+Next, I want to look at these patterns but split for the environments, to see if different daily patterns might arise under different external circumstances. 
+
+My observations: 
+
+* Spiky graphs just indicate that there aren't a lot of datapionts to thake the 'average' of. These graphs are the average taken across all days that birds are alive, if birds are only alive for a couple of days (env 1, 3, 4, 7), this results in spiky graphs. 
+* FR and FLR models keep hihger stomach contents than the SC models (blue-ish lines)
+* When temperatures are higher (right column), the FLR and FR models tend to lower stomach contents by the end of the day, with a slight increase before sunset. My interpretation is that they first eat till their thresholds are reached, they then stop eating and start resting/hoarding, which causes the dip in stomach content. Once their FR or FLR is below the threshold, they start foraging and eating again, which results in an increase of SC at the end of the day. 
+* The FR models in environments 6 and 10 drop their stomach contents completely to 0 at the end of the day. This seems counter productive in real life. These models are responding to fat-reserves, which probably don't have enough 'time' to drop below the threshold for foraging before the night starts. 
+* In environments with bonanza's (3, 4, 7, 8, 11, 12) these patterns aren't as clear. This is probably due to more unsuccessful foraging attempts. 
+
+```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+int_var<-"stom_con"
+focus<-'all_colours'
+if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
+
+plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
+        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
+        facet_wrap(.~env_id, nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
+        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text(face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text( face='bold'))+
+    scale_color_manual(values=colours)
+plot<-ggplotly(plot)
+plot
+
+int_var_df<-agg_day_df[agg_day_df$id==int_var,]
+
+```
+
+### Energy proxies - split per 12 environments - FR 
+Repeat this for the Fat-reserve variable 
+
+My observations: 
+
+* Across all environments, we see an increase in fat-reserve throughout the day. 
+* In the warmer environments, we see that this stagnates somewhat later in the day 
+* Maximum fat is reached in the warmer, food abundant environment with predictable food (env 10) 
+* In general, SC models (blue-ish) have the highest fat-reserves
+* FLR models (green-ish) have the second highest fat-rserves, sometimes equal to the SC models. The latter mostly in the higher temperature environments. 
+* In bonanza scenario’s the leftover-hoarding models (dotted line type 2) stand out. Especially for SC-leftover and FLR-leftover. SC-leftover performs best in these scenario’s. 
+* FR models keep the lowest fat-reserve in general.  
+
+
+```{r plot the daily patterns fat-res, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+int_var<-"fat_res"
+focus<-'all_colours'
+if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
+
+plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
+        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
+        facet_wrap(.~env_id, nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
+        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text(face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text( face='bold'))+
+    scale_color_manual(values=colours)
+plot<-ggplotly(plot)
+plot
+
+int_var_df<-agg_day_df[agg_day_df$id==int_var,]
+
+```
+
+
+### Energy proxies - split per 12 environments - FLR 
+Repeat this for the fat-loss-rate variable 
+
+My observations: 
+
+* In general, birds are losing fat in the mornings and then start increasing about 1/3 throughout the day. 
+* In the warmer temperatures, birds some models (especially the FR models) are losing fat at the end of the day (probably because they stop eating)
+* FLR models have this dip later than the FR models (as expected, given the proxy they respond to) 
+* The dip at the end of the day is not as present in the bonanza scenario’s 
+
+
+```{r plot the daily patterns fat-loss-rate, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+int_var<-"fat_loss_r"
+focus<-'all_colours'
+if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
+
+plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
+        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
+        facet_wrap(.~env_id, nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
+        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text(face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text( face='bold'))+
+    scale_color_manual(values=colours)
+plot<-ggplotly(plot)
+plot
+
+int_var_df<-agg_day_df[agg_day_df$id==int_var,]
+
+```
+
+
+### Energy proxies - Variation within day throughout simulation 
+As with the survival information, it could be worthwhile to check if there is lots of variation between the days within a simulation. I expect there to be diferences if birds lose fat throughout the simulation and might behave differently (or the other way around). I'm not yet sure how to visualise this in a straight forward way without having to plot lots and lots and lots and lots of graphs. And example for model 12: 
+
+```{r plot the ridgeline plots SC, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17}
+# Set the variables of interest
+#env_type_cur<-"6"
+mod_id_cur<-"12"
+int_var<-"stom_con"
+
+plot_list<-list()
+
+for (i in 1:12){
+  cur_env_type<-i
+  # set the current env_type
+  # Make the graph
+  df<-pattern_df[pattern_df$id==int_var,]
+  df<-df%>%filter(mod_id==mod_id_cur)%>%
+    filter(env_id==cur_env_type)%>%
+    filter(timestep_within_day<26)
+
+  # Now reformat this into a matrix with the right values
+  mat<-matrix(NA, nrow=26, ncol=days)
+  mat[1:26, 1:days]<-df$value
+  #mat<-as.data.frame(mat)
+
+  axx<-list(title="Day in Sim")
+  axy<-list(title="Ts in day")
+  axz<-list(title=paste(int_var))
+
+  surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur)))
+  surPlot<-surPlot%>%add_surface(showscale=FALSE)
+  #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur)))
+  #surPlot
+  #print(i)
+  plot_list[[cur_env_type]]<-plotly_build(surPlot)
+}
+
+#fig<-subplot(plot_list, nrows=6, margin=0.05)
+
+
+
+fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>%
+  layout(
+        scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+          scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+        scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'))
+
+#, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])
+
+#fit
+
+fig
+
+```
+
+Again, model 1.2 but for fat-reserve: 
+
+```{r plot the ridgeline plots - FR, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17}
+# Set the variables of interest
+#env_type_cur<-"6"
+mod_id_cur<-"12"
+int_var<-"fat_res"
+
+plot_list<-list()
+
+for (i in 1:12){
+  cur_env_type<-i
+  # set the current env_type
+  # Make the graph
+  df<-pattern_df[pattern_df$id==int_var,]
+  df<-df%>%filter(mod_id==mod_id_cur)%>%
+    filter(env_id==cur_env_type)%>%
+    filter(timestep_within_day<26)
+
+  # Now reformat this into a matrix with the right values
+  mat<-matrix(NA, nrow=26, ncol=days)
+  mat[1:26, 1:days]<-df$value
+  #mat<-as.data.frame(mat)
+
+  axx<-list(title="Day in Sim")
+  axy<-list(title="Ts in day")
+  axz<-list(title=paste(int_var))
+
+  surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur)))
+  surPlot<-surPlot%>%add_surface(showscale=FALSE)
+  #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur)))
+  #surPlot
+  #print(i)
+  plot_list[[cur_env_type]]<-plotly_build(surPlot)
+}
+
+#fig<-subplot(plot_list, nrows=6, margin=0.05)
+
+
+
+fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>%
+  layout(
+        scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+          scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+        scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'))
+
+#, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])
+
+#fit
+
+fig
+
+```
+
+And finally 1.2 for fat-loss-rates 
+
+```{r plot the ridgeline plots - FLR, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17}
+# Set the variables of interest
+#env_type_cur<-"6"
+mod_id_cur<-"12"
+int_var<-"fat_loss_r"
+
+plot_list<-list()
+
+for (i in 1:12){
+  cur_env_type<-i
+  # set the current env_type
+  # Make the graph
+  df<-pattern_df[pattern_df$id==int_var,]
+  df<-df%>%filter(mod_id==mod_id_cur)%>%
+    filter(env_id==cur_env_type)%>%
+    filter(timestep_within_day<26)
+
+  # Now reformat this into a matrix with the right values
+  mat<-matrix(NA, nrow=26, ncol=days)
+  mat[1:26, 1:days]<-df$value
+  #mat<-as.data.frame(mat)
+
+  axx<-list(title="Day in Sim")
+  axy<-list(title="Ts in day")
+  axz<-list(title=paste(int_var))
+
+  surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur)))
+  surPlot<-surPlot%>%add_surface(showscale=FALSE)
+  #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur)))
+  #surPlot
+  #print(i)
+  plot_list[[cur_env_type]]<-plotly_build(surPlot)
+}
+
+#fig<-subplot(plot_list, nrows=6, margin=0.05)
+
+
+
+fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>%
+  layout(
+        scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+          scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+        scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)),
+                      xaxis=axx, yaxis=axy, zaxis=axz,
+                      aspectmode='cube'),
+         scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'),
+         scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)),
+                       xaxis=axx, yaxis=axy, zaxis=axz,
+                       aspectmode='cube'))
+
+#, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])
+
+#fit
+
+fig
+
+```
+
+
+## **Behaviour**
+The third component of interest in these models, is the behaviour of the birds that arises from the combination of external variables (temp, food) and hte internal variables (SC, FR and FLR). 
+
+### Behaviours - average across all 12 environments 
+I think daily patterns are hte most straightforward way of looking at these. 
+
+```{r plot all variables across enviornments in daily patterns -beh, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=9}
+
+plot<-ggplot(all_vars_day_pat_tot[all_vars_day_pat_tot$id=="rest"|all_vars_day_pat_tot$id=="forage"|all_vars_day_pat_tot$id=="retrieve"|all_vars_day_pat_tot$id=="eat_hoard"|all_vars_day_pat_tot$id=="dir_hoard", ], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=mod_id, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y',nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        ggtitle(label="Behaviours- Daily patterns - Across all environments")+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text( face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text(face='bold'))+
+  scale_color_manual(values=colours)
+
+
+p<-ggplotly(plot)
+p
+
+```
+
+### Behavoiur - split per 12 environments - Forage 
+Next, I want to look at these patterns but split for the environments, to see if different daily patterns might arise under different external circumstances. 
+
+
+
+```{r plot the daily patterns - forage, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+int_var<-"forage"
+focus<-'all_colours'
+if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
+
+plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
+        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
+        facet_wrap(.~env_id, nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
+        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text(face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text( face='bold'))+
+    scale_color_manual(values=colours)
+plot<-ggplotly(plot)
+plot
+
+int_var_df<-agg_day_df[agg_day_df$id==int_var,]
+
+```
+
+### Behavoiur - split per 12 environments - Rest
+Next, I want to look at these patterns but split for the environments, to see if different daily patterns might arise under different external circumstances. 
+
+
+```{r plot the daily patterns rest, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+int_var<-"rest"
+focus<-'all_colours'
+if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
+
+plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
+        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
+        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
+        facet_wrap(.~env_id, nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
+        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
+        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text(face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text( face='bold'))+
+    scale_color_manual(values=colours)
+plot<-ggplotly(plot)
+plot
+
+int_var_df<-agg_day_df[agg_day_df$id==int_var,]
+
+```

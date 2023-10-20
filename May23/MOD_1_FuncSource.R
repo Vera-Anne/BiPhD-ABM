@@ -1160,17 +1160,18 @@ plot_env_12_comp_func<-function(env_func_out_list, models, int_var, focus){
     colours<-lim_col_df$all_colours
   }
       plot_12<-ggplot(total_all_models, aes(x=timestep, y=value))+
-        geom_line(aes( col=mod_id, linetype=line_id), size=1)+
+        geom_line(aes( col=mod_id, linetype=line_id))+
         facet_wrap(.~env_id,  nrow=6)+
         ggtitle(label=paste(int_var, "- Variable per environment type" ))+
-        theme(plot.title=element_text(size=25, face='bold'), 
-              axis.title.x = element_text(size=20, face='bold' ), 
-              axis.title.y=element_text(size=20, face='bold'), 
-              strip.text=element_text(size=20), 
-              legend.text=element_text(size=20))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text())+
         scale_color_manual(values=colours)
 
-      plot_12
+      plot_12<-ggplotly(plot_12)
+      return(plot_12)
 }
 
 
@@ -1227,7 +1228,7 @@ plot_mean_12_env_func<-function(env_func_out_list, models, int_var, focus){
     scale_color_manual(values=colours)
  
   plot_var
-    
+  return(plot_var)    
   }
   
   
