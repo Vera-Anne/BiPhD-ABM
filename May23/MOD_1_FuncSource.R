@@ -707,7 +707,6 @@ eat_hoard_func<-function(t,i){
     # update the global counters
     eat_count[i,t]<<-0
     rest_count[i,t]<<-0
-    eat_count[i,t]<<-0
     retrieve_count[i,t]<<-0
     hoard_count[i,t]<<-0
   } else {
@@ -729,7 +728,6 @@ eat_hoard_func<-function(t,i){
     # update the global counters
     eat_hoard_count[i,t]<<-0
     rest_count[i,t]<<-0
-    eat_count[i,t]<<-0
     retrieve_count[i,t]<<-0
     hoard_count[i,t]<<-0
     

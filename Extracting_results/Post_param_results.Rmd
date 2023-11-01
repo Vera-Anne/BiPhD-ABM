@@ -69,8 +69,8 @@ If this is running from the shared Rproject, this should all be automated.
 
 
 * `int_var`: Here you specify your variable of interest. These are only relevant for the graphs that are split per enviornment, where you will visualise the chosen variable across the 12 environments 
-    * `eat` = proportion of alive birds that are eating at any given timestep
-    * `eat_hoard` = proportion of alive birds that are doing the 'eat and hoard leftovers' behaviour at any given timestep. Note that this is only an option for X.2 models. 
+    * `eat` = proportion of alive birds that are eating at any given timestep. This is eat-only behaviour. Either birds that have 'eating' as a seperate beahviour. Or leftover-hoarding birds that foud a food item to eat, but it is not enough to hoard as well. 
+    * `eat_hoard` = proportion of alive birds that are doing the 'eat and hoard leftovers' behaviour at any given timestep. Note that this is only an option for X.2 models. And only in the case that they find enough items so they can hoard something. 
     * `forage` = proportion of alive birds that goes out to forage. Foraging happens before the 'eating' behaviour, before the 'direct hoarding' behaviour and before 'eat_haording' behaviour. 
     * `dir_hoard`= the proportion of alive birds that does the 'direct hoarding' behaviour at any given timestep. Note that only X.3.Y models can do this. 
     * `alive` = The percentage of birds that is alive at any given timestep 
@@ -562,8 +562,25 @@ agg_day_df<-bind_rows(agg_list)
       cur_mean_out<-cur_out%>%
         group_by(id, timestep_within_day, mod_id)%>%
         summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
-         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
-      
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+      mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+         mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
     # Add to list 
       mean_vars_day_pat_list[[i]]<-cur_mean_out
   }
@@ -577,10 +594,10 @@ agg_day_df<-bind_rows(agg_list)
 ```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
 
 plot<-ggplot(all_vars_day_pat_tot[all_vars_day_pat_tot$id=="stom_con"|all_vars_day_pat_tot$id=="fat_res"|all_vars_day_pat_tot$id=="fat_loss_r", ], aes(x=timestep_within_day, y=mean_new))+
-        geom_line(aes( col=mod_id, linetype=line_id))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
         facet_wrap(.~id, scales='free_y',nrow=6)+
         coord_cartesian(xlim=c(0, 25))+
-        ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
+        #ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
         labs(y="SC  -  FR  -  FCR (in gram or gram/2 hours)", x="Timestep within the Day", col="Model ID")+
         theme(plot.title=element_text( face='bold'), 
               axis.title.x = element_text( face='bold' ), 
@@ -588,11 +605,12 @@ plot<-ggplot(all_vars_day_pat_tot[all_vars_day_pat_tot$id=="stom_con"|all_vars_d
               strip.text=element_text(), 
               legend.text=element_text(), 
               legend.title = element_text(face='bold'))+
-  scale_color_manual(values=colours)
+  scale_color_manual(values=colours)+
+  labs(fill=" ")
 
 
 p<-ggplotly(plot)
-p
+p%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
 
 ```
 
@@ -611,101 +629,10 @@ p
       
     # Do the transformations so we get means across all environments 
       cur_mean_out<-cur_out%>%
-        group_by(id, timestep_within_day, mod_id, env_id)%>%
+        group_by(id, timestep_within_day, mod_id, env_id,)%>%
         summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
-         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
-      
-    # Add to list 
-      day_pat_per_envlist[[i]]<-cur_mean_out
-  }
-  
-  day_pat_per_env_df<-bind_rows(day_pat_per_envlist)
-  
-```
-
-
-```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
-
-plot<-ggplot(day_pat_per_env_df[day_pat_per_env_df$id=="dir_hoard",], aes(x=timestep_within_day, y=mean_new))+
-        geom_line(aes( col=mod_id, linetype=line_id))+
-        facet_wrap(.~env_id,  nrow=6)+
-        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
-        theme(plot.title=element_text(face='bold'), 
-              axis.title.x = element_text( face='bold' ), 
-              axis.title.y=element_text(face='bold'), 
-              strip.text=element_text(), 
-              legend.text=element_text(), 
-              legend.title=element_blank())+
-        scale_color_manual(values=colours)+
-        coord_cartesian(xlim=c(0, 25))+
-        labs(fill=" ")
-
-      plot<-ggplotly(plot)
-      plot%>% layout(legend = list(title=list(text='Model ID')))
-      #plot_12
-```
-
-
-
-```{r compare temperatures per sc graph , include=T, message=F, warning=F, echo=F}
-agg_day_df<-agg_day_df%>%mutate(food_ab=case_when(
-          env_id<5 ~ "low", 
-          env_id>4 & env_id<9 ~ "medium", 
-          env_id>8 ~ "high"
-        ))%>%
-  mutate(temp_env=case_when(
-    env_id==1 ~ "low", 
-    env_id==2 ~ "high", 
-    env_id==3 ~ "low", 
-    env_id==4 ~ "high", 
-    env_id==5 ~ "low", 
-    env_id==6 ~ "high",
-    env_id==7 ~ "low", 
-    env_id==8 ~ "high", 
-    env_id==9 ~ "low", 
-    env_id==10 ~ "high", 
-    env_id==11 ~ "low", 
-    env_id==12 ~ "high", 
-  ))
-  
-  
-  
-  
-  
-  
-  mutate(temperature=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))
-#
-
-
-
-#%>%
-        %>%
-        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
-  
-  
-  
-  
-int_var<-"stom_con"
-# First determine if you wanted the output split by environment or not 
-# I think it makes sense to always print the survival (as you will alwasy be interested in this)
-  # plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
-focus="all_colours"
-# Loop through the models to extract the correct variable 
-  for (i in 1:length(models)){
-    if (i==1){
-      output_per_model_list<-list()
-    }
-    # Set the current model from the env_func_out_list (input to this function)
-    cur_out<-env_func_out_list[[models[i]]]
-    # Now subset for the variable of interest 
-    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
-    # Add the environment number to the dataframes 
-    for (j in 1:length(cur_out_filtered)){
-      cur_out_filtered[[j]]$env_id<-j
-      cur_out_filtered[[j]]$mod_id<-models[i]
-      cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
-      cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>%
-        mutate(leg_name=case_when(
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+      mutate(leg_name=case_when(
           endsWith(mod_id, "11") ~ "1.1: SC-non H", 
           endsWith(mod_id, "12") ~ "1.2: SC-left H", 
           endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
@@ -718,149 +645,20 @@ focus="all_colours"
           startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
           startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
           startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
-        ))%>%
-        mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>%
-        mutate(food_ab=case_when(
-          env_id<5 ~ "low", 
-          env_id>4 & env_id<9 ~ "medium", 
-          env_id>8 ~ "high"
-        ))%>%
-        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
-    }
-    output_per_model_list[[i]]<-cur_out_filtered
-    
+        ))
+      
+    # Add to list 
+      day_pat_per_envlist[[i]]<-cur_mean_out
   }
-  # for the individual dataframes 
-  total_all_models_sc<-list()
-  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
-  for (sublist in output_per_model_list) {
-    for (df in sublist) {
-      total_all_models_sc<- rbind(total_all_models_sc, df)
-    }
-  }
-
   
-  # Now you want to produce a grid of plots, where data is split per environment 
-    # On your x-axis you want time "timestep" 
-    # On you y-axis you want the value of the chosen variable 'value' 
+  day_pat_per_env_df<-bind_rows(day_pat_per_envlist)
   
-  # select colours
-  if(focus=="colours_hoard_foc"){
-    colours<-lim_col_df$colours_hoard_foc
-  }else if(focus=="colours_prox_foc"){
-    colours<-lim_col_df$colours_prox_foc
-  }else if(focus=="all_colours"){
-    colours<-lim_col_df$all_colours
-  }
-
-
-
-# add the temp info and regroup 
-temp_average_all<-total_all_models_sc%>%
-  group_by(timestep,leg_name, temp, line_id, id)%>%
-  summarise(mean_val = mean(value, na.rm=T))
-
-facet_order<-c("low", "high")
-temp_average_all$temp <- factor(temp_average_all$temp, levels = facet_order)
-
-plot<-ggplot(temp_average_all[temp_average_all$id=="stom_con",], aes(x=timestep, y=mean_val))+
-        geom_line(aes( col=leg_name, linetype=line_id))+
-        facet_wrap(.~temp, nrow=2)+
-        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
-        theme(plot.title=element_text(face='bold'), 
-              axis.title.x = element_text( face='bold' ), 
-              axis.title.y=element_text(face='bold'), 
-              strip.text=element_text(), 
-              legend.text=element_text(), 
-              legend.title=element_blank())+
-        scale_color_manual(values=colours)+
-        ylab(label="Proportion of birds alive")
-
-      plot<-ggplotly(plot)
-plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
-
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
 
-  
-      plot_12<-ggplot(total_all_models[total_all_models$id=="stom_con",], aes(x=timestep, y=value))+
+plot<-ggplot(day_pat_per_env_df[day_pat_per_env_df$id=="fat_res",], aes(x=timestep_within_day, y=mean_new))+
         geom_line(aes( col=leg_name, linetype=line_id))+
         facet_wrap(.~env_id,  nrow=6)+
         #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
@@ -871,10 +669,65 @@ plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
               legend.text=element_text(), 
               legend.title=element_blank())+
         scale_color_manual(values=colours)+
+        #coord_cartesian(xlim=c(0, 25))+
         labs(fill=" ")
 
-      plot_12<-ggplotly(plot_12)
-      plot_12%>% layout(legend = list(title=list(text='Model ID')))
+      plot<-ggplotly(plot)
+      plot%>% layout(legend = list(title=list(text='Model ID')))
+      #plot_12
+```
+
+```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+env<-"4"
+#x<-day_pat_per_env_df[day_pat_per_env_df$id=="stom_con" & day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="fat_res"& day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="fat_loss_r"& day_pat_per_env_df$env_id==env,]
+
+
+plot_specificEnv<-ggplot(day_pat_per_env_df[day_pat_per_env_df$id=="stom_con" & day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="fat_res"& day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="fat_loss_r"& day_pat_per_env_df$env_id==env,], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y', nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Energy proxy in gram or gram/2 hour")+
+        xlab(label="Timestep in day")
+
+      plot_specificEnv<-ggplotly(plot_specificEnv)
+      plot_specificEnv%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      #plot_12
+```
+
+
+
+```{r visualise the outcome sc graph behaviours  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+env<-"3"
+#x<-day_pat_per_env_df[day_pat_per_env_df$id=="stom_con" & day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="fat_res"& day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="fat_loss_r"& day_pat_per_env_df$env_id==env,]
+
+
+plot_specificEnv<-ggplot(day_pat_per_env_df[day_pat_per_env_df$id=="rest" & day_pat_per_env_df$env_id==env|day_pat_per_env_df$id=="forage"& day_pat_per_env_df$env_id==env,], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y', nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Energy proxy in gram or gram/2 hour")+
+        xlab(label="Timestep in day")
+
+      plot_specificEnv<-ggplotly(plot_specificEnv)
+      plot_specificEnv%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
       #plot_12
 ```
 
@@ -886,328 +739,616 @@ plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
 
 
 
+### BEHAVIOURS 
+
+```{r plot all variables across enviornments in daily patterns BHES , include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+# subset the data 
+
+subset<-all_vars_day_pat_tot[all_vars_day_pat_tot$id_beh_label=="rest"|all_vars_day_pat_tot$id_beh_label=="hoard"|all_vars_day_pat_tot$id_beh_label=="eat"|all_vars_day_pat_tot$id_beh_label=="retrieve", ]
+# take out the dir_hoarding for leftover hoarders and teh leftover hoarding for direct hoarders (otherwise the graphs go double because dir-hoarders will have 0 for leftover hoarding in each timestep, etc.)
+subset<-subset%>%
+  filter(!(line_id=="2" & id=="dir_hoard"))%>%
+  filter(!(line_id=="3" & id=="eat_hoard"))%>%
+  filter(!(line_id=="4" & id=="eat_hoard"))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r visualise  mean sc across all data wrange, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
-int_var<-"stom)_con"
-focus<-"all_colours"
- # loop through each of the models 
-  for (i in 1:length(models)){
-    if (i==1){
-      output_per_model_list<-list()
-    }
-    # Set the current model from the env_func_out_list (input to this function)
-      cur_out<-env_func_out_list[[models[i]]]
-    
-      # create empty list
-      cur_mod_df<-list()
-      
-      # Concatenate the dataframes in the list 
-      for (df in cur_out[[2]]){
-        cur_mod_df<-rbind(cur_mod_df, df)
-      }
-      # summarize them by variable and timestep 
-      cur_mod_df_sum<-cur_mod_df%>%
-        group_by(timestep, id)%>%
-        summarise(mean_val = mean(value, na.rm=T))%>%
-        mutate(mod_id=models[i])%>%
-        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
-
-      output_per_model_list[[i]]<-cur_mod_df_sum
-  }
-  
-  mean_var_per_model_total<-bind_rows(output_per_model_list)
-  
-  if(focus=="colours_hoard_foc"){
-    colours<-lim_col_df$colours_hoard_foc
-  }else if(focus=="colours_prox_foc"){
-    colours<-lim_col_df$colours_prox_foc
-  }else if(focus=="all_colours"){
-    colours<-lim_col_df$all_colours
-  }
-  
-  
-```
-```{r visualise  mean sc graph, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
-
-  plot<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+
-    geom_line(aes( col=mod_id, linetype=line_id))+
-    #ggtitle(label=paste("SC  - Average across 12 env. " ))+
-    theme(plot.title=element_text(face='bold'), 
-          axis.title.x = element_text(face='bold' ), 
-          axis.title.y=element_text(face='bold'), 
-          strip.text=element_text(), 
-          legend.text=element_text())+
-    ylim(c(0,1))+
-    scale_color_manual(values=colours)+
-    ylab(label="SC in gram")
- 
-  plot<-ggplotly(plot_var)
-  plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
-
-```
-
-
-
-
-
-### Mean variable values across all environments 
-This graph shows the average of each ofthe variables on each timestep. These averages are taken across all environments. 
-```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
-plot_mean_12_env_func(env_func_out_list, models, int_var, focus="all_colours")
-
-```
-
-### Variable of interest, split per enviornment
-These graphs show the chosen variable of interest (see above) for each of the environments. The averages are taken across all alive birds in the simulation
-```{r visualise split or mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
-
-  plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var, focus="all_colours")
-```
-
-### Daily patterns 
-With this code I want to do the following: 
-
-* Aggregate over daily patterns 
-* Omit the first 3 days --> This does cause some models to not show up, or show up half way. The number of datapoints in each aggregation will also differ due to survival. We need to consider how we want to deal with that. 
-* Compare the pattern of fat-loss, SC and FLR 
-
-
-```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
-focus<-'all_colours'
-if(focus=="colours_hoard_foc"){
-    colours<-lim_col_df$colours_hoard_foc
-  }else if(focus=="colours_prox_foc"){
-    colours<-lim_col_df$colours_prox_foc
-  }else if(focus=="all_colours"){
-    colours<-lim_col_df$all_colours
-  }
-
-
-plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+
-        geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+
-        #ylim(lim_df_int[1,2], lim_df_int[1,3])+
-        facet_wrap(.~env_id, nrow=6)+
+plot<-ggplot(subset, aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id_beh_label, scales='free_y',nrow=2)+
         coord_cartesian(xlim=c(0, 25))+
-        #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+
-        ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+
-        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
-        theme(plot.title=element_text(face='bold'), 
-              axis.title.x = element_text(face='bold' ), 
-              axis.title.y=element_text( face='bold'), 
-              strip.text=element_text(), 
-              legend.text=element_text(), 
-              legend.title = element_text( face='bold'))+
-    scale_color_manual(values=colours)
-plot<-ggplotly(plot)
-plot
-
-int_var_df<-agg_day_df[agg_day_df$id==int_var,]
-
-```
-
-
-```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
-
- # loop through each of the models 
-  for (i in 1:length(models)){
-    if (i==1){
-      mean_vars_day_pat_list<-list()
-    }
-    # Set the current model from the env_func_out_list (input to this function)
-      cur_out<-agg_list[[i]]
-      
-    # Do the transformations so we get means across all environments 
-      cur_mean_out<-cur_out%>%
-        group_by(id, timestep_within_day, mod_id)%>%
-        summarise(mean_new=mean(mean_value_day), n=n())%>%
-         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
-      
-    # Add to list 
-      mean_vars_day_pat_list[[i]]<-cur_mean_out
-  }
-  
-  all_vars_day_pat_tot<-bind_rows(mean_vars_day_pat_list)
-  
-
-
-```
-
-```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=12}
-
-plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+
-        geom_line(aes( col=mod_id, linetype=line_id))+
-        facet_wrap(.~id, scales='free_y',nrow=6)+
-        coord_cartesian(xlim=c(0, 25))+
-        ggtitle(label="All variables - Daily patterns - Across all environments")+
-        labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+
+        #ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
+        labs(y="SC  -  FR  -  FCR (in gram or gram/2 hours)", x="Timestep within the Day", col="Model ID")+
         theme(plot.title=element_text( face='bold'), 
               axis.title.x = element_text( face='bold' ), 
               axis.title.y=element_text( face='bold'), 
               strip.text=element_text(), 
               legend.text=element_text(), 
               legend.title = element_text(face='bold'))+
-  scale_color_manual(values=colours)
+  scale_color_manual(values=colours)+
+  labs(fill=" ")
 
 
 p<-ggplotly(plot)
-p
+p%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
 
 ```
 
-```{r aggregate for daily patterns 3 day graph, include=TRUE, message=F, warning=F, echo=F,fig.width=17}
-# Input here will be the env_func_out_list 
-
-for (i in 1:length(models)){
-  
-  if (i==1){
-    pattern_list<-list()
-  }
-  # Select hte current list with the 12 dataframes 
-  cur_mod<-env_func_out_list[[models[i]]][[2]]
-  
-  # Cut off the first 3 days 
-  
-  # add the env row 
-  for (j in 1:length(cur_mod)){
-    cur_mod[[j]]$env_id<-j
-  }
-  # bind it all together 
-  cur_mod<-bind_rows(cur_mod)
-  day_in_sim<-rep(c(1:days), each=72)
-  day_in_sim<-rep(day_in_sim, times=204)
-  # add the timestep within day 
-  cur_mod<-cur_mod%>%
-    mutate(timestep_within_day=timestep%%72)%>%
-    mutate(day_within_sim=day_in_sim)%>%
-    mutate(mod_id=rep(models[i]))#%>%
-    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
-  # add to list 
-  pattern_list[[i]]<-cur_mod
-}
-
-# bind them all together in a dataframe 
-pattern_df<-bind_rows(pattern_list)
-
-```
-
-#### **Possibility to plot variables both within and between days**
-I'm not sure if this is a useful way of showing the variables. It could be to show if there are 'extremes' at the start/end or if things are pretty consisten throughout the simulation. 
-```{r plot the ridgeline plots, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17}
-# Set the variables of interest 
-#env_type_cur<-"6"
-mod_id_cur<-"31"
-
-plot_list<-list()
-
-for (i in 1:12){
-  cur_env_type<-i
-  # set the current env_type
-  # Make the graph 
-  df<-pattern_df[pattern_df$id==int_var,]
-  df<-df%>%filter(mod_id==mod_id_cur)%>%
-    filter(env_id==cur_env_type)%>%
-    filter(timestep_within_day<26)
-  
-  # Now reformat this into a matrix with the right values 
-  mat<-matrix(NA, nrow=26, ncol=days)
-  mat[1:26, 1:days]<-df$value
-  #mat<-as.data.frame(mat)
-  
-  axx<-list(title="Day in Sim")
-  axy<-list(title="Ts in day")
-  axz<-list(title=paste(int_var))
-  
-  surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur)))
-  surPlot<-surPlot%>%add_surface(showscale=FALSE)
-  #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur)))
-  #surPlot  
-  #print(i)
-  plot_list[[cur_env_type]]<-plotly_build(surPlot)
-}
-
-#fig<-subplot(plot_list, nrows=6, margin=0.05)
 
 
 
-fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>%
-  layout(
-        scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)),
-                      xaxis=axx, yaxis=axy, zaxis=axz,
-                      aspectmode='cube'),
-         scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-         scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-         scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-          scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)),
-                      xaxis=axx, yaxis=axy, zaxis=axz,
-                      aspectmode='cube'),
-         scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-         scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-         scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-        scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)),
-                      xaxis=axx, yaxis=axy, zaxis=axz,
-                      aspectmode='cube'),
-         scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-         scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'),
-         scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)),
-                       xaxis=axx, yaxis=axy, zaxis=axz,
-                       aspectmode='cube'))
 
-#, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])
 
-#fit
 
-fig
 
-```
+
+
+
+
+
+
+
+
+<!-- ```{r compare temperatures per sc graph , include=T, message=F, warning=F, echo=F} -->
+<!-- agg_day_df<-agg_day_df%>%mutate(food_ab=case_when( -->
+<!--           env_id<5 ~ "low",  -->
+<!--           env_id>4 & env_id<9 ~ "medium",  -->
+<!--           env_id>8 ~ "high" -->
+<!--         ))%>% -->
+<!--   mutate(temp_env=case_when( -->
+<!--     env_id==1 ~ "low",  -->
+<!--     env_id==2 ~ "high",  -->
+<!--     env_id==3 ~ "low",  -->
+<!--     env_id==4 ~ "high",  -->
+<!--     env_id==5 ~ "low",  -->
+<!--     env_id==6 ~ "high", -->
+<!--     env_id==7 ~ "low",  -->
+<!--     env_id==8 ~ "high",  -->
+<!--     env_id==9 ~ "low",  -->
+<!--     env_id==10 ~ "high",  -->
+<!--     env_id==11 ~ "low",  -->
+<!--     env_id==12 ~ "high",  -->
+<!--   )) -->
+
+
+
+
+
+
+<!--   mutate(temperature=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high")) -->
+<!-- # -->
+
+
+
+<!-- #%>% -->
+<!--         %>% -->
+<!--         mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza")) -->
+
+
+
+
+<!-- int_var<-"stom_con" -->
+<!-- # First determine if you wanted the output split by environment or not  -->
+<!-- # I think it makes sense to always print the survival (as you will alwasy be interested in this) -->
+<!--   # plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours") -->
+<!-- focus="all_colours" -->
+<!-- # Loop through the models to extract the correct variable  -->
+<!--   for (i in 1:length(models)){ -->
+<!--     if (i==1){ -->
+<!--       output_per_model_list<-list() -->
+<!--     } -->
+<!--     # Set the current model from the env_func_out_list (input to this function) -->
+<!--     cur_out<-env_func_out_list[[models[i]]] -->
+<!--     # Now subset for the variable of interest  -->
+<!--     cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))}) -->
+<!--     # Add the environment number to the dataframes  -->
+<!--     for (j in 1:length(cur_out_filtered)){ -->
+<!--       cur_out_filtered[[j]]$env_id<-j -->
+<!--       cur_out_filtered[[j]]$mod_id<-models[i] -->
+<!--       cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5] -->
+<!--       cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>% -->
+<!--         mutate(leg_name=case_when( -->
+<!--           endsWith(mod_id, "11") ~ "1.1: SC-non H",  -->
+<!--           endsWith(mod_id, "12") ~ "1.2: SC-left H",  -->
+<!--           endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop",  -->
+<!--           endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop",  -->
+<!--           endsWith(mod_id, "21") ~ "2.1: FR-non H",  -->
+<!--           endsWith(mod_id, "22") ~ "2.2: FR-left H",  -->
+<!--           endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop",  -->
+<!--           endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop", -->
+<!--           startsWith(mod_id, "31") ~ "3.1: FCR-non H",  -->
+<!--           startsWith(mod_id, "32") ~ "3.2: FCR-left H",  -->
+<!--           startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop",  -->
+<!--           startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop", -->
+<!--         ))%>% -->
+<!--         mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>% -->
+<!--         mutate(food_ab=case_when( -->
+<!--           env_id<5 ~ "low",  -->
+<!--           env_id>4 & env_id<9 ~ "medium",  -->
+<!--           env_id>8 ~ "high" -->
+<!--         ))%>% -->
+<!--         mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza")) -->
+<!--     } -->
+<!--     output_per_model_list[[i]]<-cur_out_filtered -->
+
+<!--   } -->
+<!--   # for the individual dataframes  -->
+<!--   total_all_models_sc<-list() -->
+<!--   # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list'  -->
+<!--   for (sublist in output_per_model_list) { -->
+<!--     for (df in sublist) { -->
+<!--       total_all_models_sc<- rbind(total_all_models_sc, df) -->
+<!--     } -->
+<!--   } -->
+
+
+<!--   # Now you want to produce a grid of plots, where data is split per environment  -->
+<!--     # On your x-axis you want time "timestep"  -->
+<!--     # On you y-axis you want the value of the chosen variable 'value'  -->
+
+<!--   # select colours -->
+<!--   if(focus=="colours_hoard_foc"){ -->
+<!--     colours<-lim_col_df$colours_hoard_foc -->
+<!--   }else if(focus=="colours_prox_foc"){ -->
+<!--     colours<-lim_col_df$colours_prox_foc -->
+<!--   }else if(focus=="all_colours"){ -->
+<!--     colours<-lim_col_df$all_colours -->
+<!--   } -->
+
+
+
+<!-- # add the temp info and regroup  -->
+<!-- temp_average_all<-total_all_models_sc%>% -->
+<!--   group_by(timestep,leg_name, temp, line_id, id)%>% -->
+<!--   summarise(mean_val = mean(value, na.rm=T)) -->
+
+<!-- facet_order<-c("low", "high") -->
+<!-- temp_average_all$temp <- factor(temp_average_all$temp, levels = facet_order) -->
+
+<!-- plot<-ggplot(temp_average_all[temp_average_all$id=="stom_con",], aes(x=timestep, y=mean_val))+ -->
+<!--         geom_line(aes( col=leg_name, linetype=line_id))+ -->
+<!--         facet_wrap(.~temp, nrow=2)+ -->
+<!--         #ggtitle(label=paste(int_var, "- Variable per environment type" ))+ -->
+<!--         theme(plot.title=element_text(face='bold'),  -->
+<!--               axis.title.x = element_text( face='bold' ),  -->
+<!--               axis.title.y=element_text(face='bold'),  -->
+<!--               strip.text=element_text(),  -->
+<!--               legend.text=element_text(),  -->
+<!--               legend.title=element_blank())+ -->
+<!--         scale_color_manual(values=colours)+ -->
+<!--         ylab(label="Proportion of birds alive") -->
+
+<!--       plot<-ggplotly(plot) -->
+<!-- plot %>% layout(legend=list(title=list(text='<b> Model ID</b>'))) -->
+
+<!-- ``` -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13} -->
+
+
+<!--       plot_12<-ggplot(total_all_models[total_all_models$id=="stom_con",], aes(x=timestep, y=value))+ -->
+<!--         geom_line(aes( col=leg_name, linetype=line_id))+ -->
+<!--         facet_wrap(.~env_id,  nrow=6)+ -->
+<!--         #ggtitle(label=paste(int_var, "- Variable per environment type" ))+ -->
+<!--         theme(plot.title=element_text(face='bold'),  -->
+<!--               axis.title.x = element_text( face='bold' ),  -->
+<!--               axis.title.y=element_text(face='bold'),  -->
+<!--               strip.text=element_text(),  -->
+<!--               legend.text=element_text(),  -->
+<!--               legend.title=element_blank())+ -->
+<!--         scale_color_manual(values=colours)+ -->
+<!--         labs(fill=" ") -->
+
+<!--       plot_12<-ggplotly(plot_12) -->
+<!--       plot_12%>% layout(legend = list(title=list(text='Model ID'))) -->
+<!--       #plot_12 -->
+<!-- ``` -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ```{r visualise  mean sc across all data wrange, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5} -->
+<!-- int_var<-"stom)_con" -->
+<!-- focus<-"all_colours" -->
+<!--  # loop through each of the models  -->
+<!--   for (i in 1:length(models)){ -->
+<!--     if (i==1){ -->
+<!--       output_per_model_list<-list() -->
+<!--     } -->
+<!--     # Set the current model from the env_func_out_list (input to this function) -->
+<!--       cur_out<-env_func_out_list[[models[i]]] -->
+
+<!--       # create empty list -->
+<!--       cur_mod_df<-list() -->
+
+<!--       # Concatenate the dataframes in the list  -->
+<!--       for (df in cur_out[[2]]){ -->
+<!--         cur_mod_df<-rbind(cur_mod_df, df) -->
+<!--       } -->
+<!--       # summarize them by variable and timestep  -->
+<!--       cur_mod_df_sum<-cur_mod_df%>% -->
+<!--         group_by(timestep, id)%>% -->
+<!--         summarise(mean_val = mean(value, na.rm=T))%>% -->
+<!--         mutate(mod_id=models[i])%>% -->
+<!--         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5]) -->
+
+<!--       output_per_model_list[[i]]<-cur_mod_df_sum -->
+<!--   } -->
+
+<!--   mean_var_per_model_total<-bind_rows(output_per_model_list) -->
+
+<!--   if(focus=="colours_hoard_foc"){ -->
+<!--     colours<-lim_col_df$colours_hoard_foc -->
+<!--   }else if(focus=="colours_prox_foc"){ -->
+<!--     colours<-lim_col_df$colours_prox_foc -->
+<!--   }else if(focus=="all_colours"){ -->
+<!--     colours<-lim_col_df$all_colours -->
+<!--   } -->
+
+
+<!-- ``` -->
+<!-- ```{r visualise  mean sc graph, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5} -->
+
+<!--   plot<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+ -->
+<!--     geom_line(aes( col=mod_id, linetype=line_id))+ -->
+<!--     #ggtitle(label=paste("SC  - Average across 12 env. " ))+ -->
+<!--     theme(plot.title=element_text(face='bold'),  -->
+<!--           axis.title.x = element_text(face='bold' ),  -->
+<!--           axis.title.y=element_text(face='bold'),  -->
+<!--           strip.text=element_text(),  -->
+<!--           legend.text=element_text())+ -->
+<!--     ylim(c(0,1))+ -->
+<!--     scale_color_manual(values=colours)+ -->
+<!--     ylab(label="SC in gram") -->
+
+<!--   plot<-ggplotly(plot_var) -->
+<!--   plot %>% layout(legend=list(title=list(text='<b> Model ID</b>'))) -->
+
+<!-- ``` -->
+
+
+
+
+
+<!-- ### Mean variable values across all environments  -->
+<!-- This graph shows the average of each ofthe variables on each timestep. These averages are taken across all environments.  -->
+<!-- ```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15} -->
+<!-- plot_mean_12_env_func(env_func_out_list, models, int_var, focus="all_colours") -->
+
+<!-- ``` -->
+
+<!-- ### Variable of interest, split per enviornment -->
+<!-- These graphs show the chosen variable of interest (see above) for each of the environments. The averages are taken across all alive birds in the simulation -->
+<!-- ```{r visualise split or mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15} -->
+
+<!--   plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var, focus="all_colours") -->
+<!-- ``` -->
+
+<!-- ### Daily patterns  -->
+<!-- With this code I want to do the following:  -->
+
+<!-- * Aggregate over daily patterns  -->
+<!-- * Omit the first 3 days This does cause some models to not show up, or show up half way. The number of datapoints in each aggregation will also differ due to survival. We need to consider how we want to deal with that.  -->
+<!-- * Compare the pattern of fat-loss, SC and FLR  -->
+
+
+<!-- ```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13} -->
+<!-- focus<-'all_colours' -->
+<!-- if(focus=="colours_hoard_foc"){ -->
+<!--     colours<-lim_col_df$colours_hoard_foc -->
+<!--   }else if(focus=="colours_prox_foc"){ -->
+<!--     colours<-lim_col_df$colours_prox_foc -->
+<!--   }else if(focus=="all_colours"){ -->
+<!--     colours<-lim_col_df$all_colours -->
+<!--   } -->
+
+
+<!-- plot<-ggplot(agg_day_df[agg_day_df$id==int_var,], aes(x=timestep_within_day, y=mean_value_day))+ -->
+<!--         geom_line(aes( col=mod_id, linetype=line_id), size=0.75)+ -->
+<!--         #ylim(lim_df_int[1,2], lim_df_int[1,3])+ -->
+<!--         facet_wrap(.~env_id, nrow=6)+ -->
+<!--         coord_cartesian(xlim=c(0, 25))+ -->
+<!--         #coord_cartesian(xlim = c(lim_df_int[1,2], lim_df_int[1,3]))+ -->
+<!--         ggtitle(label=paste(int_var, "- per environment - Day pattern" ))+ -->
+<!--         labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+ -->
+<!--         theme(plot.title=element_text(face='bold'),  -->
+<!--               axis.title.x = element_text(face='bold' ),  -->
+<!--               axis.title.y=element_text( face='bold'),  -->
+<!--               strip.text=element_text(),  -->
+<!--               legend.text=element_text(),  -->
+<!--               legend.title = element_text( face='bold'))+ -->
+<!--     scale_color_manual(values=colours) -->
+<!-- plot<-ggplotly(plot) -->
+<!-- plot -->
+
+<!-- int_var_df<-agg_day_df[agg_day_df$id==int_var,] -->
+
+<!-- ``` -->
+
+
+<!-- ```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F} -->
+
+<!--  # loop through each of the models  -->
+<!--   for (i in 1:length(models)){ -->
+<!--     if (i==1){ -->
+<!--       mean_vars_day_pat_list<-list() -->
+<!--     } -->
+<!--     # Set the current model from the env_func_out_list (input to this function) -->
+<!--       cur_out<-agg_list[[i]] -->
+
+<!--     # Do the transformations so we get means across all environments  -->
+<!--       cur_mean_out<-cur_out%>% -->
+<!--         group_by(id, timestep_within_day, mod_id)%>% -->
+<!--         summarise(mean_new=mean(mean_value_day), n=n())%>% -->
+<!--          mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5]) -->
+
+<!--     # Add to list  -->
+<!--       mean_vars_day_pat_list[[i]]<-cur_mean_out -->
+<!--   } -->
+
+<!--   all_vars_day_pat_tot<-bind_rows(mean_vars_day_pat_list) -->
+
+
+
+<!-- ``` -->
+
+<!-- ```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=12} -->
+
+<!-- plot<-ggplot(all_vars_day_pat_tot, aes(x=timestep_within_day, y=mean_new))+ -->
+<!--         geom_line(aes( col=mod_id, linetype=line_id))+ -->
+<!--         facet_wrap(.~id, scales='free_y',nrow=6)+ -->
+<!--         coord_cartesian(xlim=c(0, 25))+ -->
+<!--         ggtitle(label="All variables - Daily patterns - Across all environments")+ -->
+<!--         labs(y=paste(int_var), x="Timestep within the Day", col="Model ID")+ -->
+<!--         theme(plot.title=element_text( face='bold'),  -->
+<!--               axis.title.x = element_text( face='bold' ),  -->
+<!--               axis.title.y=element_text( face='bold'),  -->
+<!--               strip.text=element_text(),  -->
+<!--               legend.text=element_text(),  -->
+<!--               legend.title = element_text(face='bold'))+ -->
+<!--   scale_color_manual(values=colours) -->
+
+
+<!-- p<-ggplotly(plot) -->
+<!-- p -->
+
+<!-- ``` -->
+
+<!-- ```{r aggregate for daily patterns 3 day graph, include=TRUE, message=F, warning=F, echo=F,fig.width=17} -->
+<!-- # Input here will be the env_func_out_list  -->
+
+<!-- for (i in 1:length(models)){ -->
+
+<!--   if (i==1){ -->
+<!--     pattern_list<-list() -->
+<!--   } -->
+<!--   # Select hte current list with the 12 dataframes  -->
+<!--   cur_mod<-env_func_out_list[[models[i]]][[2]] -->
+
+<!--   # Cut off the first 3 days  -->
+
+<!--   # add the env row  -->
+<!--   for (j in 1:length(cur_mod)){ -->
+<!--     cur_mod[[j]]$env_id<-j -->
+<!--   } -->
+<!--   # bind it all together  -->
+<!--   cur_mod<-bind_rows(cur_mod) -->
+<!--   day_in_sim<-rep(c(1:days), each=72) -->
+<!--   day_in_sim<-rep(day_in_sim, times=204) -->
+<!--   # add the timestep within day  -->
+<!--   cur_mod<-cur_mod%>% -->
+<!--     mutate(timestep_within_day=timestep%%72)%>% -->
+<!--     mutate(day_within_sim=day_in_sim)%>% -->
+<!--     mutate(mod_id=rep(models[i]))#%>% -->
+<!--     #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72)) -->
+<!--   # add to list  -->
+<!--   pattern_list[[i]]<-cur_mod -->
+<!-- } -->
+
+<!-- # bind them all together in a dataframe  -->
+<!-- pattern_df<-bind_rows(pattern_list) -->
+
+<!-- ``` -->
+
+<!-- #### **Possibility to plot variables both within and between days** -->
+<!-- I'm not sure if this is a useful way of showing the variables. It could be to show if there are 'extremes' at the start/end or if things are pretty consisten throughout the simulation.  -->
+<!-- ```{r plot the ridgeline plots, include=T, message=F, warning=F, echo=F, fig.width=11, fig.height=17} -->
+<!-- # Set the variables of interest  -->
+<!-- #env_type_cur<-"6" -->
+<!-- mod_id_cur<-"31" -->
+
+<!-- plot_list<-list() -->
+
+<!-- for (i in 1:12){ -->
+<!--   cur_env_type<-i -->
+<!--   # set the current env_type -->
+<!--   # Make the graph  -->
+<!--   df<-pattern_df[pattern_df$id==int_var,] -->
+<!--   df<-df%>%filter(mod_id==mod_id_cur)%>% -->
+<!--     filter(env_id==cur_env_type)%>% -->
+<!--     filter(timestep_within_day<26) -->
+
+<!--   # Now reformat this into a matrix with the right values  -->
+<!--   mat<-matrix(NA, nrow=26, ncol=days) -->
+<!--   mat[1:26, 1:days]<-df$value -->
+<!--   #mat<-as.data.frame(mat) -->
+
+<!--   axx<-list(title="Day in Sim") -->
+<!--   axy<-list(title="Ts in day") -->
+<!--   axz<-list(title=paste(int_var)) -->
+
+<!--   surPlot<-plot_ly(z=~mat, scene=paste0("scene", i))%>%layout(title=list(text=paste0("Var=", int_var, " - Mod=", mod_id_cur))) -->
+<!--   surPlot<-surPlot%>%add_surface(showscale=FALSE) -->
+<!--   #%>% layout(scene=list(xaxis=axx, yaxis=axy, zaxis=axz)) #, title=list(text=paste0("Environment=", env_type_cur, " - Model=", mod_id_cur))) -->
+<!--   #surPlot   -->
+<!--   #print(i) -->
+<!--   plot_list[[cur_env_type]]<-plotly_build(surPlot) -->
+<!-- } -->
+
+<!-- #fig<-subplot(plot_list, nrows=6, margin=0.05) -->
+
+
+
+<!-- fig<-subplot(plot_list[[1]], plot_list[[2]], plot_list[[3]], plot_list[[4]],  plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]])%>% -->
+<!--   layout( -->
+<!--         scene = list(domain=list(x=c(0,0.5),y=c(0.83333333,1)), -->
+<!--                       xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                       aspectmode='cube'), -->
+<!--          scene2 = list(domain=list(x=c(0.5,1),y=c(0.83333333,1)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--          scene3 = list(domain=list(x=c(0,0.5),y=c(0.66666666666666666,0.83333333)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--          scene4 = list(domain=list(x=c(0.5,1),y=c(0.66666666666666666,0.83333333)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--           scene5 = list(domain=list(x=c(0,0.5),y=c(0.5,0.66666666666666666)), -->
+<!--                       xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                       aspectmode='cube'), -->
+<!--          scene6 = list(domain=list(x=c(0.5,1),y=c(0.5,0.66666666666666666)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--          scene7 = list(domain=list(x=c(0,0.5),y=c(0.333333333,0.5)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--          scene8 = list(domain=list(x=c(0.5,1),y=c(0.333333333,0.5)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--         scene9 = list(domain=list(x=c(0,0.5),y=c(0.16666666,0.333333333)), -->
+<!--                       xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                       aspectmode='cube'), -->
+<!--          scene10 = list(domain=list(x=c(0.5,1),y=c(0.16666666,0.333333333)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--          scene11 = list(domain=list(x=c(0,0.5),y=c(0,0.16666666)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube'), -->
+<!--          scene12 = list(domain=list(x=c(0.5,1),y=c(0,0.16666666)), -->
+<!--                        xaxis=axx, yaxis=axy, zaxis=axz, -->
+<!--                        aspectmode='cube')) -->
+
+<!-- #, plot_list[[5]], plot_list[[6]], plot_list[[7]], plot_list[[8]], plot_list[[9]], plot_list[[10]], plot_list[[11]], plot_list[[12]]) -->
+
+<!-- #fit -->
+
+<!-- fig -->
+
+<!-- ``` -->
 
 
 
