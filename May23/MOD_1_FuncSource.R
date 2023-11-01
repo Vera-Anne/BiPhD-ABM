@@ -451,6 +451,8 @@ dead_or_alive_func<-function(t, i){
     mat_caches[i,t]<<-NA
     # For the FLR matrix 
     mat_flr[i,t]<<-NA
+    # for Pdecay 
+    mat_Pdecay[i,t]<<-NA
   } else {
     
     #################

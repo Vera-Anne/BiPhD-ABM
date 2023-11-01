@@ -16,10 +16,11 @@ library(ggplot2)
 library(pracma)# linspace 
 
 # set opt type 
-opt_type<-331
+opt_type<-332
 
 # Set the folder 
-working_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/331/12_environments/2023-10-10/phase_2/"
+working_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/332/12_environments/2023-10-10/phase_2/"
+  # 331: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/331/12_environments/2023-10-10/phase_2/"
   # 32: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/32/12_environments/2023-10-03/phase_2"
   # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_2"
   # 22: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/22/12_environments/2023-10-03/phase_2/"

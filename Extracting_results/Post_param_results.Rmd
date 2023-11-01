@@ -11,7 +11,7 @@ output: html_document
 
 # If Tom (or someone else ) wants to use this on their computer --> any packages that are not installed need to be installed 
     # List of needed packages
-    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr", "plotly", "hrbrthemes")
+    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr", "plotly", "hrbrthemes", "tibble")
     # find which packages are needed 
     new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
     # install ones that were missing 
@@ -36,6 +36,7 @@ output: html_document
   library(stringr)
   library(plotly)
   library(hrbrthemes)
+  library(tibble)
 
 ```
 
@@ -94,7 +95,7 @@ If this is running from the shared Rproject, this should all be automated.
 
 
 ```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
-models<-c("11", "21", "31", "12", "22", "32", "131", "231", "331", "132", "232") # Keep this as is (unless runnig models from scratch)
+models<-c("11", "21", "31", "12", "22", "32", "131", "231", "331", "132", "232", "332") # Keep this as is (unless runnig models from scratch)
 int_var<-"stom_con"  # This is hte variable you can chagne in order to inspect specific variables! 
 
 # If you are using the previously generated data, do not change these the code will use teh default settings 
@@ -157,8 +158,7 @@ for (i in 1:length(models)){
     env_func_3_3_1_par(days = days, N= num_birds, th_forage_flr1 = -0.1346939, th_forage_flr2 = 0.2081633, th_forage_flr3 = 0.3795918, daylight_h = daylight_h, modelType = 331)
     
   } else if (models[i]==332){
-    # Code that runs 332
-    
+    env_func_3_3_2_par(days = days, N= num_birds, th_forage_flr1 = -0.1346939, th_forage_flr2 = 0.2326531, th_forage_flr3 = 0.2571429, daylight_h = 8, modelType = 332)
   }
   
   output_env_func[[3]]<-models[i]
@@ -172,7 +172,8 @@ for (i in 1:length(models)){
 
 # make sure that the lists inside the list have the right name 
 names(env_func_out_list)<-models
-#save(env_func_out_list, file="results.Rda")
+# setwd(sourcefile_wd)
+# save(env_func_out_list, file="results.Rda")
 
 ```
 
@@ -214,39 +215,295 @@ colnames(mod_df)<-c("all_models")
 lim_col_df<-col_df%>%
   right_join(mod_df, by="all_models")
 
+# change the names for clarity 
+# models<-c("1.1: SC-Non H", "1.2: SC-left H", "1.3.1: SC-Dir H-Htop", "1.3.2: SC-Dir H-Rtop", 
+#                             "2.1: FR-Non H", "2.2: FR-left H", "2.3.1: FR-Dir H-Htop", "2.3.2: FR-Dir H-Rtop", 
+#                             "3.1: FCR-Non H", "3.2: FCR-left H", "3.3.1: FCR-Dir H-Htop", "3.3.2: FCR-Dir H-Rtop")
+# names(env_func_out_list)<-c("1.1: SC-Non H", "1.2: SC-left H", "1.3.1: SC-Dir H-Htop", "1.3.2: SC-Dir H-Rtop", 
+#                             "2.1: FR-Non H", "2.2: FR-left H", "2.3.1: FR-Dir H-Htop", "2.3.2: FR-Dir H-Rtop", 
+#                             "3.1: FCR-Non H", "3.2: FCR-left H", "3.3.1: FCR-Dir H-Htop", "3.3.2: FCR-Dir H-Rtop")
+
 ```
+
 
 ### Survival across the selected models 
 The following graph shows how the different models survive across the environments. Survival is hte proportion of birds alive at any given timestep. 
 
-```{r visualise the outcome survival , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+#### Mean across all environments: 
+```{r visualise  mean data wrange, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
 
+focus<-"all_colours"
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-env_func_out_list[[models[i]]]
+    
+      # create empty list
+      cur_mod_df<-list()
+      
+      # Concatenate the dataframes in the list 
+      for (df in cur_out[[2]]){
+        cur_mod_df<-rbind(cur_mod_df, df)
+      }
+      # summarize them by variable and timestep 
+      cur_mod_df_sum<-cur_mod_df%>%
+        group_by(timestep, id)%>%
+        summarise(mean_val = mean(value, na.rm=T))%>%
+        mutate(mod_id=models[i])%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+        mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))
+
+      output_per_model_list[[i]]<-cur_mod_df_sum
+  }
+  
+  mean_var_per_model_total<-bind_rows(output_per_model_list)
+  
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+  
+  
+```
+
+```{r visualise  mean graph, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
+
+  plot_var<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+
+    geom_line(aes( col=leg_name, linetype=line_id))+
+    #ggtitle(label=paste("Survival  - Average across 12 env. " ))+
+    theme(plot.title=element_text(face='bold'), 
+          axis.title.x = element_text(face='bold' ), 
+          axis.title.y=element_text(face='bold'), 
+          strip.text=element_text(), 
+          legend.text=element_text())+
+    ylim(c(0,1))+
+    scale_color_manual(values=colours)+
+    ylab(label="Proportion birds alive")
+ 
+  plot_var<-ggplotly(plot_var)
+  plot_var%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+
+```
+
+#### Split by enevironment 
+```{r visualise the outcome survival data wrangle  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+# legend<-c("1.1: SC-Non H", "1.2: SC-left H", "1.3.1: SC-Dir H-Htop", "1.3.2: SC-Dir H-Rtop",
+#                             "2.1: FR-Non H", "2.2: FR-left H", "2.3.1: FR-Dir H-Htop", "2.3.2: FR-Dir H-Rtop",
+#                             "3.1: FCR-Non H", "3.2: FCR-left H", "3.3.1: FCR-Dir H-Htop", "3.3.2: FCR-Dir H-Rtop")
+int_var<-"alive"
 # First determine if you wanted the output split by environment or not 
 # I think it makes sense to always print the survival (as you will alwasy be interested in this)
-   plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
+  # plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
+focus="all_colours"
+# Loop through the models to extract the correct variable 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+    cur_out<-env_func_out_list[[models[i]]]
+    # Now subset for the variable of interest 
+    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
+    # Add the environment number to the dataframes 
+    for (j in 1:length(cur_out_filtered)){
+      cur_out_filtered[[j]]$env_id<-j
+      cur_out_filtered[[j]]$mod_id<-models[i]
+      cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
+      cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>%
+        mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>%
+        mutate(food_ab=case_when(
+          env_id<5 ~ "low", 
+          env_id>4 & env_id<9 ~ "medium", 
+          env_id>8 ~ "high"
+        ))%>%
+        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
+    }
+    output_per_model_list[[i]]<-cur_out_filtered
+    
+  }
+  # for the individual dataframes 
+  total_all_models_surv<-list()
+  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
+  for (sublist in output_per_model_list) {
+    for (df in sublist) {
+      total_all_models_surv <- rbind(total_all_models_surv, df)
+    }
+  }
+
+  
+  # Now you want to produce a grid of plots, where data is split per environment 
+    # On your x-axis you want time "timestep" 
+    # On you y-axis you want the value of the chosen variable 'value' 
+  
+  # select colours
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+  
 ```
 
-### Mean variable values across all environments 
-This graph shows the average of each ofthe variables on each timestep. These averages are taken across all environments. 
-```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
-plot_mean_12_env_func(env_func_out_list, models, int_var, focus="all_colours")
+```{r visualise the outcome survival graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+
+  
+      plot_12<-ggplot(total_all_models_surv, aes(x=timestep, y=value))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        labs(fill=" ")
+
+      plot_12<-ggplotly(plot_12)
+      plot_12%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      #plot_12
+```
+
+#### Effects of temperature 
+
+```{r compare temperatures, include=T, message=F, warning=F, echo=F}
+
+# add the temp info and regroup 
+temp_average_all<-total_all_models_surv%>%
+  group_by(timestep,leg_name, temp, line_id, id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
 
 ```
 
-### Variable of interest, split per enviornment
-These graphs show the chosen variable of interest (see above) for each of the environments. The averages are taken across all alive birds in the simulation
-```{r visualise split or mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
 
-  plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var, focus="all_colours")
+```{r compare temperatures graph , include=T, message=F, warning=F, echo=F}
+facet_order<-c("low", "high")
+temp_average_all$temp <- factor(temp_average_all$temp, levels = facet_order)
+
+plot<-ggplot(temp_average_all[temp_average_all$id=="alive",], aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~temp, nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
 ```
 
-### Daily patterns 
-With this code I want to do the following: 
 
-* Aggregate over daily patterns 
-* Omit the first 3 days --> This does cause some models to not show up, or show up half way. The number of datapoints in each aggregation will also differ due to survival. We need to consider how we want to deal with that. 
-* Compare the pattern of fat-loss, SC and FLR 
+#### Effects of Food abundancy 
 
+```{r compare food abundancy, include=T, message=F, warning=F, echo=F}
+
+# add the temp info and regroup 
+food_ab_average_all<-total_all_models_surv%>%
+  group_by(timestep,leg_name, food_ab, line_id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+```
+
+
+```{r compare food abundancy graph , include=T, message=F, warning=F, echo=F}
+facet_order<-c("low", "medium", "high")
+food_ab_average_all$food_ab <- factor(food_ab_average_all$food_ab, levels = facet_order)
+
+plot<-ggplot(food_ab_average_all, aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~food_ab, nrow=3)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+
+#### Effects of Food predictability
+
+```{r compare food predictability, include=T, message=F, warning=F, echo=F}
+
+# add the temp info and regroup 
+food_pred_average_all<-total_all_models_surv%>%
+  group_by(timestep,leg_name, food_pred, line_id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+```
+
+```{r compare food predictability  graph , include=T, message=F, warning=F, echo=F}
+facet_order<-c("poisson", "bonanza")
+food_pred_average_all$food_pred <- factor(food_pred_average_all$food_pred, levels = facet_order)
+
+plot<-ggplot(food_pred_average_all, aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~food_pred,nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+### Energy proxies 
 ```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=8}
 # Input here will be the env_func_out_list 
 
@@ -275,8 +532,8 @@ for (i in 1:length(models)){
   # Now summarise the dataframe by timestep within day 
   agg_cur_mod<-cur_mod%>%
     group_by(id, env_id, timestep_within_day)%>%
-    summarise(mean_value_day=mean(value, na.rm=T), 
-              mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
+    summarise(mean_value_day=mean(value, na.rm=T)) %>%#, 
+             # mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
     mutate(mod_id=rep(models[i]))%>%
      mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
   
@@ -288,6 +545,465 @@ for (i in 1:length(models)){
 agg_day_df<-bind_rows(agg_list)
 
 ```
+
+#### Average over all 12 environments 
+
+```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
+
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      mean_vars_day_pat_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id)%>%
+        summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+      
+    # Add to list 
+      mean_vars_day_pat_list[[i]]<-cur_mean_out
+  }
+  
+  all_vars_day_pat_tot<-bind_rows(mean_vars_day_pat_list)
+  
+
+
+```
+
+```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+
+plot<-ggplot(all_vars_day_pat_tot[all_vars_day_pat_tot$id=="stom_con"|all_vars_day_pat_tot$id=="fat_res"|all_vars_day_pat_tot$id=="fat_loss_r", ], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=mod_id, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y',nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
+        labs(y="SC  -  FR  -  FCR (in gram or gram/2 hours)", x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text( face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text(face='bold'))+
+  scale_color_manual(values=colours)
+
+
+p<-ggplotly(plot)
+p
+
+```
+
+
+#### Stomach content 
+
+```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
+
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      day_pat_per_envlist<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id, env_id)%>%
+        summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+      
+    # Add to list 
+      day_pat_per_envlist[[i]]<-cur_mean_out
+  }
+  
+  day_pat_per_env_df<-bind_rows(day_pat_per_envlist)
+  
+```
+
+
+```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+
+plot<-ggplot(day_pat_per_env_df[day_pat_per_env_df$id=="dir_hoard",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=mod_id, linetype=line_id))+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")
+
+      plot<-ggplotly(plot)
+      plot%>% layout(legend = list(title=list(text='Model ID')))
+      #plot_12
+```
+
+
+
+```{r compare temperatures per sc graph , include=T, message=F, warning=F, echo=F}
+agg_day_df<-agg_day_df%>%mutate(food_ab=case_when(
+          env_id<5 ~ "low", 
+          env_id>4 & env_id<9 ~ "medium", 
+          env_id>8 ~ "high"
+        ))%>%
+  mutate(temp_env=case_when(
+    env_id==1 ~ "low", 
+    env_id==2 ~ "high", 
+    env_id==3 ~ "low", 
+    env_id==4 ~ "high", 
+    env_id==5 ~ "low", 
+    env_id==6 ~ "high",
+    env_id==7 ~ "low", 
+    env_id==8 ~ "high", 
+    env_id==9 ~ "low", 
+    env_id==10 ~ "high", 
+    env_id==11 ~ "low", 
+    env_id==12 ~ "high", 
+  ))
+  
+  
+  
+  
+  
+  
+  mutate(temperature=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))
+#
+
+
+
+#%>%
+        %>%
+        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
+  
+  
+  
+  
+int_var<-"stom_con"
+# First determine if you wanted the output split by environment or not 
+# I think it makes sense to always print the survival (as you will alwasy be interested in this)
+  # plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
+focus="all_colours"
+# Loop through the models to extract the correct variable 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+    cur_out<-env_func_out_list[[models[i]]]
+    # Now subset for the variable of interest 
+    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
+    # Add the environment number to the dataframes 
+    for (j in 1:length(cur_out_filtered)){
+      cur_out_filtered[[j]]$env_id<-j
+      cur_out_filtered[[j]]$mod_id<-models[i]
+      cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
+      cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>%
+        mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>%
+        mutate(food_ab=case_when(
+          env_id<5 ~ "low", 
+          env_id>4 & env_id<9 ~ "medium", 
+          env_id>8 ~ "high"
+        ))%>%
+        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
+    }
+    output_per_model_list[[i]]<-cur_out_filtered
+    
+  }
+  # for the individual dataframes 
+  total_all_models_sc<-list()
+  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
+  for (sublist in output_per_model_list) {
+    for (df in sublist) {
+      total_all_models_sc<- rbind(total_all_models_sc, df)
+    }
+  }
+
+  
+  # Now you want to produce a grid of plots, where data is split per environment 
+    # On your x-axis you want time "timestep" 
+    # On you y-axis you want the value of the chosen variable 'value' 
+  
+  # select colours
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+
+
+
+# add the temp info and regroup 
+temp_average_all<-total_all_models_sc%>%
+  group_by(timestep,leg_name, temp, line_id, id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+facet_order<-c("low", "high")
+temp_average_all$temp <- factor(temp_average_all$temp, levels = facet_order)
+
+plot<-ggplot(temp_average_all[temp_average_all$id=="stom_con",], aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~temp, nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+
+  
+      plot_12<-ggplot(total_all_models[total_all_models$id=="stom_con",], aes(x=timestep, y=value))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        labs(fill=" ")
+
+      plot_12<-ggplotly(plot_12)
+      plot_12%>% layout(legend = list(title=list(text='Model ID')))
+      #plot_12
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r visualise  mean sc across all data wrange, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
+int_var<-"stom)_con"
+focus<-"all_colours"
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-env_func_out_list[[models[i]]]
+    
+      # create empty list
+      cur_mod_df<-list()
+      
+      # Concatenate the dataframes in the list 
+      for (df in cur_out[[2]]){
+        cur_mod_df<-rbind(cur_mod_df, df)
+      }
+      # summarize them by variable and timestep 
+      cur_mod_df_sum<-cur_mod_df%>%
+        group_by(timestep, id)%>%
+        summarise(mean_val = mean(value, na.rm=T))%>%
+        mutate(mod_id=models[i])%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+
+      output_per_model_list[[i]]<-cur_mod_df_sum
+  }
+  
+  mean_var_per_model_total<-bind_rows(output_per_model_list)
+  
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+  
+  
+```
+```{r visualise  mean sc graph, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
+
+  plot<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+
+    geom_line(aes( col=mod_id, linetype=line_id))+
+    #ggtitle(label=paste("SC  - Average across 12 env. " ))+
+    theme(plot.title=element_text(face='bold'), 
+          axis.title.x = element_text(face='bold' ), 
+          axis.title.y=element_text(face='bold'), 
+          strip.text=element_text(), 
+          legend.text=element_text())+
+    ylim(c(0,1))+
+    scale_color_manual(values=colours)+
+    ylab(label="SC in gram")
+ 
+  plot<-ggplotly(plot_var)
+  plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+
+
+
+
+### Mean variable values across all environments 
+This graph shows the average of each ofthe variables on each timestep. These averages are taken across all environments. 
+```{r visualise  mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+plot_mean_12_env_func(env_func_out_list, models, int_var, focus="all_colours")
+
+```
+
+### Variable of interest, split per enviornment
+These graphs show the chosen variable of interest (see above) for each of the environments. The averages are taken across all alive birds in the simulation
+```{r visualise split or mean, include=T, message=F, warning=F, echo=F, fig.width=17, fig.height=15}
+
+  plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = int_var, focus="all_colours")
+```
+
+### Daily patterns 
+With this code I want to do the following: 
+
+* Aggregate over daily patterns 
+* Omit the first 3 days --> This does cause some models to not show up, or show up half way. The number of datapoints in each aggregation will also differ due to survival. We need to consider how we want to deal with that. 
+* Compare the pattern of fat-loss, SC and FLR 
+
 
 ```{r plot the daily patterns, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
 focus<-'all_colours'

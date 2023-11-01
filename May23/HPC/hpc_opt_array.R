@@ -30,7 +30,7 @@ library(utils)
     
 # link to the function file 
 source('MOD_1_FuncSource.R')
-source('ModelSource.R')
+source('ModelSource_HPC.R')
 #("C:/Local_R/BiPhD-ABM/May23")
 # checking memory usage 
 #Rprof(tf<-"rprof.log", memory.profiling=TRUE)
@@ -672,7 +672,6 @@ if (modelType==0){
   th11_th21_comb<-as.data.frame(as.matrix(expand.grid(th11_vec, th21_vec)))
   colnames(th11_th21_comb)<-c('th11', 'th21')
   
-
   # Set the current thresholds 
   cur_th11<-th11_th21_comb[th_comb_numb,1]
   cur_th21<-th11_th21_comb[th_comb_numb,2]
@@ -744,7 +743,7 @@ if (modelType==0){
   # No wthe environmnets need to run in parallel 
   
   # put into the environment fnction 
-  env_results<-env_func_4_1_par_hpc(days = days, N= N, th_forage_fr1 = cur_th11, th_forage_fr2= cur_th12, th_forage_flr1=cur_th21, th_forage_flr2=cur_th22, daylight_h = daylight_h, modelType=modelType)
+  env_results<-env_func_4_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th11, th_forage_fr2= cur_th12, th_forage_flr1=cur_th21, th_forage_flr2=cur_th22, daylight_h = daylight_h, modelType=modelType)
   
   # This contains the results for the current threshold, through all 18 environments 
   env_results
@@ -752,10 +751,13 @@ if (modelType==0){
   #add this to the output list
   env_results[[3]]<-args
   
+  # to not clutter the entire HPC
+  env_results[[2]]<-NA
+  
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_4_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
+  save(env_results, file=paste0('outcome_4_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
   
 }else if (modelType=='431'){
   

@@ -16,11 +16,12 @@ library(plotly)         # For the 3D scatterplot
 library(ggplot2)
 
 # set opt_type
-opt_type=332
+opt_type=41
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results) - for .x.3.y models 
-batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/332/12_environments/2023-10-10/phase_1"
+batch_folder<-x
+# 332: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/332/12_environments/2023-10-10/phase_1"
 # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/12_environments/2023-10-06/phase_1"
 # 231: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_1"
 # 132"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
@@ -32,7 +33,7 @@ batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/M
 # 21: 
 
 # Set the folder where the sperate files are (for x.1 and x.2)
-file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/32/12_environments/2023-10-03/phase_1"
+file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/41/2023-10-25/phase_1"
 
   # 11 ---->
   # 12 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/'
@@ -290,7 +291,79 @@ if (opt_type==11 | opt_type==21 | opt_type==31){
       best_1000<-t(best_1000[,6])
       # save it 
       write.table(best_1000, file=paste('best_1000_', opt_type, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names = F, col.names = F)
-} else {
+  } else if (opt_type==41){
+    
+      print(paste('start concatenation phase 1 for opt type = ', opt_type))
+      
+      # navigate to folder where the seperate files are
+      setwd(paste0(file_folder))
+      # Load the filenames in this folder 
+      filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+      
+      # make halflife list
+      halflife_list<-list()
+      
+      numCores<-(detectCores()-1)
+      registerDoParallel(numCores)
+      
+      outcome_concat<- foreach(j=1:length(filenames), .combine='c') %dopar% {
+        
+        # For each of the files in the current batch: extract the halflife 
+        # for (j in 1:length(filenames)){
+        # load the current file 
+        load(filenames[j])
+        # extract the current halflife and put in list 
+        halflife_list[1]<-env_results[1]
+        halflife_list[[1]][3]<-env_results[[3]]$th11
+        halflife_list[[1]][4]<-env_results[[3]]$th21
+        halflife_list[[1]][5]<-env_results[[3]]$th_comb_input
+        #print(paste('batch',i ,'file', j))
+        # to add this to teh 'outcome_concat' 
+        halflife_list
+      } # end for loop that runs through files in a batch-folder
+      
+      # stop the cluster
+      stopImplicitCluster()
+      
+      # Turn the list into a dataframe 
+      halflife_df<-as.data.frame(do.call(rbind, outcome_concat))
+      colnames(halflife_df)<-c('mean', 'sd', 'th11', 'th21', 'th_num')
+      
+      # rename for rest of code
+      HL_df<-halflife_df
+      
+      # Calculate the best value 
+      HL_best<-HL_df[(which.max(HL_df$mean)),]
+      
+      # Turn to numeric 
+      HL_df$th1<-as.numeric(HL_df$th11)
+      HL_df$th2<-as.numeric(HL_df$th21)
+      HL_df$mean<-as.numeric(HL_df$mean)
+      HL_df$th_num<-as.numeric(HL_df$th_num)
+      
+      # order in order of performance 
+      HL_df<-HL_df %>%
+        arrange(desc(mean))
+      
+      # save
+      setwd(paste0(file_folder, '/concat_results'))
+      # Save in the folder
+      save(HL_df, file=paste('opt_outcome_concat_HPC_', opt_type,'_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.Rda'))
+      
+      # SAve the best 1000 threshold values in a vector 
+      best_1000<-head(HL_df, 1000)
+      best_1000<-t(best_1000[,5])
+      # save it 
+      write.table(best_1000, file=paste('best_1000_', opt_type, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names = F, col.names = F)
+      
+      # order the data 
+      HL_df_ordered<-HL_df[order(HL_df$th_num),]
+      
+      print(paste('end concatenation phase 1 opt type = ', opt_type))
+    
+  
+  
+  } else {
   print(paste('mistake'))
 }
 

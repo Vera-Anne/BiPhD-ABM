@@ -3,8 +3,8 @@ title: "Extracting model results - Meeting Tom 23-10-2023"
 author: "Vera Vinken"
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
   
  
@@ -159,6 +159,10 @@ focus<-"all_colours"
   }else if(focus=="all_colours"){
     colours<-lim_col_df$all_colours
   }
+  
+  
+  
+  
   
   
   plot_var<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+
