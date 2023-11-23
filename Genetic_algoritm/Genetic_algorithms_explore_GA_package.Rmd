@@ -16,11 +16,11 @@ https://luca-scr.github.io/GA/articles/GA.html#miscellanea
 
 ```{r packages, include=T, message=F, warning=F}
 
-# Code to check if packages are there, if not install them 
+# Code to check if packages are there, if not install them
     packages_to_install <- c("GA", "purr", "doParallel", "foreach", "iterators")
-    # find which packages are needed 
+    # find which packages are needed
     new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
-    # install ones that were missing 
+    # install ones that were missing
     if(length(new_packages)>0){
       install.packages(new_packages)
       }

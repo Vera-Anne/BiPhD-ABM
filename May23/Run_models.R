@@ -85,7 +85,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # environment model 
-  env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.09795918, daylight_h = 8, modelType = 11)
+  env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.046875, daylight_h = 8, modelType = 11)
 })
 
 # HPC version - non paralleel 
@@ -244,7 +244,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # Run the model 
-  mod_2_1(days=30, N=1000, env_type = 8, th_forage_fr = 1.55102 , daylight_h = 8)
+  mod_2_1(days=30, N=1000, env_type = 8, th_forage_fr = 1.714286, daylight_h = 8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_21_list<-list(total_vars_df21, output_df_list_raw21)
   # save the results 
@@ -266,7 +266,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # environment function 
-  env_func_2_1_par(days = 30, N= 1000, th_forage_fr = 1.55102, daylight_h = 8, modelType = 21)
+  env_func_2_1_par(days = 30, N= 1000, th_forage_fr = 1.34375, daylight_h = 8, modelType = 21)
 })
 
 # Now do an overview image 

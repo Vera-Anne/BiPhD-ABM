@@ -699,7 +699,7 @@ p%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
 
 #### Stomach content 
 
-```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
+```{r check mean across environment for all valuessss, include=TRUE, message=F, warning=F, echo=F}
 
  # loop through each of the models 
   for (i in 1:length(models)){
