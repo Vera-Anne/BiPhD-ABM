@@ -950,7 +950,7 @@ mod_2_1_hpc<-function(days, N, env_type, th_forage_fr, daylight_h){
   env_type<<-env_type
   th_forage_fr<<-th_forage_fr
   daylight_h<<-daylight_h
-  model_type<<-"21"
+  mod_type<<-"21"
   
   # load necessary packages for parallel (if needed)
   require(foreach)
