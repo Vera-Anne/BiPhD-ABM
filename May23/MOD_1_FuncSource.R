@@ -1286,6 +1286,197 @@ t_halflife_func<-function(halflife_input){
 
 
 
+#############################
+#    BRANCHING FUNCTIONS    # 
+#############################
+
+# Basic branching function 
+branch_func<-function(range_min, range_max, branch_num){
+  # determine stepsize
+  step_size<<-((range_max-range_min)/branch_num)
+  
+  # Set the value for the threshold for each branch
+  th_b1<-range_min + (step_size/2)
+  th_b2<-(th_b1+step_size)
+  th_b3<-(th_b2+step_size)
+  th_b4<-(th_b3+step_size)
+  
+  # concatenate output 
+  output_branches<<-c(th_b1, th_b2, th_b3, th_b4, step_size)
+  return(output_branches)
+}
+
+# Function that runs models x.1 through the branch and outputs the best threshold (each th run 25x throughout the 12 environments )
+branch_4_optimization_x1<-function(model_type, range_min_start, range_max_start){
+  
+  ##### LEVEL 1 
+  # Run the branch function 
+  vals_l1<-branch_func(range_min = range_min_start, range_max = range_max_start, branch_num = 4)
+  
+  # Now run the model 
+  for (i in 1:4){
+    if (i==1){
+      # Create empty list for results 
+      level_1_results<<-list()
+    }
+    # Set current th 
+    cur_th<-vals_l1[i]
+    # Run the model 25 times in the 12 environments and take the average
+    for (j in 1:25){
+      if (j==1){
+        out_per_run_list<-list()
+      }
+      # Run the model 
+      if(model_type==11){
+        env_func_1_1_par_hpc(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType = 11)
+      }else if(model_type==21){
+        env_func_2_1_par_hpc(days = days, N= N, th_forage_fr = cur_th, daylight_h = daylight_h, modelType = 21)
+      }else if(model_type==31){
+        env_func_3_1_par_hpc(days = days, N= N, th_forage_flr = cur_th, daylight_h = daylight_h, modelType = 31)
+      }else{
+        print('problem with model_type settings')
+      }
+      out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th)
+      print(paste(j))
+    } # end of loop for 25 run s
+    
+    # bind together
+    out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
+    colnames(out_per_run_df)<-"HL"
+    # Now take the average for the threshold 
+    mean_perf<-c(mean(out_per_run_df$HL), cur_th)
+    # add to list
+    level_1_results[[i]]<<-mean_perf
+    # mark that things are working
+    print(paste("Done with level 1 ", i))
+  } # end of 1-4 branching loop
+  
+  halflife_out_l1<-data.frame(matrix(unlist(level_1_results), nrow=4, byrow=TRUE),stringsAsFactors=FALSE)
+  names<-c("HL",  "th")
+  colnames(halflife_out_l1)<-names
+  
+  # select highest outcome
+  max_HL_l1<-max(halflife_out_l1$HL)
+  best_l1<-halflife_out_l1[halflife_out_l1$HL==max_HL_l1, ]
+  best_th_l1<-best_l1[1,2]
+  
+  #### LEVEL 2 
+  # Calculate the new ranges for level 2 (this uses the stepsize that comes out of the branching function in level 1 )
+  range_min_l2<-(best_th_l1-(step_size/2))
+  range_max_l2<-(best_th_l1+(step_size/2))
+  
+  # Run the branch function 
+  vals_l2<-branch_func(range_min = range_min_l2, range_max = range_max_l2, branch_num = 4)
+  
+  # Now run the model 
+  for (i in 1:4){
+    if (i==1){
+      # Create empty list for results 
+      level_2_results<<-list()
+    }
+    # Set current th 
+    cur_th<-vals_l2[i]
+    # Run the model 25 times in the 12 environments and take the average
+    for (j in 1:25){
+      if (j==1){
+        out_per_run_list<-list()
+      }
+      # Run the model 
+      if(model_type==11){
+        env_func_1_1_par_hpc(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType = 11)
+      }else if(model_type==21){
+        env_func_2_1_par_hpc(days = days, N= N, th_forage_fr = cur_th, daylight_h = daylight_h, modelType = 21)
+      }else if(model_type==31){
+        env_func_3_1_par_hpc(days = days, N= N, th_forage_flr = cur_th, daylight_h = daylight_h, modelType = 31)
+      }else{
+        print('problem with model_type settings')
+      }
+      out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th)
+      print(paste(j))
+    } # end of loop for 25 run s
+    
+    # bind together
+    out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
+    colnames(out_per_run_df)<-"HL"
+    # Now take the average for the threshold 
+    mean_perf<-c(mean(out_per_run_df$HL), cur_th)
+    # add to list
+    level_2_results[[i]]<<-mean_perf
+    
+    # mark that things are working
+    print(paste("Done with level 2 ", i))
+  } # end of 1-4 branching loop
+  
+  halflife_out_l2<-data.frame(matrix(unlist(level_2_results), nrow=4, byrow=TRUE),stringsAsFactors=FALSE)
+  names<-c("HL",  "th")
+  colnames(halflife_out_l2)<-names
+  
+  # select highest outcome
+  max_HL_l2<-max(halflife_out_l2$HL)
+  best_l2<-halflife_out_l2[halflife_out_l2$HL==max_HL_l2, ]
+  best_th_l2<-best_l2[1,2]
+  
+  #### LEVEL 3 
+  # Calculate the new ranges for level 2 (this uses the stepsize that comes out of the branching function in level 1 )
+  range_min_l3<-(best_th_l2-(step_size/2))
+  range_max_l3<-(best_th_l2+(step_size/2))
+  
+  # Run the branch function 
+  vals_l3<-branch_func(range_min = range_min_l3, range_max = range_max_l3, branch_num = 4)
+  
+  # Now run the model 
+  for (i in 1:4){
+    if (i==1){
+      # Create empty list for results 
+      level_3_results<<-list()
+    }
+    # Set current th 
+    cur_th<-vals_l3[i]
+    # Run the model 25 times in the 12 environments and take the average
+    for (j in 1:25){
+      if (j==1){
+        out_per_run_list<-list()
+      }
+      # Run the model 
+      if(model_type==11){
+        env_func_1_1_par_hpc(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType = 11)
+      }else if(model_type==21){
+        env_func_2_1_par_hpc(days = days, N= N, th_forage_fr = cur_th, daylight_h = daylight_h, modelType = 21)
+      }else if(model_type==31){
+        env_func_3_1_par_hpc(days = days, N= N, th_forage_flr = cur_th, daylight_h = daylight_h, modelType = 31)
+      }else{
+        print('problem with model_type settings')
+      }
+      out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th)
+      print(paste(j))
+    } # end of loop for 25 run s
+    
+    # bind together
+    out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
+    colnames(out_per_run_df)<-"HL"
+    # Now take the average for the threshold 
+    mean_perf<-c(mean(out_per_run_df$HL), cur_th)
+    # add to list
+    level_3_results[[i]]<<-mean_perf
+    
+    # mark that things are working
+    print(paste("Done with level 3 ", i))
+  } # end of 1-4 branching loop - level 3
+  
+  halflife_out_l3<-data.frame(matrix(unlist(level_3_results), nrow=4, byrow=TRUE),stringsAsFactors=FALSE)
+  names<-c("HL", "th")
+  colnames(halflife_out_l3)<-names
+  
+  # select highest outcome
+  max_HL_l3<-max(halflife_out_l3$HL)
+  best_l3<-halflife_out_l3[halflife_out_l3$HL==max_HL_l3, ]
+  best_th_l3<-best_l3[1,2]
+  
+  # Output the best threshold 
+  return_list<-list(level_1_results, level_2_results, level_3_results, best_l3)
+  return(return_list)
+  
+} # end of function 
 
 
 

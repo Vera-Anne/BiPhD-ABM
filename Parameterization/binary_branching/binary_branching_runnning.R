@@ -9,8 +9,7 @@ source('MOD_1_FuncSource.R')
 source('ModelSource.R')
 
 # set the value 
-current_th<-0.046875
-
+current_th<-0.021875
 
 
 # Start the loop for running 1 value 25x 
@@ -20,7 +19,7 @@ for (i in 1:25){
     outcome_list<-list()
   }
   # environment model 
-  env_func_1_1_par(days = 30, N= 100, th_forage_sc = current_th, daylight_h = 8, modelType = 11)
+  env_func_1_1_par(days = 30, N= 1000, th_forage_sc = current_th, daylight_h = 8, modelType = 11)
   
   outcome_list[i]<-performance[[1]]  
   
@@ -46,8 +45,7 @@ source('MOD_1_FuncSource.R')
 source('ModelSource.R')
 
 # set the value 
-current_th<-1.375
-
+current_th<-1.95918
 
 # Start the loop for running 1 value 25x 
 
