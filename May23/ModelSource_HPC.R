@@ -3,7 +3,7 @@
 # Start date: 16/05/2023
 # Vera Vinken 
 # all models - for HPC use 
-# LAST UPDATE: 23/10/2023
+# LAST UPDATE: 30/11/2023
 #################################################################################
 
 
@@ -1334,7 +1334,7 @@ env_func_2_2_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, daylight_h
   # parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12
@@ -1760,7 +1760,7 @@ env_func_2_3_1_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   # parallel computing
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12
@@ -1801,7 +1801,7 @@ env_func_2_3_2_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   # For parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12
@@ -2014,7 +2014,7 @@ env_func_3_1_par_hpc<-function(days, N, th_forage_flr, daylight_h, modelType){
   # For parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # set number of environments 
   num_env<-12 
@@ -2235,7 +2235,7 @@ env_func_3_2_par_hpc<-function(days, N, th_forage_flr1, th_forage_flr2, daylight
   # For parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12 
@@ -2659,7 +2659,7 @@ env_func_3_3_1_par_hpc<-function(days, N, th_forage_flr1, th_forage_flr2, th_for
   # For parallel computing
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12
@@ -2701,7 +2701,7 @@ env_func_3_3_2_par_hpc<-function(days, N, th_forage_flr1, th_forage_flr2, th_for
   # For parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12 
@@ -2912,7 +2912,7 @@ env_func_4_1_par_hpc<-function(days, N, th_forage_fr, th_forage_flr, daylight_h,
   # For parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12 
@@ -3133,7 +3133,7 @@ env_func_4_2_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_
   # For parallel computing
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12 
@@ -3547,7 +3547,7 @@ env_func_4_3_1_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   # parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Number of environments 
   num_env<-12 
@@ -3591,7 +3591,7 @@ env_func_4_3_2_par_hpc<-function(days, N, th_forage_fr1, th_forage_fr2, th_forag
   # for parallel computing 
   require(doParallel)
   require(foreach)
-  numCores<-(10)
+  numCores<-(12)
   registerDoParallel(numCores)
   # Set number of environments 
   num_env<-12 

@@ -38,14 +38,6 @@ library(foreach)            # For running code parallel
 library(ggpubr)             # To arrange plots 
 library(gridExtra)          # for grid.arrange 
 
-
-# link to the function file 
-# This contains all the general, smaller funcitons needed for the models 
-#setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
-# setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
-# source('MOD_1_FuncSource.R')
-# source('ModelSource.R')
-
 #################################################################
 ##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
 #################################################################
@@ -62,7 +54,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # Run the model 
-  mod_1_1(days=30, N=100, env_type = 6, th_forage_sc = 0.09795918 , daylight_h = 8)
+  mod_1_1(days=30, N=1000, env_type = 6, th_forage_sc = 0.008163265 , daylight_h = 8)
   # First put together some relevant dataframes (we want both individual data and mean data)
   save_11_list<-list(total_vars_df11, output_df_list_raw11)
   # save the data 
@@ -85,7 +77,7 @@ system.time({
   source('MOD_1_FuncSource.R')
   source('ModelSource.R')
   # environment model 
-  env_func_1_1_par(days = 30, N= 100, th_forage_sc = 0.046875, daylight_h = 8, modelType = 11)
+  env_func_1_1_par(days = 30, N= 1000, th_forage_sc = 0.008163265, daylight_h = 8, modelType = 11)
 })
 
 # HPC version - non paralleel 

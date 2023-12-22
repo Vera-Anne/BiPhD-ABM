@@ -1,0 +1,119 @@
+---
+title: "Visualise half-life function"
+author: "Vera Vinken"
+date: "05/12/2023"
+output: html_document
+---
+  
+## Packages & functions 
+
+```{r packages, include=TRUE, message=FALSE, warning=FALSE}
+
+# Packages 
+  library(truncnorm)
+  library(ggplot2)
+  library(data.table)
+  library(foreach)
+  library(doParallel)
+  library(purrr)             # for making lists into dataframes 
+  library(beepr)
+  library(doParallel)         # For runing code parallel with dopar function 
+  library(foreach)            # For running code parallel 
+  library(ggpubr)             # To arrange plots 
+  library(gridExtra)          # for grid.arrange 
+  
+
+# Function files 
+  setwd("C:/Local_R/BiPhD-ABM/May23") # for hp elitebook 
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+```
+
+## Background
+The half-life function calculates how well a model performs in an environment. It takes the information about survival across all individuals across all timesteps. From here, it fits an exponential decay curve to see at which point in time half of the original individuals would be alive. 
+
+## Run a model so you have data to work with 
+```{r run a model, include=TRUE, message=FALSE, warning=FALSE}
+  # environment model 
+  env_func_1_1_par(days = 30, N= 1000, th_forage_sc = 0.008163265, daylight_h = 8, modelType = 11)
+
+```
+
+Now you have that outcome, I select the part of the outcome that goes into the half-life function. The halflife-function is specified in the Function Source file. 
+
+```{r Put output into halflife function, include=TRUE, warning=FALSE, message=FALSE, echo=FALSE}
+halflife_input<-output_env_func[[2]]
+
+# This will do nothing, cause the function has not actual return output that is relevan there 
+t_halflife_func(halflife_input = halflife_input)
+
+
+# So do it step by step: 
+for (i in 1:length(halflife_input)){
+    if (i==1){
+      # list for the t_HL
+      t_HL_list<<-list()
+      # list for general fit summaries
+      fit_sum_list<-list()
+    } 
+    
+    # Create the dataframe you'll be dealing with 
+    df<-subset(halflife_input[[i]], halflife_input[[i]]$id=='alive')
+    # clean up the dataframe
+    df$timestep<-as.numeric(df$timestep)
+    df<-df[,2:3]
+    colnames(df)<-c('y', 't')
+    
+    # Now fit the model 
+    
+    # To control the interations in NLS I use the following 
+    nls.control(maxiter = 100)
+    # I use a basic exponential decay curve 
+    # starting values need to be given 
+    fit<-nls(y ~ a*exp(-b*t), data=df, 
+             start=list(a=1, b=0.0000001))
+    # pull out hte summary --> this has the estimated values for a an db in it 
+    sum_fit<-summary(fit)
+    # put in the list 
+    fit_sum_list[[i]]<-sum_fit$parameters
+    
+    # Now, where does it cross the x-axis? 
+    # Set the current a & b 
+    cur_a<-fit_sum_list[[i]][1]
+    cur_b<-fit_sum_list[[i]][2]
+    # set the halflife 
+    y_halflife<-0.5
+    # now calculate the timestep at which this will occur 
+    t_halflife<-(-(log(y_halflife/cur_a)/cur_b))
+    # calculate y from there (just to check)
+    ytest<-(cur_a*exp(-cur_b*t_halflife))
+    
+  }
+
+
+```
+
+Plot this to see what it looks like. 
+
+```{r build the model function, include=TRUE, warning=FALSE, message=FALSE, results='hide'}
+# The data we have 
+plot(df$t, df$y, xlab="Timestep", ylab="Proportion alive")
+curve(cur_a*exp(-cur_b*x), from = 0, to=2160, xlab="x", ylab="y", type="l", add=T)
+
+# plot the curve on top 
+
+points(df$t, df$y)
+
+
+# plot the curve on top 
+my_equation<-function(x){cur_a*exp(-cur_b*x)}
+
+test<-ggplot(data.frame(x=c(1,2160)), aes(x=x))+
+  stat_function(fun=my_equation)
+
+ggplot(data=df, aes(x=df$t, y=df$y))+
+  geom_line()+
+  stat_function(fun=my_equation)
+  
+```
+
