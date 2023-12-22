@@ -1650,9 +1650,6 @@ branch_4_optimization_x1_single<-function(model_type, range_min_start, range_max
   
 } # end of function 
 
-
-
-
 # The HPC function 
 branch_4_optimization_x2_hpc<-function(model_type, range_min_start_th1, range_max_start_th1, range_min_start_th2, range_max_start_th2){
   
@@ -2198,5 +2195,5 @@ branch_4_optimization_x3_hpc<-function(model_type, range_min_start_th1, range_ma
   return(return_list)
   
 } # end of function for hpc 
-
+  
 

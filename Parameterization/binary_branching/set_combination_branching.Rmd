@@ -312,11 +312,11 @@ branch_4_optimization_x1<-function(model_type, range_min_start, range_max_start)
             }
             # Run the model 
               if(model_type==11){
-                env_func_1_1_par(days = 10, N= 100, th_forage_sc = cur_th, daylight_h = 8, modelType = 11)
+                env_func_1_1_par(days = 30, N= 1000, th_forage_sc = cur_th, daylight_h = 8, modelType = 11)
               }else if(model_type==21){
-                env_func_2_1_par(days = 10, N= 100, th_forage_fr = cur_th, daylight_h = 8, modelType = 21)
+                env_func_2_1_par(days = 30, N= 1000, th_forage_fr = cur_th, daylight_h = 8, modelType = 21)
               }else if(model_type==31){
-                env_func_3_1_par(days = 10, N= 100, th_forage_flr = cur_th, daylight_h = 8, modelType = 31)
+                env_func_3_1_par(days = 30, N= 1000, th_forage_flr = cur_th, daylight_h = 8, modelType = 31)
               }else{
                 print('problem with model_type settings')
               }

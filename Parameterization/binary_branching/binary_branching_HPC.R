@@ -76,5 +76,5 @@ branching_output_list<-list(branching_output, args)
 # set directory 
 setwd(out_dir)
 # make sure to attach the threshold to the dataframe 
-save(branching_output_list, file=paste0('out_4branch_x1_', modelType, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
+save(branching_output_list, file=paste0('out_4branch_x1_', modelType, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_','.Rda'))
 
