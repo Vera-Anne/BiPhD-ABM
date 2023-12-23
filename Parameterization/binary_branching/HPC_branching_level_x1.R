@@ -34,6 +34,7 @@ library(utils)
 # link to the function file 
 source('MOD_1_FuncSource.R')
 source('ModelSource_HPC.R')
+source("ModelSource.R")
 
 
 #############################
@@ -89,7 +90,7 @@ vals<-branch_func(range_min = range_min_start, range_max = range_max_start, bran
       }
       # Run the model 
       if(modelType==11){
-        env_func_1_1_par_hpc(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType = 11)
+        env_func_1_1_par(days = days, N= N, th_forage_sc = cur_th, daylight_h = daylight_h, modelType = 11)
       }else if(modelType==21){
         env_func_2_1_par_hpc(days = days, N= N, th_forage_fr = cur_th, daylight_h = daylight_h, modelType = 21)
       }else if(modelType==31){
