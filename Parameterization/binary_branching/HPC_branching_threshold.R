@@ -48,6 +48,10 @@ vals<-branch_func(range_min = range_min_start, range_max = range_max_start, bran
 # set directory 
   setwd(out_dir)
   
+ 
+ #vals<-vals[1:4]
+ vals<-t(vals)
+  
 # make sure to attach the threshold to the dataframe 
-  write.table(vals, file=paste('out_4branch_th', modelType, '_level', level, "_", '.csv'), row.names = F, col.names = F)
-
+  write.table(vals, sep=" ", file=paste0('out_4branch_th', modelType, '_level', level, "_", '.csv'), row.names = F, col.names = F)
+  #write.csv(vals, file="test.csv")
