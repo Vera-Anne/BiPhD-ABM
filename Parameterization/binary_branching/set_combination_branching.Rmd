@@ -168,6 +168,90 @@ level_2<-level_2[level_2$Var1>level_2$Var2,]
 
 
 
+ tree_func_x2<-function(start_min_th1, start_max_th1, start_min_th2, start_max_th2, branch_num, depth){
+      
+      # Start the loop that will go thrugh the number of steps as set in 'depth' 
+      for (i in 1:depth){
+        # Generate a list for the output 
+          if (i==1){
+            tree_output_list<-list()
+          
+        # Run the function to branch for the first th 
+          out_th1<-as.data.frame(branch_func(range_min = start_min_th1, range_max = start_max_th1, branch_num = branch_num))
+          out_th2<-as.data.frame(branch_func(range_min= start_min_th2, range_max = start_max_th2, branch_num = branch_num))
+        # combine
+          th_l1<-cbind(out_th1, out_th2)
+          colnames(th_l1)<-c("th1", "th2")
+        # Add the output 
+          tree_output_list[[1]]<-th_l1
+
+          } else if (i==2){
+        
+            
+            
+        ########### CONTINUE HERE     
+            
+        # if i = 2 or higher 
+            
+        # Set previous step stepsize
+        step_size_prev_step<-step_size
+        
+        # Determine the new ranges for each of the 4 branches 
+        for (j in 1:branch_num){
+          
+          # Calculate the new minimum 
+          cur_min<-(tree_output_list[[j]][[1]]-(0.5*step_size_prev_step))
+          cur_max<-(tree_output_list[[j]][[1]]+(0.5*step_size_prev_step))
+          
+          # run the function 
+          out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
+          
+  # add it to the list 
+          tree_output_list[[j]][1]<-list(out[1])
+          tree_output_list[[j]][2]<-list(out[2])
+          tree_output_list[[j]][3]<-list(out[3])
+          tree_output_list[[j]][4]<-list(out[4])
+          
+          names<-c(out[[1]], out[[2]], out[[3]], out[[4]])
+          names(tree_output_list[[j]])<-names
+
+        } # end of 4 branches 
+        
+        
+  }else if (i==3){
+            # Set previous step stepsize
+        step_size_prev_step<-step_size
+        
+        # Determine the new ranges for each of the 4 branches 
+        for (k in 1:branch_num){
+          
+          for(l in 1:branch_num){
+          
+          # Calculate the new minimum 
+          cur_min<-(tree_output_list[[k]][[l]]-(0.5*step_size_prev_step))
+          cur_max<-(tree_output_list[[k]][[l]]+(0.5*step_size_prev_step))
+          
+          # run the function 
+          out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
+          
+          # add it to the list 
+          tree_output_list[[k]][[l]][1]<-list(out[1])
+          tree_output_list[[k]][[l]][2]<-list(out[2])
+          tree_output_list[[k]][[l]][3]<-list(out[3])
+          tree_output_list[[k]][[l]][4]<-list(out[4])
+          
+                    
+          names<-c(out[[1]], out[[2]], out[[3]], out[[4]])
+          names(tree_output_list[[k]][[l]])<-names
+          } # end of the for loop 'l' 
+          
+          
+        } # end of 4 branches 
+  } 
+      }# end of the for loop 
+      
+      return(tree_output_list)
+    } # en dof the funciton 
 
 
 
