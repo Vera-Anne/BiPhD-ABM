@@ -95,7 +95,7 @@ setwd(out_dir)
 
 
 # make sure to attach the threshold to the dataframe 
-write.table(next_range, sep=" ", file=paste0('out_concat_level_mod_', modelType, '_level', level, "_", format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.csv'), row.names = F, col.names = F)
+write.table(next_range, sep=" ", file=paste0('out_concat_mod_', modelType, '_level', level, "_", format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'.csv'), row.names = F, col.names = F)
 #write.csv(vals, file="test.csv")
 
   
