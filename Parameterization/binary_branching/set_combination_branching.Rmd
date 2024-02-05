@@ -9,6 +9,8 @@ output: html_document
 
 ```{r packages, include=TRUE, message=FALSE, warning=FALSE}
 library(dplyr)
+
+library(strinr) # to select the 2nd digit of a number with the str_sub() function 
 ```
 
 ## Background
@@ -155,6 +157,16 @@ Old function for tree-branching
   #   } # en dof the funciton
 
 
+# Also load the function file dependencies in order to run the models
+  # setwd("C:/Local_R/BiPhD-ABM/May23")
+  # source('MOD_1_FuncSource.R')
+  # source('ModelSource.R')
+```
+
+New tree-branching fucntions from 31/01/24
+x.1 
+```{r subset 1 tree branching functions}
+
 tree_func_x1<-function(model_type, branch_num){
       if(model_type==11){
         start_min<-0
@@ -292,12 +304,35 @@ tree_func_x1<-function(model_type, branch_num){
         
       } # end the for loop 
    names(tree_output_list)<-c("level1", "level2", "level3")
+   # save it 
+    setwd(file_folder)
+    save(tree_output_list, file=paste0("branch_sub1_x1_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
-        
+   
+```
+x.2 
+```{r write sub1 x.2 models}
     
 # Build a tree for the x.2 models (subset 1 - one variable)
-    tree_func_x2<-function(start_min_th1, start_max_th1, start_min_th2, start_max_th2, branch_num){
+tree_func_x2<-function(model_type, branch_num){
+      if(model_type==12){
+        start_min_th1<-0
+        start_max_th1<-0.4
+        start_min_th2<-0
+        start_max_th2<-0.4
+      }else if(model_type==22){
+        start_min_th1<-0
+        start_max_th1<-4
+        start_min_th2<-0
+        start_max_th2<-4
+      }else if(model_type==32){
+        start_min_th1<-(-0.6)
+        start_max_th1<-0.6
+        start_min_th2<-(-0.6)
+        start_max_th2<-0.6
+      }else{print("there is a problem with model_type")}
+      
       depth<-3
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
@@ -348,7 +383,6 @@ tree_func_x1<-function(model_type, branch_num){
                     filter(th1<th2)
                   # Add the output to the list 
                   level_list[[j]]<-grid
-                  
               }
             # sort naming 
             names(level_list)<-c(
@@ -435,14 +469,40 @@ tree_func_x1<-function(model_type, branch_num){
         
       } # end the for loop 
    names(tree_output_list)<-c("level1", "level2", "level3")
+   # save it 
+    setwd(file_folder)
+    save(tree_output_list, file=paste0("branch_sub1_x2_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
-        
+```   
+x.3
+```{r build subset 1 x.3 models }
     
-# Build a tree for the x.2 models (subset 1 - one variable)
-    tree_func_x3<-function(start_min_th1, start_max_th1, start_min_th2, start_max_th2, start_min_th3, start_max_th3, branch_num){
+tree_func_x3<-function(model_type, branch_num){
+       if((model_type==131)|(model_type==132)){
+        start_min_th1<-0
+        start_max_th1<-0.4
+        start_min_th2<-0
+        start_max_th2<-0.4
+        start_min_th3<-0
+        start_max_th3<-0.4
+      }else if(model_type==231 | model_type==232){
+        start_min_th1<-0
+        start_max_th1<-4
+        start_min_th2<-0
+        start_max_th2<-4
+        start_min_th3<-0
+        start_max_th3<-4
+      }else if(model_type==331 | model_type==332){
+        start_min_th1<-(-0.6)
+        start_max_th1<-0.6
+        start_min_th2<-(-0.6)
+        start_max_th2<-0.6
+        start_min_th3<-(-0.6)
+        start_max_th3<-0.6
+      }else{print("there is a problem with model_type")}
+      # set the hardcoded depth 
       depth<-3
-      
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
         # Generate a list for the output 
@@ -479,7 +539,6 @@ tree_func_x1<-function(model_type, branch_num){
                   cur_max_th1<-(tree_output_list[[i-1]][[1]][[j]]+(0.5*stepsize_list[[i-1]][[1]]))
                   cur_max_th2<-(tree_output_list[[i-1]][[2]][[j]]+(0.5*stepsize_list[[i-1]][[2]]))
                   cur_max_th3<-(tree_output_list[[i-1]][[3]][[j]]+(0.5*stepsize_list[[i-1]][[3]]))
-            
                   # run the function 
                   out_th1<-branch_func(range_min = cur_min_th1, range_max = cur_max_th1, branch_num = branch_num)
                   out_th2<-branch_func(range_min = cur_min_th2, range_max = cur_max_th2, branch_num = branch_num)
@@ -496,17 +555,22 @@ tree_func_x1<-function(model_type, branch_num){
                     filter(th1<th2 & th2<th3)
                   # Add the output to the list 
                   level_list[[j]]<-grid
-                  
               }
             # sort naming 
-            names(level_list)<-c(
-                                        (paste(tree_output_list[[1]][[1]][[1]], "&", tree_output_list[[1]][[2]][[1]], "&" , tree_output_list[[1]][[3]][[1]])), 
-                                        (paste(tree_output_list[[1]][[1]][[2]], "&", tree_output_list[[1]][[2]][[2]], "&" , tree_output_list[[1]][[3]][[2]])),
-                                        (paste(tree_output_list[[1]][[1]][[3]], "&", tree_output_list[[1]][[2]][[3]], "&" , tree_output_list[[1]][[3]][[3]])),
-                                        (paste(tree_output_list[[1]][[1]][[4]], "&", tree_output_list[[1]][[2]][[4]], "&" , tree_output_list[[1]][[3]][[4]])))
+            names(level_list)<-c((paste(tree_output_list[[1]][[1]][[1]], "&", 
+                                        tree_output_list[[1]][[2]][[1]], "&" ,
+                                        tree_output_list[[1]][[3]][[1]])),
+                                 (paste(tree_output_list[[1]][[1]][[2]], "&", 
+                                        tree_output_list[[1]][[2]][[2]], "&" , 
+                                        tree_output_list[[1]][[3]][[2]])),
+                                  (paste(tree_output_list[[1]][[1]][[3]], "&", 
+                                         tree_output_list[[1]][[2]][[3]], "&" , 
+                                         tree_output_list[[1]][[3]][[3]])),
+                                  (paste(tree_output_list[[1]][[1]][[4]], "&", 
+                                         tree_output_list[[1]][[2]][[4]], "&" , 
+                                         tree_output_list[[1]][[3]][[4]])))
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
-            
           }else if(i==3){
             # For level 3 
             # This can't be the same as 2, because the structure of teh list won't be the same 
@@ -529,15 +593,12 @@ tree_func_x1<-function(model_type, branch_num){
                       cur_max_th1<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[i-1]][[1]]))
                       cur_max_th2<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[i-1]][[2]]))
                       cur_max_th3<-(tree_output_list[[2]][[j]][[3]][[k]]+(0.5*stepsize_list[[i-1]][[3]]))
-                
                       # run the function 
                       out_th1<-branch_func(range_min = cur_min_th1, range_max = cur_max_th1, branch_num = branch_num)
                       out_th2<-branch_func(range_min = cur_min_th2, range_max = cur_max_th2, branch_num = branch_num)
                       out_th3<-branch_func(range_min = cur_min_th3, range_max = cur_max_th3, branch_num = branch_num)
-                  
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
                       stepsize_list[[i]]<-as.data.frame(cbind(out_th1[branch_num+1], out_th2[branch_num+1], out_th3[branch_num+1]))
-      
                       # Create a grid with all the possible combinations of th1 and th 2 
                       grid<-expand.grid(out_th1[1:branch_num], out_th2[1:branch_num], out_th3[1:branch_num])
                       colnames(grid)<-c("th1", "th2", "th3")
@@ -548,128 +609,195 @@ tree_func_x1<-function(model_type, branch_num){
                       list_new_th[[k]]<-grid
                   }
                    # sort naming 
-                    names(list_new_th)<-c(
-                                        (paste(tree_output_list[[2]][[1]][[1]][[1]], "&", tree_output_list[[2]][[1]][[2]][[1]], "&", tree_output_list[[2]][[1]][[3]][[1]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[2]], "&", tree_output_list[[2]][[1]][[2]][[2]], "&", tree_output_list[[2]][[1]][[3]][[2]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[3]], "&", tree_output_list[[2]][[1]][[2]][[3]], "&", tree_output_list[[2]][[1]][[3]][[3]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[4]], "&", tree_output_list[[2]][[1]][[2]][[4]], "&", tree_output_list[[2]][[1]][[3]][[4]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[5]], "&", tree_output_list[[2]][[1]][[2]][[5]], "&", tree_output_list[[2]][[1]][[3]][[5]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[6]], "&", tree_output_list[[2]][[1]][[2]][[6]], "&", tree_output_list[[2]][[1]][[3]][[6]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[7]], "&", tree_output_list[[2]][[1]][[2]][[7]], "&", tree_output_list[[2]][[1]][[3]][[7]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[8]], "&", tree_output_list[[2]][[1]][[2]][[8]], "&", tree_output_list[[2]][[1]][[3]][[8]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[9]], "&", tree_output_list[[2]][[1]][[2]][[9]], "&", tree_output_list[[2]][[1]][[3]][[9]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[10]], "&", tree_output_list[[2]][[1]][[2]][[10]], "&", tree_output_list[[2]][[1]][[3]][[10]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[11]], "&", tree_output_list[[2]][[1]][[2]][[11]], "&", tree_output_list[[2]][[1]][[3]][[11]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[12]], "&", tree_output_list[[2]][[1]][[2]][[12]], "&", tree_output_list[[2]][[1]][[3]][[12]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[13]], "&", tree_output_list[[2]][[1]][[2]][[13]], "&", tree_output_list[[2]][[1]][[3]][[13]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[14]], "&", tree_output_list[[2]][[1]][[2]][[14]], "&", tree_output_list[[2]][[1]][[3]][[14]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[15]], "&", tree_output_list[[2]][[1]][[2]][[15]], "&", tree_output_list[[2]][[1]][[3]][[15]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[16]], "&", tree_output_list[[2]][[1]][[2]][[16]], "&", tree_output_list[[2]][[1]][[3]][[16]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[17]], "&", tree_output_list[[2]][[1]][[2]][[17]], "&", tree_output_list[[2]][[1]][[3]][[17]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[18]], "&", tree_output_list[[2]][[1]][[2]][[18]], "&", tree_output_list[[2]][[1]][[3]][[18]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[19]], "&", tree_output_list[[2]][[1]][[2]][[19]], "&", tree_output_list[[2]][[1]][[3]][[19]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[20]], "&", tree_output_list[[2]][[1]][[2]][[20]], "&", tree_output_list[[2]][[1]][[3]][[20]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[21]], "&", tree_output_list[[2]][[1]][[2]][[21]], "&", tree_output_list[[2]][[1]][[3]][[21]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[22]], "&", tree_output_list[[2]][[1]][[2]][[22]], "&", tree_output_list[[2]][[1]][[3]][[22]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[23]], "&", tree_output_list[[2]][[1]][[2]][[23]], "&", tree_output_list[[2]][[1]][[3]][[23]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[24]], "&", tree_output_list[[2]][[1]][[2]][[24]], "&", tree_output_list[[2]][[1]][[3]][[24]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[25]], "&", tree_output_list[[2]][[1]][[2]][[25]], "&", tree_output_list[[2]][[1]][[3]][[25]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[26]], "&", tree_output_list[[2]][[1]][[2]][[26]], "&", tree_output_list[[2]][[1]][[3]][[26]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[27]], "&", tree_output_list[[2]][[1]][[2]][[27]], "&", tree_output_list[[2]][[1]][[3]][[27]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[28]], "&", tree_output_list[[2]][[1]][[2]][[28]], "&", tree_output_list[[2]][[1]][[3]][[28]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[29]], "&", tree_output_list[[2]][[1]][[2]][[29]], "&", tree_output_list[[2]][[1]][[3]][[29]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[30]], "&", tree_output_list[[2]][[1]][[2]][[30]], "&", tree_output_list[[2]][[1]][[3]][[30]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[31]], "&", tree_output_list[[2]][[1]][[2]][[31]], "&", tree_output_list[[2]][[1]][[3]][[31]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[32]], "&", tree_output_list[[2]][[1]][[2]][[32]], "&", tree_output_list[[2]][[1]][[3]][[32]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[33]], "&", tree_output_list[[2]][[1]][[2]][[33]], "&", tree_output_list[[2]][[1]][[3]][[33]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[34]], "&", tree_output_list[[2]][[1]][[2]][[34]], "&", tree_output_list[[2]][[1]][[3]][[34]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[35]], "&", tree_output_list[[2]][[1]][[2]][[35]], "&", tree_output_list[[2]][[1]][[3]][[35]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[36]], "&", tree_output_list[[2]][[1]][[2]][[36]], "&", tree_output_list[[2]][[1]][[3]][[36]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[37]], "&", tree_output_list[[2]][[1]][[2]][[37]], "&", tree_output_list[[2]][[1]][[3]][[37]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[38]], "&", tree_output_list[[2]][[1]][[2]][[38]], "&", tree_output_list[[2]][[1]][[3]][[38]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[39]], "&", tree_output_list[[2]][[1]][[2]][[39]], "&", tree_output_list[[2]][[1]][[3]][[39]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[40]], "&", tree_output_list[[2]][[1]][[2]][[40]], "&", tree_output_list[[2]][[1]][[3]][[40]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[41]], "&", tree_output_list[[2]][[1]][[2]][[41]], "&", tree_output_list[[2]][[1]][[3]][[41]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[42]], "&", tree_output_list[[2]][[1]][[2]][[42]], "&", tree_output_list[[2]][[1]][[3]][[42]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[43]], "&", tree_output_list[[2]][[1]][[2]][[43]], "&", tree_output_list[[2]][[1]][[3]][[43]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[44]], "&", tree_output_list[[2]][[1]][[2]][[44]], "&", tree_output_list[[2]][[1]][[3]][[44]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[45]], "&", tree_output_list[[2]][[1]][[2]][[45]], "&", tree_output_list[[2]][[1]][[3]][[45]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[46]], "&", tree_output_list[[2]][[1]][[2]][[46]], "&", tree_output_list[[2]][[1]][[3]][[46]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[47]], "&", tree_output_list[[2]][[1]][[2]][[47]], "&", tree_output_list[[2]][[1]][[3]][[47]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[48]], "&", tree_output_list[[2]][[1]][[2]][[48]], "&", tree_output_list[[2]][[1]][[3]][[48]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[49]], "&", tree_output_list[[2]][[1]][[2]][[49]], "&", tree_output_list[[2]][[1]][[3]][[49]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[50]], "&", tree_output_list[[2]][[1]][[2]][[50]], "&", tree_output_list[[2]][[1]][[3]][[50]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[51]], "&", tree_output_list[[2]][[1]][[2]][[51]], "&", tree_output_list[[2]][[1]][[3]][[51]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[52]], "&", tree_output_list[[2]][[1]][[2]][[52]], "&", tree_output_list[[2]][[1]][[3]][[52]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[53]], "&", tree_output_list[[2]][[1]][[2]][[53]], "&", tree_output_list[[2]][[1]][[3]][[53]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[54]], "&", tree_output_list[[2]][[1]][[2]][[54]], "&", tree_output_list[[2]][[1]][[3]][[54]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[55]], "&", tree_output_list[[2]][[1]][[2]][[55]], "&", tree_output_list[[2]][[1]][[3]][[55]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[56]], "&", tree_output_list[[2]][[1]][[2]][[56]], "&", tree_output_list[[2]][[1]][[3]][[56]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[57]], "&", tree_output_list[[2]][[1]][[2]][[57]], "&", tree_output_list[[2]][[1]][[3]][[57]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[58]], "&", tree_output_list[[2]][[1]][[2]][[58]], "&", tree_output_list[[2]][[1]][[3]][[58]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[59]], "&", tree_output_list[[2]][[1]][[2]][[59]], "&", tree_output_list[[2]][[1]][[3]][[59]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[60]], "&", tree_output_list[[2]][[1]][[2]][[60]], "&", tree_output_list[[2]][[1]][[3]][[60]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[61]], "&", tree_output_list[[2]][[1]][[2]][[61]], "&", tree_output_list[[2]][[1]][[3]][[61]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[62]], "&", tree_output_list[[2]][[1]][[2]][[62]], "&", tree_output_list[[2]][[1]][[3]][[62]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[63]], "&", tree_output_list[[2]][[1]][[2]][[63]], "&", tree_output_list[[2]][[1]][[3]][[63]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[64]], "&", tree_output_list[[2]][[1]][[2]][[64]], "&", tree_output_list[[2]][[1]][[3]][[64]]))
+                    names(list_new_th)<-c((paste(tree_output_list[[2]][[1]][[1]][[1]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[1]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[1]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[2]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[2]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[2]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[3]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[3]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[3]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[4]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[4]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[4]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[5]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[5]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[5]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[6]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[6]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[6]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[7]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[7]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[7]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[8]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[8]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[8]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[9]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[9]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[9]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[10]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[10]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[10]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[11]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[11]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[11]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[12]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[12]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[12]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[13]], "&", 
+                                                 tree_output_list[[2]][[1]][[2]][[13]], "&", 
+                                                 tree_output_list[[2]][[1]][[3]][[13]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[14]], "&", tree_output_list[[2]][[1]][[2]][[14]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[14]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[15]], "&", tree_output_list[[2]][[1]][[2]][[15]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[15]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[16]], "&", tree_output_list[[2]][[1]][[2]][[16]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[16]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[17]], "&", tree_output_list[[2]][[1]][[2]][[17]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[17]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[18]], "&", tree_output_list[[2]][[1]][[2]][[18]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[18]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[19]], "&", tree_output_list[[2]][[1]][[2]][[19]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[19]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[20]], "&", tree_output_list[[2]][[1]][[2]][[20]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[20]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[21]], "&", tree_output_list[[2]][[1]][[2]][[21]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[21]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[22]], "&", tree_output_list[[2]][[1]][[2]][[22]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[22]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[23]], "&", tree_output_list[[2]][[1]][[2]][[23]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[23]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[24]], "&", tree_output_list[[2]][[1]][[2]][[24]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[24]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[25]], "&", tree_output_list[[2]][[1]][[2]][[25]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[25]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[26]], "&", tree_output_list[[2]][[1]][[2]][[26]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[26]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[27]], "&", tree_output_list[[2]][[1]][[2]][[27]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[27]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[28]], "&", tree_output_list[[2]][[1]][[2]][[28]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[28]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[29]], "&", tree_output_list[[2]][[1]][[2]][[29]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[29]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[30]], "&", tree_output_list[[2]][[1]][[2]][[30]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[30]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[31]], "&", tree_output_list[[2]][[1]][[2]][[31]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[31]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[32]], "&", tree_output_list[[2]][[1]][[2]][[32]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[32]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[33]], "&", tree_output_list[[2]][[1]][[2]][[33]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[33]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[34]], "&", tree_output_list[[2]][[1]][[2]][[34]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[34]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[35]], "&", tree_output_list[[2]][[1]][[2]][[35]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[35]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[36]], "&", tree_output_list[[2]][[1]][[2]][[36]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[36]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[37]], "&", tree_output_list[[2]][[1]][[2]][[37]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[37]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[38]], "&", tree_output_list[[2]][[1]][[2]][[38]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[38]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[39]], "&", tree_output_list[[2]][[1]][[2]][[39]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[39]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[40]], "&", tree_output_list[[2]][[1]][[2]][[40]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[40]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[41]], "&", tree_output_list[[2]][[1]][[2]][[41]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[41]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[42]], "&", tree_output_list[[2]][[1]][[2]][[42]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[42]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[43]], "&", tree_output_list[[2]][[1]][[2]][[43]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[43]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[44]], "&", tree_output_list[[2]][[1]][[2]][[44]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[44]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[45]], "&", tree_output_list[[2]][[1]][[2]][[45]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[45]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[46]], "&", tree_output_list[[2]][[1]][[2]][[46]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[46]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[47]], "&", tree_output_list[[2]][[1]][[2]][[47]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[47]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[48]], "&", tree_output_list[[2]][[1]][[2]][[48]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[48]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[49]], "&", tree_output_list[[2]][[1]][[2]][[49]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[49]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[50]], "&", tree_output_list[[2]][[1]][[2]][[50]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[50]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[51]], "&", tree_output_list[[2]][[1]][[2]][[51]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[51]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[52]], "&", tree_output_list[[2]][[1]][[2]][[52]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[52]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[53]], "&", tree_output_list[[2]][[1]][[2]][[53]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[53]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[54]], "&", tree_output_list[[2]][[1]][[2]][[54]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[54]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[55]], "&", tree_output_list[[2]][[1]][[2]][[55]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[55]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[56]], "&", tree_output_list[[2]][[1]][[2]][[56]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[56]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[57]], "&", tree_output_list[[2]][[1]][[2]][[57]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[57]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[58]], "&", tree_output_list[[2]][[1]][[2]][[58]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[58]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[59]], "&", tree_output_list[[2]][[1]][[2]][[59]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[59]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[60]], "&", tree_output_list[[2]][[1]][[2]][[60]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[60]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[61]], "&", tree_output_list[[2]][[1]][[2]][[61]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[61]])), 
+                                          (paste(tree_output_list[[2]][[1]][[1]][[62]], "&", tree_output_list[[2]][[1]][[2]][[62]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[62]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[63]], "&", tree_output_list[[2]][[1]][[2]][[63]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[63]])),
+                                          (paste(tree_output_list[[2]][[1]][[1]][[64]], "&", tree_output_list[[2]][[1]][[2]][[64]], "&",
+                                                 tree_output_list[[2]][[1]][[3]][[64]]))
                                         )
-              
             # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
             }
             # sort naming 
-            names(level_list)<-c(
-                                        (paste(tree_output_list[[1]][[1]][[1]], "&", tree_output_list[[1]][[2]][[1]], "&" , tree_output_list[[1]][[3]][[1]])), 
-                                        (paste(tree_output_list[[1]][[1]][[2]], "&", tree_output_list[[1]][[2]][[2]], "&" , tree_output_list[[1]][[3]][[2]])),
-                                        (paste(tree_output_list[[1]][[1]][[3]], "&", tree_output_list[[1]][[2]][[3]], "&" , tree_output_list[[1]][[3]][[3]])),
-                                        (paste(tree_output_list[[1]][[1]][[4]], "&", tree_output_list[[1]][[2]][[4]], "&" , tree_output_list[[1]][[3]][[4]])))
+            names(level_list)<-c((paste(tree_output_list[[1]][[1]][[1]], "&", tree_output_list[[1]][[2]][[1]], "&" ,
+                                        tree_output_list[[1]][[3]][[1]])), 
+                                  (paste(tree_output_list[[1]][[1]][[2]], "&", tree_output_list[[1]][[2]][[2]], "&" ,
+                                         tree_output_list[[1]][[3]][[2]])),
+                                  (paste(tree_output_list[[1]][[1]][[3]], "&", tree_output_list[[1]][[2]][[3]], "&" ,
+                                         tree_output_list[[1]][[3]][[3]])),
+                                  (paste(tree_output_list[[1]][[1]][[4]], "&", tree_output_list[[1]][[2]][[4]], "&" ,
+                                         tree_output_list[[1]][[3]][[4]])))
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
           }
-        
       } # end the for loop 
    names(tree_output_list)<-c("level1", "level2", "level3")
+   # save it 
+    setwd(file_folder)
+    save(tree_output_list, file=paste0("branch_sub1_x3_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
-        
-    
-# Also load the function file dependencies in order to run the models
-  # setwd("C:/Local_R/BiPhD-ABM/May23")
-  # source('MOD_1_FuncSource.R')
-  # source('ModelSource.R')
 ```
 
 ## Run the functions 
-Run the tree-function for the FR 2.1 model, which will start at 0 and end at 4, for 4 branches and with a depth of 3 (the maximum possible)
+Run the tree-function for the 1 variable models 
+
+First, x.1 models 
 
 ```{r run branching, include=TRUE, message=F, warning=F}
-outcome_21<-tree_func(start_min = 0, start_max = 4, branch_num = 4, depth = 3)
+#outcome_21<-tree_func(start_min = 0, start_max = 4, branch_num = 4, depth = 3) # old code 
+#outcome_11<-tree_func(start_min = 0, start_max=0.4, branch_num = 4, depth=3)  # old code 
+#outcome_31<-tree_func(start_min = -0.6, start_max=0.6, branch_num = 4, depth=3) # old code 
+
+out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 4)
 ```
 
-Now for the SC 1.1 model, which starts at 0.4 and ends at 4, 4 branches and depth 3. 
-```{r run for SC 11 branching, include=T, message=F, warning=F}
-outcome_11<-tree_func(start_min = 0, start_max=0.4, branch_num = 4, depth=3)
+The subset 1 x.2 models 
 
+```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
+out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 4)
 ```
 
-Now for the FLR 3.1 model, which starts at -0.6 and ends at 0.6, 4 branches and depth 3. 
-```{r run for SC 11 branching, include=T, message=F, warning=F}
-outcome_31<-tree_func(start_min = -0.6, start_max=0.6, branch_num = 4, depth=3)
+The subset 1 x.3 models
 
-```
-
-
-## Combine multiple trhesholds for X.2 models 
-Write a function 
-```{r combine thresholds, include=T, message=F, warning=F}
-
-
-```
-Run the function 
-```{r run the function , include=T, message=F, warning=F}
- 
-out_x2<-tree_func_x2(start_min_th1 = 0, start_max_th1 = 0.4, start_min_th2 = 0, start_max_th2 = 0.4, branch_num = 4) 
+```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
+out_sub1_x3<-tree_func_x3(model_type = 332, branch_num = 4)
 ```
 
 ## Different approach: run the model directly
@@ -1989,25 +2117,32 @@ out_x2<-tree_func_x2(start_min_th1 = 0, start_max_th1 = 0.4, start_min_th2 = 0, 
 ```
 
 
-## January 2024: rewrite the tree-functions 
-I re-wrote the x.2 function and the x.3 function 
-Run them here: 
-```{r run x.3, include=T, echo=F, message=F, eval=T}
-out_x3<-tree_func_x3(start_min_th1 = 0, start_max_th1 = 0.4, start_min_th2 = 0, start_max_th2 = 0.4, start_min_th3 = 0, start_max_th3 = 0.4, branch_num = 4)
-
-
-setwd(file_folder)
-save(out_x3, file=paste0("out_x3_min", start_min_th1, "_max", start_max_th1, ".Rda"))
-```
+## January 2024: 
+I re-wrote the x.1, x.2 and x.3 fucntions for subset 1. They are outlined above. 
 
 Then, I worked on the second subset of models: they have 2 variables that decisions are based on. 
 
 Start with the simplest model: a non-hoarding bird, access to 2 variables, each with 1 threshold. 
 The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the code are for 'threshold number'. So for example, a model with both SC and FR, each with 3 thresholds would have v1 (SC) and v3 (FR). For each of those there would be a th1, th2 and th3. 
 ```{r make subset 2 x.1 models}
-
 # Non hoarder 2 variables 
-    tree_func_sub2_x1<-function(start_min_v1_th1, start_max_v1_th1, start_min_v2_th1, start_max_v2_th1, branch_num, model_type){
+    tree_func_sub2_x1<-function(model_type, branch_num){
+      if(model_type==41){
+        start_min_v1_th1<-0
+        start_max_v1_th1<-4
+        start_min_v2_th1<-(-0.6)
+        start_max_v2_th1<-(0.6)
+      }else if(model_type==51){
+        start_min_v1_th1<-0
+        start_max_v1_th1<-0.4
+        start_min_v2_th1<-0
+        start_max_v2_th1<-5
+      }else if(model_type==61){
+        start_min_v1_th1<-0
+        start_max_v1_th1<-0.4
+        start_min_v2_th1<-(-0.6)
+        start_max_v2_th1<-(0.6)
+      }
       depth<-3
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
@@ -2031,9 +2166,9 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
                       model_type=="51"~v1_th1>0 & v2_th1>0,
                       model_type=="61"~v1_th1>0
                     ))
-                    
             # Add the output to the list 
               tree_output_list[[i]]<-grid
+              
               
           }else if(i==2){
             # So for level 2
@@ -2048,19 +2183,15 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
                   # calculate the new maximum 
                   cur_max_v1_th1<-(tree_output_list[[i-1]][[1]][[j]]+(0.5*stepsize_list[[i-1]][[1]]))
                   cur_max_v2_th1<-(tree_output_list[[i-1]][[2]][[j]]+(0.5*stepsize_list[[i-1]][[2]]))
-            
                   # run the function 
                   out_v1_th1<-branch_func(range_min = cur_min_v1_th1, range_max = cur_max_v1_th1, branch_num = branch_num)
                   out_v2_th1<-branch_func(range_min = cur_min_v2_th1, range_max = cur_max_v2_th1, branch_num = branch_num)
-                  
                   # Extract the stepsize - I know this overwrites, but it doesn't matter; should all be there same 
                   stepsize_list_j[[j]]<-as.data.frame(cbind(out_v1_th1[branch_num+1], out_v2_th1[branch_num+1]))
-      
                   # Create a grid with all the possible combinations of th1 and th 2 
                   grid<-expand.grid(out_v1_th1[1:branch_num], out_v2_th1[1:branch_num])
                   colnames(grid)<-c("v1_th1", "v2_th1")
                   # In the cases of stoamch content and FR variables, this value cannot drop below 0. 
-                  
                   grid<-grid%>%
                     filter(case_when(
                       model_type=="41"~v1_th1>0, 
@@ -2069,7 +2200,6 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
                     ))
                   # Add the output to the list 
                   level_list[[j]]<-grid
-                  
               }
             # sort naming 
             names(level_list)<-c(
@@ -2115,15 +2245,12 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
                       # calculate the new maximum 
                       cur_max_v1_th1<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[i-1]][[1]]))
                       cur_max_v2_th1<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[i-1]][[2]]))
-                
                       # run the function 
                       out_v1_th1<-branch_func(range_min = cur_min_v1_th1, range_max = cur_max_v1_th1, branch_num = branch_num)
                       out_v2_th1<-branch_func(range_min = cur_min_v2_th1, range_max = cur_max_v2_th1, branch_num = branch_num)
-                  
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
                       stepsize_list_k[[k]]<-as.data.frame(cbind(out_v1_th1[branch_num+1], 
                                                                 out_v2_th1[branch_num+1]))
-      
                       # Create a grid with all the possible combinations of th1 and th 2 
                       grid<-expand.grid(out_v1_th1[1:branch_num], 
                                         out_v2_th1[1:branch_num])
@@ -2157,7 +2284,6 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
                                         (paste(tree_output_list[[2]][[1]][[1]][[15]], "&", tree_output_list[[2]][[1]][[2]][[15]])),
                                         (paste(tree_output_list[[2]][[1]][[1]][[16]], "&", tree_output_list[[2]][[1]][[2]][[16]]))
                                         )
-              
               # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
             }
@@ -2182,26 +2308,22 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
           }
-        
       } # end the for loop 
-   names(tree_output_list)<-c("level1", "level2", "level3")
-   return(tree_output_list)
+    names(tree_output_list)<-c("level1", "level2", "level3")
+    # save it 
+    setwd(file_folder)
+    save(tree_output_list, file=paste0("branch_sub2_x1_mod", model_type, ".Rda"))
+    return(tree_output_list)
 } # End hte function 
 ```
 
 Run the non-hoarding, 2 variables, 1 th model: 
 ```{r run subset 2 x1}
-
-out_sub2_x1<-tree_func_sub2_x1(start_min_v1_th1 = 0, start_max_v1_th1 = 0.4, start_min_v2_th1 = 0, start_max_v2_th1 = 4, model_type=51, branch_num = 4)
-
-setwd(file_folder)
-save(out_sub2_x1, file=paste0("branch_sub2_x1.Rda"))
-
+out_sub2_x1<-tree_func_sub2_x1(model_type=61, branch_num = 4)
 ```
 
 Now, write teh code for the second subset, the leftover hoarders. This has 2 energy proxy variables and each of these has 2 thresholds. 
 ```{r make subset 2 x.2 models}
-
 # Non hoarder 2 variables 
     tree_func_sub2_x2<-function(model_type, branch_num){
       if(model_type==42){
@@ -2229,7 +2351,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
         start_min_v2_th2<-0
         start_max_v2_th2<-4
       }else if(model_type==62){
-                  
         # variable 1 = SC
         start_min_v1_th1<-0
         start_max_v1_th1<-0.4
@@ -2240,11 +2361,9 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
         start_max_v2_th1<-0.6
         start_min_v2_th2<-(-0.6)
         start_max_v2_th2<-0.6
-      }
-      
+      }else{print("There is a problem with the modeltype ")}
       # set depth (hardcoded now)
       depth<-3
-      
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
         # Generate a list for the output 
@@ -2275,7 +2394,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                                     model_type=="62"~v1_th1>0 & v1_th2>0))%>%
                   filter(v1_th1<v1_th2)%>%
                   filter(v2_th1<v2_th2)
-                  
             # Add the output to the list 
               tree_output_list[[i]]<-grid
               
@@ -2286,7 +2404,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                     level_list<-list()
                     stepsize_list_j<-list()
                   }
-                
                   # Calculate the new minimum for th1 
                   cur_min_v1_th1<-(tree_output_list[[1]][[1]][[j]]-(0.5*stepsize_list[[1]][[1]]))
                   cur_min_v2_th1<-(tree_output_list[[1]][[2]][[j]]-(0.5*stepsize_list[[1]][[2]]))
@@ -2307,7 +2424,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                                                             out_v2_th1[branch_num+1], 
                                                             out_v1_th2[branch_num+1], 
                                                             out_v2_th2[branch_num+1]))
-      
                   # Create a grid with all the possible combinations of th1 and th 2 
                   grid<-expand.grid(out_v1_th1[1:branch_num], 
                                     out_v2_th1[1:branch_num], 
@@ -2338,7 +2454,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
             
             # sort naming 
             names(level_list)<-name_vector_j
-            
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
             stepsize_list[[i]]<-stepsize_list_j
@@ -2368,19 +2483,16 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                       cur_max_v2_th1<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[i-1]][[2]]))
                       cur_max_v1_th2<-(tree_output_list[[2]][[j]][[3]][[k]]+(0.5*stepsize_list[[i-1]][[3]]))
                       cur_max_v2_th2<-(tree_output_list[[2]][[j]][[4]][[k]]+(0.5*stepsize_list[[i-1]][[4]]))
-                
                       # run the function 
                       out_v1_th1<-t(as.data.frame(branch_func(range_min = cur_min_v1_th1, range_max = cur_max_v1_th1, branch_num = branch_num)))
                       out_v2_th1<-t(as.data.frame(branch_func(range_min = cur_min_v2_th1, range_max = cur_max_v2_th1, branch_num = branch_num)))
                       out_v1_th2<-t(as.data.frame(branch_func(range_min = cur_min_v1_th2, range_max = cur_max_v1_th2, branch_num = branch_num)))
                       out_v2_th2<-t(as.data.frame(branch_func(range_min = cur_min_v2_th2, range_max = cur_max_v2_th2, branch_num = branch_num)))
-                  
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
                       stepsize_list_k[[k]]<-as.data.frame(cbind(out_v1_th1[branch_num+1], 
                                                                 out_v2_th1[branch_num+1], 
                                                                 out_v1_th2[branch_num+1], 
                                                                 out_v2_th2[branch_num+1]))
-      
                       # Create a grid with all the possible combinations of th1 and th 2 
                       grid<-expand.grid(out_v1_th1[1:branch_num], 
                                         out_v2_th1[1:branch_num], 
@@ -2397,7 +2509,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                           filter(v2_th1<v2_th2)
                       # Add the output to the list 
                       list_new_th[[k]]<-grid
-                      
                       # do something about the  names 
                       cur_name<-(paste(tree_output_list[[2]][[j]][[1]][[k]], "&", 
                                    tree_output_list[[2]][[j]][[2]][[k]], "&", 
@@ -2413,7 +2524,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                   
                   # names 
                   names(list_new_th)<-name_vector_k
-
               # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
               # do something about the  names 
@@ -2428,29 +2538,30 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
                     name_vector_j2<-c(name_vector_j2, cur_name)
                   }
             } # end j loop 
-            
+            # sort the names 
             names(level_list)<-name_vector_j2
-
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
           }
         
       } # end the for loop 
    names(tree_output_list)<-c("level1", "level2", "level3")
+  # save it 
+    setwd(file_folder)
+    save(tree_output_list, file=paste0("branch_sub2_x2_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
 ```
 
+Subset 2 - x.2
 Run the leftove rhoarding, 2 variables, 2 th model: 
 ```{r run subset 2 x2}
 
-out_sub2_x2<-tree_func_sub2_x2(model_type=42, branch_num = 4)
-setwd(file_folder)
-save(out_sub2_x2, file=paste0("branch_sub2_x2.Rda"))
+out_sub2_x2<-tree_func_sub2_x2(model_type=62, branch_num = 4)
 
 ```
 
-
+Subset 2 - x.3
 Now, write hte function for the 2nd subset, direct hoarders with 2 variables and 3 thresholds each. 
 
 ```{r make subset 2 x.3 models}
@@ -2458,7 +2569,7 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
 # Non hoarder 2 variables 
     tree_func_sub2_x3<-function(model_type, branch_num){
       
-      if(model_type==43){
+      if((model_type==431)|(model_type==432)){
         # variable 1 = FR
         start_min_v1_th1<-0
         start_max_v1_th1<-4
@@ -2473,8 +2584,7 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
         start_max_v2_th2<-0.6
         start_min_v2_th3<-(-0.6)
         start_max_v2_th3<-0.6
-        
-      }else if(model_type==53){
+      }else if(model_type==531|model_type==532){
         # variable 1 = SC
         start_min_v1_th1<-0
         start_max_v1_th1<-0.4
@@ -2489,7 +2599,7 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
         start_max_v2_th2<-4
         start_min_v2_th3<-0
         start_max_v2_th3<-4
-      }else if(model_type==63){
+      }else if(model_type==631|model_type==632){
         # variable 1 = SC
         start_min_v1_th1<-0
         start_max_v1_th1<-0.4
@@ -2504,7 +2614,7 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
         start_max_v2_th2<-0.6
         start_min_v2_th3<-(-0.6)
         start_max_v2_th3<-0.6
-      }else{print("something is wrong")}
+      }else{print("something is wrong with the model_type setting")}
       depth<-3
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
@@ -2537,15 +2647,17 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
               colnames(grid)<-c("v1_th1", "v2_th1", "v1_th2", "v2_th2", "v1_th3", "v2_th3")
             # Subset this for cases 
                   grid<-grid%>%
-                    filter(case_when( model_type=="43"~v1_th1>0 & v1_th2>0 & v1_th3>0, 
-                                      model_type=="53"~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
-                                      model_type=="63"~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
+                    filter(case_when( ((model_type=="431")|(model_type=="432"))~v1_th1>0 & v1_th2>0 & v1_th3>0, 
+                                      ((model_type=="531")|(model_type=="532"))~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
+                                      ((model_type=="631")|(model_type=="632"))~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
                     filter(v1_th1<v1_th2)%>%
                     filter(v2_th1<v2_th2)%>%
                     filter(v1_th2<v1_th3)%>%
                     filter(v2_th2<v2_th3)
             # Add the output to the list 
               tree_output_list[[i]]<-grid
+            # print
+              print("i=1 done")
               
           }else if(i==2){
             # So for level 2
@@ -2585,7 +2697,6 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                                                             out_v1_th3[branch_num+1], 
                                                             out_v2_th3[branch_num+1] 
                                                             ))
-      
                   # Create a grid with all the possible combinations of th1 and th 2 
                   grid<-expand.grid(out_v1_th1[1:branch_num], 
                                     out_v2_th1[1:branch_num], 
@@ -2593,19 +2704,17 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                                     out_v2_th2[1:branch_num], 
                                     out_v1_th3[1:branch_num], 
                                     out_v2_th3[1:branch_num])
-                  
+                  # colnames 
                   colnames(grid)<-c("v1_th1", "v2_th1", "v1_th2", "v2_th2", "v1_th3", "v2_th3")
-                  
                   # Subset this for cases where th2 > th 1 
-                   grid<-grid%>%
-                      filter(case_when( model_type=="43"~v1_th1>0 & v1_th2>0 & v1_th3>0, 
-                                        model_type=="53"~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
-                                        model_type=="63"~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
-                      filter(v1_th1<v1_th2)%>%
-                      filter(v2_th1<v2_th2)%>%
-                      filter(v1_th2<v1_th3)%>%
-                      filter(v2_th2<v2_th3)
-                  
+                          grid<-grid%>%
+                    filter(case_when( ((model_type=="431")|(model_type=="432"))~v1_th1>0 & v1_th2>0 & v1_th3>0, 
+                                      ((model_type=="531")|(model_type=="532"))~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
+                                      ((model_type=="631")|(model_type=="632"))~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
+                    filter(v1_th1<v1_th2)%>%
+                    filter(v2_th1<v2_th2)%>%
+                    filter(v1_th2<v1_th3)%>%
+                    filter(v2_th2<v2_th3)
                   # Add the output to the list 
                   level_list[[j]]<-grid
                   #names(level_list[[j]])<-c("test5")
@@ -2625,16 +2734,19 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
             
             # sort naming 
             names(level_list)<-name_vector_j
-            
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
             stepsize_list[[i]]<-stepsize_list_j
+            # print
+            print("i=2 done")
+            print(paste("the number of j's that need doing is= ", length(tree_output_list[[2]])))
             
           }else if(i==3){
             # For level 3 
             # This can't be the same as 2, because the structure of teh list won't be the same 
             # For any additional levels this would probably be teh case. 
             for (j in 1:length(tree_output_list[[2]])){
+              
                   if(j==1){
                     level_list<-list()
                   }
@@ -2659,7 +2771,6 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                       cur_max_v2_th2<-(tree_output_list[[2]][[j]][[4]][[k]]+(0.5*stepsize_list[[i-1]][[4]]))
                       cur_max_v1_th3<-(tree_output_list[[2]][[j]][[5]][[k]]+(0.5*stepsize_list[[i-1]][[5]]))
                       cur_max_v2_th3<-(tree_output_list[[2]][[j]][[6]][[k]]+(0.5*stepsize_list[[i-1]][[6]]))
-                
                       # run the function 
                       out_v1_th1<-t(as.data.frame(branch_func(range_min = cur_min_v1_th1, range_max = cur_max_v1_th1, branch_num = branch_num)))
                       out_v2_th1<-t(as.data.frame(branch_func(range_min = cur_min_v2_th1, range_max = cur_max_v2_th1, branch_num = branch_num)))
@@ -2667,7 +2778,6 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                       out_v2_th2<-t(as.data.frame(branch_func(range_min = cur_min_v2_th2, range_max = cur_max_v2_th2, branch_num = branch_num)))
                       out_v1_th3<-t(as.data.frame(branch_func(range_min = cur_min_v1_th3, range_max = cur_max_v1_th3, branch_num = branch_num)))
                       out_v2_th3<-t(as.data.frame(branch_func(range_min = cur_min_v2_th3, range_max = cur_max_v2_th3, branch_num = branch_num)))
-                      
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
                       stepsize_list_k[[k]]<-as.data.frame(cbind(out_v1_th1[branch_num+1], 
                                                                 out_v2_th1[branch_num+1], 
@@ -2675,7 +2785,6 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                                                                 out_v2_th2[branch_num+1], 
                                                                 out_v1_th3[branch_num+1], 
                                                                 out_v2_th3[branch_num+1]))
-      
                       # Create a grid with all the possible combinations of th1 and th 2 
                       grid<-expand.grid(out_v1_th1[1:branch_num], 
                                         out_v2_th1[1:branch_num], 
@@ -2684,19 +2793,17 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                                         out_v1_th3[1:branch_num], 
                                         out_v2_th3[1:branch_num])
                       colnames(grid)<-c("v1_th1", "v2_th1", "v1_th2", "v2_th2", "v1_th3", "v2_th3")
-                      
                       # Subset this for cases where th2 > th 1 
-                          grid<-grid%>%
-                              filter(case_when( model_type=="43"~v1_th1>0 & v1_th2>0 & v1_th3>0, 
-                                                model_type=="53"~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
-                                                model_type=="63"~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
-                              filter(v1_th1<v1_th2)%>%
-                              filter(v2_th1<v2_th2)%>%
-                              filter(v1_th2<v1_th3)%>%
-                              filter(v2_th2<v2_th3)
+                      grid<-grid%>%
+                    filter(case_when( ((model_type=="431")|(model_type=="432"))~v1_th1>0 & v1_th2>0 & v1_th3>0, 
+                                      ((model_type=="531")|(model_type=="532"))~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
+                                      ((model_type=="631")|(model_type=="632"))~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
+                    filter(v1_th1<v1_th2)%>%
+                    filter(v2_th1<v2_th2)%>%
+                    filter(v1_th2<v1_th3)%>%
+                    filter(v2_th2<v2_th3)
                       # Add the output to the list 
                       list_new_th[[k]]<-grid
-                      
                       # do something about the  names 
                       cur_name<-(paste(tree_output_list[[2]][[j]][[1]][[k]], "&", 
                                    tree_output_list[[2]][[j]][[2]][[k]], "&", 
@@ -2711,7 +2818,6 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                     name_vector_k<-c(name_vector_k, cur_name)
                   }
                 } # end of k loop 
-                  
                   # names 
                   names(list_new_th)<-name_vector_k
 
@@ -2730,16 +2836,22 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
                   }else{
                     name_vector_j2<-c(name_vector_j2, cur_name)
                   }
+              # print progress 
+              print(paste("i=3, j=", j, " done"))
             } # end j loop 
-            
+            # name the levels 
             names(level_list)<-name_vector_j2
-
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
+            # print
+              print("i=3 done")
           }
-        
+          
       } # end the for loop 
-   names(tree_output_list)<-c("level1", "level2", "level3")
+    names(tree_output_list)<-c("level1", "level2", "level3")
+    # save it 
+    setwd(file_folder)
+    save(tree_output_list, file=paste0("branch_sub2_x3_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
 ```
@@ -2747,18 +2859,48 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
 Run the direct hoarder , 2 variables, 3 th model: 
 ```{r run subset 2 x2}
 
-out_sub2_x3<-tree_func_sub2_x3(model_type=43, branch_num = 4)
+out_sub2_x3<-tree_func_sub2_x3(model_type=632, branch_num = 4)
+
+```
+
+I have now ran all the branches for all the models. Here is some code that can help me to select the correct dataframe for the next HPC run. I'm going to stop trying to do this all at once, it's taken too much time :( (02/02/24)
+
+```{r saving seperate branching dataframes}
+# Settings for what you watn to do
+subset<-2
+model_type<-531
+level<-"level1" # set teh level that you want to extract from 
+# any  previuos results 
+best_comb_l1<-as.numeric(c(NA))
+best_comb_l2<-as.numeric(c(NA))
+
+
+# It is best for the HPC to take a csv that does not have column headings 
+# I've done something similar in the original optimization code --> use the write.table function 
+
+# First, select teh dataframe taht you want 
+# Just lodaing it from the folder is probs easiest 
 setwd(file_folder)
+load(paste0("branch_sub", subset, "_x", (str_sub(model_type, 2, 2)), "_mod", model_type, ".Rda"))
+
+# Then select what you want to do 
+
+if(level=="level1"){
+  selected_df<-tree_output_list[[level]]
+  # save it
+   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
+   #write.csv(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
+}else if(level=="level2"){
+  selected_df<-tree_output_list[[level]][[paste(best_comb_l1)]]
+    # You're there 
+   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
+}else if(level=="level3"){
+    selected_df<-tree_output_list[[level]][[paste(best_comb_l1)]][[paste(best_comb_l2)]]
+    # You're there 
+   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
+}
+
+
 ```
 
-## Flexible code to save output 
-I need flexible code that lets me save either bit of the branching that I've done 
-```{r saving}
-setwd()
-write.table(out_sub2_x3, file=paste('best_1000_', opt_type, '_',format(Sys.time(), "%Y-%m-%d_%H_%M_%S"), '.csv'), row.names = F, col.names = F)
-      
 
-```
-
-
-Save stuff 
