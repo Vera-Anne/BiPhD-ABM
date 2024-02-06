@@ -191,6 +191,48 @@ if (modelType==0){
       }
       
       
+  # This contains the results for the current threshold, through all 18 environments 
+  env_results
+  # clean up cluster 
+  stopImplicitCluster()
+  #add this to the output list
+  env_results[[3]]<-args
+  # save the data 
+  setwd(out_dir)
+  # make sure to attach the threshold to the dataframe 
+  save(env_results, file=paste0('out_', modelType, '_HPC_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
+  
+  
+} else if (modelType==41|modelType==51|modelType==61){
+  # This is a 2 variale - 1 theshold model - subset 2 - non-hoarder
+  # Set the thresholds 
+  v1_th1<-thresholds[1]
+  v2_th2<-thresholds[2]
+  
+  # Add some information to the output data 
+  args<-as.data.frame(t(args))
+  colnames(args)<-c('days', 'N', 'day_h', 'mod_type', "level", 'output_dir', "th_row", 'rep_num',"v1_th1", "v2_th1")
+  
+  # Run the model-specific part 
+  
+          if(modelType==41){
+            # run environment function 
+            env_results<-env_func_4_1_par_hpc(days = days, N= N, th_forage_fr = v1_th1, th_forage_flr=v2_th1, daylight_h = daylight_h, modelType=modelType)
+            
+          }else if(modelType==51){
+            # run environment function 
+            env_results<-env_func_5_1_par_hpc(days = days, N= N, th_forage_sc = v1_th1, th_forage_fr=v2_th1, daylight_h = daylight_h, modelType=modelType)
+            
+          }else if(modelType==61){
+            # run environment function 
+            env_results<-env_func_6_1_par_hpc(days = days, N= N, th_forage_sc = v1_th1, th_forage_flr=v2_th1, daylight_h = daylight_h, modelType=modelType)
+            
+          }else{
+            print("Problem: modeltype is not set correctly, but within x.1 subset 2")
+          }
+          
+      
+      
   # Return it, so it will be included in the endresult of the optimization list 
   env_results
   #add this to the output list
@@ -200,174 +242,102 @@ if (modelType==0){
   save(env_results, file=paste0('out_', modelType, '_HPC_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
   
   
-} else if (modelType==41|modelType==51|modelType==61){
+}else if(modelType==42|modelType==52|modelType==62){
   
-  
-  # No wthe environmnets need to run in parallel 
-  
-  # put into the environment fnction 
-  env_results<-env_func_4_1_par_hpc(days = days, N= N, th_forage_fr = cur_th11, th_forage_flr=cur_th21, daylight_h = daylight_h, modelType=modelType)
-  
-  # This contains the results for the current threshold, through all 18 environments 
-  env_results
-  
-  #add this to the output list
-  env_results[[3]]<-args
-  
-  # save the data 
-  setwd(out_dir)
-  # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_4_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
-  
-  
-}else if(modelType=='42'){
-  
-  # Set the number of options for which each threshold needs to be tested 
-  num_th<-50
-  # set the minima 
-  # For 4.1 the first energy proxy is FR
-  # For 4.1 the second energy proxy is FLR 
-  min_th_11<-0
-  min_th_12<-0
-  min_th_21<-(-0.6)
-  min_th_22<-(-0.6)
-  # set the maxima
-  max_th_11<-4
-  max_th_12<-4
-  max_th_21<-0.6
-  max_th_22<-0.6
-  # create the vectors
-  th11_vec<-linspace(x1=min_th_11, x2=max_th_11, n=num_th)
-  th12_vec<-linspace(x1=min_th_12, x2=max_th_12, n=num_th)
-  th21_vec<-linspace(x1=min_th_21, x2=max_th_21, n=num_th)
-  th22_vec<-linspace(x1=min_th_22, x2=max_th_22, n=num_th)
-  # create a matrix that contains all possible combinations 
-  th_comb_4<-as.data.frame(as.matrix(expand.grid(th11_vec, th12_vec, th21_vec, th22_vec)))
-  colnames(th_comb_4)<-c('th11', 'th12', 'th21', 'th22')
-  # Select the relevant combinations
-  relev_th_comb_4<-th_comb_4[(th_comb_4$th11<th_comb_4$th12 & th_comb_4$th21<th_comb_4$th22),]
-  
-  # Set the current thresholds 
-  cur_th11<-relev_th_comb_4[th_comb_numb,1]
-  cur_th12<-relev_th_comb_4[th_comb_numb,2]
-  cur_th21<-relev_th_comb_4[th_comb_numb,3]
-  cur_th22<-relev_th_comb_4[th_comb_numb,4]
+  # This is a 2 variale - 2 theshold model - subset 2 - leftover-hoarder
+  # Set the thresholds 
+  v1_th1<-thresholds[1]
+  v2_th2<-thresholds[2]
+  v1_th2<-thresholds[3]
+  v2_th2<-thresholds[4]
   
   # Add some information to the output data 
-  # Add the total number of th, the minima and maxima 
-  args<-c(args, num_th,cur_th11, cur_th12, cur_th21, cur_th22, min_th_11, min_th_12, min_th_21, min_th_22, max_th_11, max_th_12, max_th_21, max_th_22)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_per_th', 'th11', 'th12', 'th21', 'th22', 'min_th_11', 'min_th_12', 'min_th_21', 'min_th_22', 'max_th_11', 'max_th_12', 'max_th_21', 'max_th_22' )
+  colnames(args)<-c('days', 'N', 'day_h', 'mod_type', "level", 'output_dir', "th_row", 'rep_num',"v1_th1", "v2_th1","v1_th2", "v2_th2")
+
+  # Run through the specific models 
+        if(modelType==42){
+          # run environment function 
+          env_results<-env_func_4_2_par_hpc(days = days, N= N, th_forage_fr1 = v1_th1, th_forage_fr2= v1_th2, 
+                                            th_forage_flr1=v2_th1, th_forage_flr2=v2_th2, daylight_h = daylight_h, modelType=modelType)
+          
+        }else if(modelType==52){
+          env_results<-env_func_5_2_par_hpc(days = days, N= N, th_forage_sc1 = v1_th1, th_forage_sc2= v1_th2, 
+                                            th_forage_fr1=v2_th1, th_forage_fr2=v2_th2, daylight_h = daylight_h, modelType=modelType)
+    
+        }else if(modelType==62){
+          env_results<-env_func_6_2_par_hpc(days = days, N= N, th_forage_sc1 = v1_th1, th_forage_sc2= v1_th2, 
+                                            th_forage_flr1=v2_th1, th_forage_flr2=v2_th2, daylight_h = daylight_h, modelType=modelType)
+     
+        }else{
+          print("Problem: modeltype is not set correctly, but within x.2 subset 2")
+        }
+        
   
-  
-  # No wthe environmnets need to run in parallel 
-  
-  # put into the environment fnction 
-  env_results<-env_func_4_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th11, th_forage_fr2= cur_th12, th_forage_flr1=cur_th21, th_forage_flr2=cur_th22, daylight_h = daylight_h, modelType=modelType)
-  
-  # This contains the results for the current threshold, through all 18 environments 
+  # Return it, so it will be included in the endresult of the optimization list 
   env_results
-  
   #add this to the output list
   env_results[[3]]<-args
-  
-  # to not clutter the entire HPC
-  env_results[[2]]<-NA
-  
   # save the data 
   setwd(out_dir)
-  # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_4_2_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
-  
-}else if (modelType=='431'){
-  
-  # Set the number of options for which each threshold needs to be tested 
-  num_th<-50
-  # set the minima 
-  # For 4.1 the first energy proxy is FR
-  # For 4.1 the second energy proxy is FLR 
-  min_th_11<-0
-  min_th_12<-0
-  min_th_13<-0
-  min_th_21<-(-0.6)
-  min_th_22<-(-0.6)
-  min_th_23<-(-0.6)
-  # set the maxima
-  max_th_11<-4
-  max_th_12<-4
-  max_th_13<-4
-  max_th_21<-0.6
-  max_th_22<-0.6
-  max_th_23<-0.6
-  # create the vectors
-  th11_vec<-linspace(x1=min_th_11, x2=max_th_11, n=num_th)
-  th12_vec<-linspace(x1=min_th_12, x2=max_th_12, n=num_th)
-  th13_vec<-linspace(x1=min_th_13, x2=max_th_13, n=num_th)
-  th21_vec<-linspace(x1=min_th_21, x2=max_th_21, n=num_th)
-  th22_vec<-linspace(x1=min_th_22, x2=max_th_22, n=num_th)
-  th23_vec<-linspace(x1=min_th_23, x2=max_th_23, n=num_th)
-  # create a matrix that contains all possible combinations 
-  th_comb_31<-as.data.frame(as.matrix(expand.grid(th11_vec, th12_vec, th13_vec)))
-  th_comb_32<-as.data.frame(as.matrix(expand.grid(th21_vec, th22_vec, th23_vec)))
-  colnames(th_comb_31)<-c('th11', 'th12', 'th13')
-  colnames(th_comb_32)<-c('th21', 'th22', 'th23')
-  # select only relevant 
-  relev_31<-th_comb_31[(th_comb_31$th11<th_comb_31$th12 & th_comb_31$th12<th_comb_31$th13),]
-  relev_32<-th_comb_32[(th_comb_32$th21<th_comb_32$th22 & th_comb_32$th22<th_comb_32$th23),]
-  
-  # Create a new dataframe with all possible combinations of thes two dataframes 
-  th_comb_6 <- expand.grid(1:nrow(relev_31), 1:nrow(relev_32)) %>%
-    mutate(
-      th11 = relev_31$th11[Var1],
-      th12 = relev_31$th12[Var1],
-      th13 = relev_31$th13[Var1],
-      th21 = relev_32$th21[Var2],
-      th22 = relev_32$th22[Var2],
-      th23 = relev_32$th23[Var2]
-    ) %>%
-    select(th11, th12, th13, th21, th22, th23)
+  save(env_results, file=paste0('out_', modelType, '_HPC_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
   
   
-  # Set the current thresholds 
-  cur_th11<-th_comb_6[th_comb_numb,1]
-  cur_th12<-th_comb_6[th_comb_numb,2]
-  cur_th13<-th_comb_6
-  cur_th21<-th_comb_6[th_comb_numb,3]
-  cur_th22<-th_comb_6[th_comb_numb,4]
+}else if (modelType==431|modelType==531|modelType==631|modelType==432|modelType==532|modelType==632){
+  
+  # This is a 2 variale - 23theshold model - subset 2 - leftover-hoarder
+  # Set the thresholds 
+  v1_th1<-thresholds[1]
+  v2_th2<-thresholds[2]
+  v1_th2<-thresholds[3]
+  v2_th2<-thresholds[4]
+  v1_th3<-thresholds[5]
+  v2_th3<-thresholds[6]
   
   # Add some information to the output data 
-  # Add the total number of th, the minima and maxima 
-  args<-c(args, num_th,cur_th11, cur_th12, cur_th21, cur_th22, min_th_11, min_th_12, min_th_21, min_th_22, max_th_11, max_th_12, max_th_21, max_th_22)
   args<-as.data.frame(t(args))
-  colnames(args)<-c('days', 'N', 'day_h', 'th_comb_input', 'mod_type', 'output_dir', 'rep_num', 'total_num_per_th', 'th11', 'th12', 'th21', 'th22', 'min_th_11', 'min_th_12', 'min_th_21', 'min_th_22', 'max_th_11', 'max_th_12', 'max_th_21', 'max_th_22' )
+  colnames(args)<-c('days', 'N', 'day_h', 'mod_type', "level", 'output_dir', "th_row", 'rep_num',"v1_th1", "v2_th1","v1_th2", "v2_th2","v1_th3", "v2_th3")
   
+  # Run through the specific models 
+        if(modelType==431){
+          # run environment function 
+          env_results<-env_func_4_3_1_par_hpc(days = days, N= N, th_forage_fr1 = v1_th1, th_forage_fr2= v1_th2, th_forage_fr3= v1_th3,
+                                              th_forage_flr1=v2_th1, th_forage_flr2=v2_th2, th_forage_flr3=v2_th3, daylight_h = daylight_h, modelType=modelType)
+        }else if(modelType==432){
+          env_results<-env_func_4_3_2_par_hpc(days = days, N= N, th_forage_fr1 = v1_th1, th_forage_fr2= v1_th2, th_forage_fr3= v1_th3,
+                                              th_forage_flr1=v2_th1, th_forage_flr2=v2_th2, th_forage_flr3=v2_th3, daylight_h = daylight_h, modelType=modelType)
+          
+        }else if(modelType==531){
+          env_results<-env_func_5_3_1_par_hpc(days = days, N= N, th_forage_sc1 = v1_th1, th_forage_sc2= v1_th2, th_forage_sc3= v1_th3,
+                                              th_forage_fr1=v2_th1, th_forage_fr2=v2_th2, th_forage_fr3=v2_th3, daylight_h = daylight_h, modelType=modelType)
+          
+        }else if(modelType==532){
+          env_results<-env_func_5_3_2_par_hpc(days = days, N= N, th_forage_sc1 = v1_th1, th_forage_sc2= v1_th2, th_forage_sc3= v1_th3,
+                                              th_forage_fr1=v2_th1, th_forage_fr2=v2_th2, th_forage_fr3=v2_th3, daylight_h = daylight_h, modelType=modelType)
+          
+        }else if(modelType==631){
+          env_results<-env_func_6_3_1_par_hpc(days = days, N= N, th_forage_sc1 = v1_th1, th_forage_sc2= v1_th2, th_forage_sc3= v1_th3,
+                                              th_forage_flr1=v2_th1, th_forage_flr2=v2_th2, th_forage_flr3=v2_th3, daylight_h = daylight_h, modelType=modelType)
+        }else if(modelType==632){
+          env_results<-env_func_6_3_2_par_hpc(days = days, N= N, th_forage_sc1 = v1_th1, th_forage_sc2= v1_th2, th_forage_sc3= v1_th3,
+                                              th_forage_flr1=v2_th1, th_forage_flr2=v2_th2, th_forage_flr3=v2_th3, daylight_h = daylight_h, modelType=modelType)
+        }else{
+          print("Problem: modeltype is not set correctly, but within x.3 subset 2")
+        }
+        
   
-  # No wthe environmnets need to run in parallel 
-  
-  # put into the environment fnction 
-  env_results<-env_func_4_1_par_hpc(days = days, N= N, th_forage_fr1 = cur_th11, th_forage_fr2= cur_th12, th_forage_flr1=cur_th21, th_forage_flr2=cur_th22, daylight_h = daylight_h, modelType=modelType)
-  
-  # This contains the results for the current threshold, through all 18 environments 
+  # Return it, so it will be included in the endresult of the optimization list 
   env_results
-  
   #add this to the output list
   env_results[[3]]<-args
-  
   # save the data 
   setwd(out_dir)
-  # make sure to attach the threshold to the dataframe 
-  save(env_results, file=paste0('outcome_4_1_HPC_th', th_comb_numb, '_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_', rep_num,'.Rda'))
-  
-  
-  
-} else if(modelType=='432'){
-  
+  save(env_results, file=paste0('out_', modelType, '_HPC_', format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
+
   
 }else {
   print('help stop, something is wrong with the modeltype ')
   
 }
 
-# End memory profiling 
-# Rprof(NULL)
-# summaryRprof(tf, memory='both')
+

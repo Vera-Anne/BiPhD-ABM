@@ -1,0 +1,29 @@
+---
+title: "Compiling level-output from the HPC"
+author: "Vera Vinken"
+date: "`r Sys.Date()`"
+output: html_document
+---
+  
+## Packages 
+
+```{r packages, include=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+## Background
+On the HPC I'll run the models for 1 level of the different branches (see `set_combination_branding.Rmd` script). The outcome will be x * 25 files with model outcomes of 1000 individuals over 30 days of one specific model. `X` being the number of unique thresholds (that are relevant) in each level. With this code I will load the data that comes out and take the following steps: 
+
+- Calculate the mean survival across each of the 25 repetitions of each threshold-combination 
+- Find the threshold combination with the highest survival 
+
+From there, I can feed this combination into the next level, using the `set_combination_branding.Rmd` script. I can feed in the combination and output a csv file that has all new threshold for the next level. 
+
+This csv file can be saved on the HPC, from which I can then run the next level. 
+
+## Load data 
+```{r set working directories}
+file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/HPC/predesigned_branches"
+setwd(file_folder)
+
+```

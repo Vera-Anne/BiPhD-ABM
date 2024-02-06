@@ -10,7 +10,7 @@ output: html_document
 ```{r packages, include=TRUE, message=FALSE, warning=FALSE}
 library(dplyr)
 
-library(strinr) # to select the 2nd digit of a number with the str_sub() function 
+library(stringr) # to select the 2nd digit of a number with the str_sub() function 
 ```
 
 ## Background
@@ -2868,7 +2868,7 @@ I have now ran all the branches for all the models. Here is some code that can h
 ```{r saving seperate branching dataframes}
 # Settings for what you watn to do
 subset<-2
-model_type<-531
+model_type<-632
 level<-"level1" # set teh level that you want to extract from 
 # any  previuos results 
 best_comb_l1<-as.numeric(c(NA))
