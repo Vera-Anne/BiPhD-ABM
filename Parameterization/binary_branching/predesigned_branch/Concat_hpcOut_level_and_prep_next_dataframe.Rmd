@@ -20,7 +20,7 @@ This code will take the output from the HPC from a specific level. It then conca
 
 ## Basic settings 
 ```{r settings}
-model_type<-32
+model_type<-21
 level<-1          # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
 subset<-1
 
@@ -159,18 +159,19 @@ if(next_level_chr=="level1"){
   selected_df<-tree_output_list[[next_level]]
   # save it
    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                        model_type, '_', next_level, '.csv'), row.names = F, col.names = F)
+                                        model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
 }else if(next_level_chr=="level2"){
   # Select the right part of the tree 
   selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr)]]
     # save it 
    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                        model_type, '_', next_level, '.csv'), row.names = F, col.names = F)
+                                        model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
 }else if(level=="level3"){
     # Select the right part of the tree 
     selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
     # save it
-    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', next_level, '.csv'), row.names = F, col.names = F)
+    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                         model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
 }
 
 
