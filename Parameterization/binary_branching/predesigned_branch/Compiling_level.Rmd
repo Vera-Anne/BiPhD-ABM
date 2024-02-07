@@ -25,12 +25,13 @@ This csv file can be saved on the HPC, from which I can then run the next level.
 
 ## Basic settings 
 ```{r settings}
-model_type<-332
-level<-1
+model_type<-11
+level<-1          # The level that you are concatenating (the level that just ran on the HPC)
 
 ```
 
 ## Set working directory & Load data 
+Right now, this is specified for subset 1. 
 ```{r load data}
 file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/HPC/predesigned_branches/output_subset1"
 # set working directory 
@@ -60,7 +61,7 @@ setwd(cur_wd)
     # extract the current halflife and put in list 
     halflife_list[1]<-env_results[1]                                # add performance              
     halflife_list[[1]][3]<-env_results[[3]]$th_row                       # add the row of dataframe 
-    halflife_list[[1]][4]<-env_results[[3]]$rep_num
+    halflife_list[[1]][4]<-env_results[[3]]$rep_num                 # Add the rep number 
     halflife_list[[1]][5:(length(env_results[[3]])-4)] <-env_results[[3]][9:length(env_results[[3]])]  # add the actual thresholds 
 
     halflife_list

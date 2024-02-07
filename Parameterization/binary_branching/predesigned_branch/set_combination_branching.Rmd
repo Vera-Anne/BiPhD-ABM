@@ -2868,8 +2868,8 @@ I have now ran all the branches for all the models. Here is some code that can h
 ```{r saving seperate branching dataframes}
 # Settings for what you watn to do
 subset<-1
-model_type<-31
-level<-"level2" # set teh level that you want to extract from (from the pre-made branch)
+model_type<-331
+level<-"level2" # Whcih level are you about to run? (you  need to select here from the premade branch)
 
 
 
