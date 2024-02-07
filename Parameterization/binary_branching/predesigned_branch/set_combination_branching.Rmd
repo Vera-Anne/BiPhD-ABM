@@ -2867,12 +2867,59 @@ I have now ran all the branches for all the models. Here is some code that can h
 
 ```{r saving seperate branching dataframes}
 # Settings for what you watn to do
-subset<-2
-model_type<-632
-level<-"level1" # set teh level that you want to extract from 
-# any  previuos results 
-best_comb_l1<-as.numeric(c(NA))
-best_comb_l2<-as.numeric(c(NA))
+subset<-1
+model_type<-31
+level<-"level2" # set teh level that you want to extract from (from the pre-made branch)
+
+
+
+
+# Code to run 
+if(level=="level2"){
+# Extract best values from previous level 
+  # Set the wd to where the concatenation results are 
+  prev_level<-as.numeric(substr(level, nchar(level), nchar(level)))-1
+  setwd(paste0(file_folder, "/output_subset", subset, "/level_", prev_level, "/concat_results"))
+  
+  # Load the relevant dataframe 
+  filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", prev_level, ".Rda"), full.names=TRUE)
+  load(filenames[1])
+  
+  # Extract first row 
+  best_th<-HL_df[1,]
+  # extract the thresholds 
+  thresholds<-best_th[,5:(ncol(HL_df)-1)]
+  best_comb_chr<-paste(thresholds, collapse=" & ")
+}else if(level=="level3"){
+  # For the best th from level 1 
+  # Set the wd to where the concatenation results are 
+  prev_level<-as.numeric(substr(level, nchar(level), nchar(level)))-2
+  setwd(paste0(file_folder, "/output_subset", subset, "/level_", prev_level, "/concat_results"))
+  
+  # Load the relevant dataframe 
+  filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", prev_level, ".Rda"), full.names=TRUE)
+  load(filenames[1])
+  # Extract first row 
+  best_th<-HL_df[1,]
+  # extract the thresholds 
+  thresholds<-best_th[,5:(ncol(HL_df)-1)]
+  best_comb_chr_l1<-paste(thresholds, collapse=" & ")
+  
+  # For the best th from level 2
+  # Set the wd to where the concatenation results are 
+  prev_level<-as.numeric(substr(level, nchar(level), nchar(level)))-1
+  setwd(paste0(file_folder, "/output_subset", subset, "/level_", prev_level, "/concat_results"))
+  
+  # Load the relevant dataframe 
+  filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", prev_level, ".Rda"), full.names=TRUE)
+  load(filenames[1])
+  # Extract first row 
+  best_th<-HL_df[1,]
+  # extract the thresholds 
+  thresholds<-best_th[,5:(ncol(HL_df)-1)]
+  best_comb_chr_l2<-paste(thresholds, collapse=" & ")
+}
+
 
 
 # It is best for the HPC to take a csv that does not have column headings 
@@ -2891,11 +2938,11 @@ if(level=="level1"){
    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
    #write.csv(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
 }else if(level=="level2"){
-  selected_df<-tree_output_list[[level]][[paste(best_comb_l1)]]
+  selected_df<-tree_output_list[[level]][[paste(best_comb_chr)]]
     # You're there 
    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
 }else if(level=="level3"){
-    selected_df<-tree_output_list[[level]][[paste(best_comb_l1)]][[paste(best_comb_l2)]]
+    selected_df<-tree_output_list[[level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
     # You're there 
    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
 }

@@ -8,7 +8,9 @@ output: html_document
 ## Packages 
 
 ```{r packages, include=TRUE, message=FALSE, warning=FALSE}
-
+library(parallel)     # parallel computing 
+library(doParallel)   # parallel computing 
+library(dplyr)        # For %>% pipes 
 ```
 
 ## Background
@@ -21,9 +23,83 @@ From there, I can feed this combination into the next level, using the `set_comb
 
 This csv file can be saved on the HPC, from which I can then run the next level. 
 
-## Load data 
-```{r set working directories}
-file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/HPC/predesigned_branches"
-setwd(file_folder)
+## Basic settings 
+```{r settings}
+model_type<-332
+level<-1
 
 ```
+
+## Set working directory & Load data 
+```{r load data}
+file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/HPC/predesigned_branches/output_subset1"
+# set working directory 
+cur_wd<-(paste0(file_folder, "/level_", level, "/", model_type, "/"))
+setwd(cur_wd)
+
+# Load data 
+# Note that I use a parallel appraoch which won't be necessary until I'm dealing which large numbers of files
+# This will be relevant for the second subset mostly. 
+
+
+  # Load the filenames in this folder 
+  filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+  
+  # make halflife list
+  halflife_list<-list()
+  
+  numCores<-(detectCores()-1)
+  registerDoParallel(numCores)
+  
+  outcome_concat<- foreach(j=1:length(filenames), .combine='c') %dopar% {
+    
+    # For each of the files in the current batch: extract the halflife 
+    # for (j in 1:length(filenames)){
+    # load the current file 
+    load(filenames[j])
+    # extract the current halflife and put in list 
+    halflife_list[1]<-env_results[1]                                # add performance              
+    halflife_list[[1]][3]<-env_results[[3]]$th_row                       # add the row of dataframe 
+    halflife_list[[1]][4]<-env_results[[3]]$rep_num
+    halflife_list[[1]][5:(length(env_results[[3]])-4)] <-env_results[[3]][9:length(env_results[[3]])]  # add the actual thresholds 
+
+    halflife_list
+  } # end for loop that runs through files in a batch-folder
+  
+  # stop the cluster
+  stopImplicitCluster()
+```
+## Find best combo 
+Concatenate the data, summarise across the 25 repetitions, and find the combination with the best survival output 
+
+```{r concat & find best}
+
+  
+  # Turn the list into a dataframe 
+  HL_df<-as.data.frame(do.call(rbind, outcome_concat))
+  HL_df<-as.data.frame(lapply(HL_df, as.numeric))
+  
+  # set some names
+  colnames(HL_df)<-c("survival", "sd","th_row", "rep", paste((1:(ncol(HL_df)-4))))
+
+  # order in order of performance 
+  HL_df<-HL_df %>%
+    group_by(th_row)%>%
+    mutate(sum_survival=sum(survival))%>%
+    ungroup()%>%
+    arrange(desc(sum_survival))
+
+  # Set wd for saving 
+  save_wd<-(paste0(file_folder, "/level_", level, "/concat_results"))
+  setwd(save_wd)
+  
+
+  # Save in the folder
+  save(HL_df, file=paste0('out_concat_HPC_',  format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"__MOD_", model_type,'_lev', level, '.Rda'))
+  
+  
+
+```
+
+
+

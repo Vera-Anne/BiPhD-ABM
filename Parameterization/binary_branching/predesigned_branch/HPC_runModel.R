@@ -2,7 +2,8 @@
 # 22/08/2023
 # Rscript that can run job arrays where each seperate job runs for 1 threshold combo 
 # Vera Vinken 
-# Last changes: 18/09/2023
+# Last changes: 07/02/2024
+
 ######################################################################################
 
 ##############################
@@ -67,7 +68,7 @@ args<-c(days, N, daylight_h, modelType, level, out_dir, th_row, rep_num, thresho
 
 # Some checks for debugging (can be removed later)
 print(paste("length of args_old=",length(args_old)))
-print(paste("this is R - thresholds=", thresholds))
+print(paste("this is R - thresholds=", thresholds, "And the repetition number is =", rep_num))
 print(paste("level=", level))
 print(paste("threshold row =", th_row))
 
