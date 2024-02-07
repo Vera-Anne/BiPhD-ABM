@@ -114,7 +114,7 @@ if(next_level_chr=="level2"){
       setwd(paste0(general_folder, "/output_subset", subset, "/level_", level, "/concat_results"))
       # Load the relevant dataframe 
       filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", level, ".Rda"), full.names=TRUE)
-      load(filenames[1])
+      load(filenames[length(filenames)])
       # Extract first row 
       best_th<-HL_df[1,]
       # extract the thresholds 
@@ -123,10 +123,10 @@ if(next_level_chr=="level2"){
 }else if(next_level_chr=="level3"){
   # Best of level 1
       # Set the wd to where the concatenation results are 
-      setwd(paste0(general_folder, "/output_subset", subset, "/level_", 1, "/concat_results"))
+      setwd(paste0(general_folder, "/output_subset", subset, "/level_", (level-1), "/concat_results"))
       # Load the relevant dataframe 
       filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", 1, ".Rda"), full.names=TRUE)
-      load(filenames[1])
+      load(filenames[length(filenames)])
       # Extract first row 
       best_th<-HL_df[1,]
       # extract the thresholds 
@@ -138,7 +138,7 @@ if(next_level_chr=="level2"){
       setwd(paste0(general_folder, "/output_subset", subset, "/level_", level, "/concat_results"))
       # Load the relevant dataframe 
       filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", level, ".Rda"), full.names=TRUE)
-      load(filenames[1])
+      load(filenames[length(filenames)])
       # Extract first row 
       best_th<-HL_df[1,]
       # extract the thresholds 

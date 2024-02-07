@@ -383,6 +383,8 @@ tree_func_x2<-function(model_type, branch_num){
                     filter(th1<th2)
                   # Add the output to the list 
                   level_list[[j]]<-grid
+                  
+                  
               }
             # sort naming 
             names(level_list)<-c(
@@ -431,27 +433,20 @@ tree_func_x2<-function(model_type, branch_num){
                         filter(th1<th2)
                       # Add the output to the list 
                       list_new_th[[k]]<-grid
+                      
+                      # do something about the  names 
+                      cur_name<-(paste(tree_output_list[[2]][[j]][[1]][[k]], "&", 
+                                   tree_output_list[[2]][[j]][[2]][[k]]))
+                  # attach to vector 
+                  if(k==1){
+                    name_vector_k<-cur_name
+                  }else{
+                    name_vector_k<-c(name_vector_k, cur_name)
                   }
-                   # sort naming 
-                    names(list_new_th)<-c(
-                                        (paste(tree_output_list[[2]][[1]][[1]][[1]], "&", tree_output_list[[2]][[1]][[2]][[1]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[2]], "&", tree_output_list[[2]][[1]][[2]][[2]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[3]], "&", tree_output_list[[2]][[1]][[2]][[3]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[4]], "&", tree_output_list[[2]][[1]][[2]][[4]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[5]], "&", tree_output_list[[2]][[1]][[2]][[5]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[6]], "&", tree_output_list[[2]][[1]][[2]][[6]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[7]], "&", tree_output_list[[2]][[1]][[2]][[7]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[8]], "&", tree_output_list[[2]][[1]][[2]][[8]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[9]], "&", tree_output_list[[2]][[1]][[2]][[9]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[10]], "&", tree_output_list[[2]][[1]][[2]][[10]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[11]], "&", tree_output_list[[2]][[1]][[2]][[11]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[12]], "&", tree_output_list[[2]][[1]][[2]][[12]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[13]], "&", tree_output_list[[2]][[1]][[2]][[13]])), 
-                                        (paste(tree_output_list[[2]][[1]][[1]][[14]], "&", tree_output_list[[2]][[1]][[2]][[14]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[15]], "&", tree_output_list[[2]][[1]][[2]][[15]])),
-                                        (paste(tree_output_list[[2]][[1]][[1]][[16]], "&", tree_output_list[[2]][[1]][[2]][[16]]))
-                                        )
+                  } # end k-loop 
               
+              # names 
+              names(list_new_th)<-name_vector_k
               # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
             }
@@ -607,150 +602,21 @@ tree_func_x3<-function(model_type, branch_num){
                         filter(th1<th2 & th2<th3)
                       # Add the output to the list 
                       list_new_th[[k]]<-grid
+                      
+                      # do something about the  names 
+                      cur_name<-(paste(tree_output_list[[2]][[j]][[1]][[k]], "&", tree_output_list[[2]][[j]][[2]][[k]], "&", tree_output_list[[2]][[j]][[3]][[k]]))
+                  # attach to vector 
+                  if(k==1){
+                    name_vector_k<-cur_name
+                  }else{
+                    name_vector_k<-c(name_vector_k, cur_name)
                   }
-                   # sort naming 
-                    names(list_new_th)<-c((paste(tree_output_list[[2]][[1]][[1]][[1]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[1]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[1]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[2]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[2]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[2]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[3]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[3]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[3]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[4]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[4]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[4]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[5]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[5]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[5]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[6]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[6]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[6]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[7]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[7]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[7]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[8]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[8]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[8]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[9]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[9]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[9]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[10]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[10]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[10]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[11]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[11]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[11]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[12]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[12]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[12]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[13]], "&", 
-                                                 tree_output_list[[2]][[1]][[2]][[13]], "&", 
-                                                 tree_output_list[[2]][[1]][[3]][[13]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[14]], "&", tree_output_list[[2]][[1]][[2]][[14]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[14]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[15]], "&", tree_output_list[[2]][[1]][[2]][[15]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[15]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[16]], "&", tree_output_list[[2]][[1]][[2]][[16]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[16]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[17]], "&", tree_output_list[[2]][[1]][[2]][[17]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[17]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[18]], "&", tree_output_list[[2]][[1]][[2]][[18]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[18]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[19]], "&", tree_output_list[[2]][[1]][[2]][[19]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[19]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[20]], "&", tree_output_list[[2]][[1]][[2]][[20]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[20]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[21]], "&", tree_output_list[[2]][[1]][[2]][[21]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[21]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[22]], "&", tree_output_list[[2]][[1]][[2]][[22]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[22]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[23]], "&", tree_output_list[[2]][[1]][[2]][[23]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[23]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[24]], "&", tree_output_list[[2]][[1]][[2]][[24]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[24]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[25]], "&", tree_output_list[[2]][[1]][[2]][[25]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[25]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[26]], "&", tree_output_list[[2]][[1]][[2]][[26]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[26]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[27]], "&", tree_output_list[[2]][[1]][[2]][[27]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[27]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[28]], "&", tree_output_list[[2]][[1]][[2]][[28]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[28]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[29]], "&", tree_output_list[[2]][[1]][[2]][[29]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[29]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[30]], "&", tree_output_list[[2]][[1]][[2]][[30]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[30]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[31]], "&", tree_output_list[[2]][[1]][[2]][[31]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[31]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[32]], "&", tree_output_list[[2]][[1]][[2]][[32]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[32]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[33]], "&", tree_output_list[[2]][[1]][[2]][[33]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[33]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[34]], "&", tree_output_list[[2]][[1]][[2]][[34]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[34]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[35]], "&", tree_output_list[[2]][[1]][[2]][[35]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[35]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[36]], "&", tree_output_list[[2]][[1]][[2]][[36]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[36]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[37]], "&", tree_output_list[[2]][[1]][[2]][[37]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[37]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[38]], "&", tree_output_list[[2]][[1]][[2]][[38]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[38]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[39]], "&", tree_output_list[[2]][[1]][[2]][[39]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[39]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[40]], "&", tree_output_list[[2]][[1]][[2]][[40]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[40]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[41]], "&", tree_output_list[[2]][[1]][[2]][[41]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[41]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[42]], "&", tree_output_list[[2]][[1]][[2]][[42]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[42]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[43]], "&", tree_output_list[[2]][[1]][[2]][[43]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[43]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[44]], "&", tree_output_list[[2]][[1]][[2]][[44]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[44]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[45]], "&", tree_output_list[[2]][[1]][[2]][[45]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[45]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[46]], "&", tree_output_list[[2]][[1]][[2]][[46]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[46]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[47]], "&", tree_output_list[[2]][[1]][[2]][[47]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[47]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[48]], "&", tree_output_list[[2]][[1]][[2]][[48]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[48]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[49]], "&", tree_output_list[[2]][[1]][[2]][[49]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[49]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[50]], "&", tree_output_list[[2]][[1]][[2]][[50]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[50]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[51]], "&", tree_output_list[[2]][[1]][[2]][[51]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[51]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[52]], "&", tree_output_list[[2]][[1]][[2]][[52]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[52]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[53]], "&", tree_output_list[[2]][[1]][[2]][[53]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[53]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[54]], "&", tree_output_list[[2]][[1]][[2]][[54]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[54]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[55]], "&", tree_output_list[[2]][[1]][[2]][[55]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[55]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[56]], "&", tree_output_list[[2]][[1]][[2]][[56]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[56]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[57]], "&", tree_output_list[[2]][[1]][[2]][[57]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[57]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[58]], "&", tree_output_list[[2]][[1]][[2]][[58]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[58]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[59]], "&", tree_output_list[[2]][[1]][[2]][[59]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[59]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[60]], "&", tree_output_list[[2]][[1]][[2]][[60]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[60]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[61]], "&", tree_output_list[[2]][[1]][[2]][[61]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[61]])), 
-                                          (paste(tree_output_list[[2]][[1]][[1]][[62]], "&", tree_output_list[[2]][[1]][[2]][[62]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[62]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[63]], "&", tree_output_list[[2]][[1]][[2]][[63]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[63]])),
-                                          (paste(tree_output_list[[2]][[1]][[1]][[64]], "&", tree_output_list[[2]][[1]][[2]][[64]], "&",
-                                                 tree_output_list[[2]][[1]][[3]][[64]]))
-                                        )
+                  } # end k-loop 
+              
+                  # names 
+                  names(list_new_th)<-name_vector_k
+                  
+                   
             # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
             }
@@ -791,7 +657,7 @@ out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 4)
 The subset 1 x.2 models 
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 4)
+out_sub1_x2<-tree_func_x2(model_type = 22, branch_num = 4)
 ```
 
 The subset 1 x.3 models
