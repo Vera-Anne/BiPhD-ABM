@@ -2712,7 +2712,7 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
 Run the direct hoarder , 2 variables, 3 th model: 
 ```{r run subset 2 x3}
 
-out_sub2_x3<-tree_func_sub2_x3(model_type=431, branch_num = 4)
+out_sub2_x3<-tree_func_sub2_x3(model_type=632, branch_num = 4)
 
 ```
 
