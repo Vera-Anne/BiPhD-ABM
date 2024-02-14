@@ -8,6 +8,7 @@ output: html_document
 ## Packages 
 
 ```{r packages, include=TRUE, message=FALSE, warning=FALSE}
+rm(list = ls())
 library(stringr)      # to select the 2nd digit of a number with the str_sub() function 
 library(parallel)     # parallel computing 
 library(doParallel)   # parallel computing 
@@ -20,10 +21,9 @@ This code will take the output from the HPC from a specific level. It then conca
 
 ## Basic settings 
 ```{r settings}
-model_type<-12
-level<-3          # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
-subset<-1
-
+model_type<-61
+level<-0       # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
+subset<-2
 ```
 
 ## Set working directories 
@@ -33,10 +33,10 @@ general_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project
 ```
 
 ## Set working directory & Load HPC output data 
-This is only necessary when you are concatenating (so only for levels 2 and 3)
+This is only necessary when you are concatenating (so only for levels 1, 2 and 3)
 ```{r load data}
 # set working directory depending on model type
-
+if(level>0){
 cur_wd<-(paste0(general_folder,"/output_subset", subset, "/level_", level, "/", model_type, "/"))
 
 setwd(cur_wd)
@@ -68,12 +68,15 @@ setwd(cur_wd)
   
   # stop the cluster
   stopImplicitCluster()
+}
 ```
 
 ## Find best combo 
 Concatenate the data, summarise across the 25 repetitions, and find the combination with the best survival output 
 
 ```{r concat & find best}
+ if(level>0){
+   
   # Turn the list into a dataframe 
   HL_df<-as.data.frame(do.call(rbind, outcome_concat))
   HL_df<-as.data.frame(lapply(HL_df, as.numeric))
@@ -82,9 +85,10 @@ Concatenate the data, summarise across the 25 repetitions, and find the combinat
   colnames(HL_df)<-c("survival", "sd","th_row", "rep", paste((1:(ncol(HL_df)-4))))
 
   # order in order of performance 
-  HL_df<-HL_df %>%
+  HL_df<-HL_df%>%
     group_by(th_row)%>%
-    mutate(sum_survival=sum(survival), mean_survival=mean(survival))%>%
+    mutate(sum_survival=sum(survival))%>%
+    mutate(mean_survival=mean(survival))%>%
     ungroup()%>%
     arrange(desc(sum_survival))
 
@@ -94,6 +98,8 @@ Concatenate the data, summarise across the 25 repetitions, and find the combinat
   
   # Save in the folder
   save(HL_df, file=paste0('out_concat_HPC_',  format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"__MOD_", model_type,'_lev', level, '.Rda'))
+  rm(HL_df)
+ }
   
 ```
 
@@ -118,7 +124,7 @@ if(next_level_chr=="level2"){
       # Extract first row 
       best_th<-HL_df[1,]
       # extract the thresholds 
-      thresholds<-best_th[,5:(ncol(HL_df)-1)]
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
       best_comb_chr<-paste(thresholds, collapse=" & ")
 }else if(next_level_chr=="level3"){
   # Best of level 1
@@ -130,7 +136,7 @@ if(next_level_chr=="level2"){
       # Extract first row 
       best_th<-HL_df[1,]
       # extract the thresholds 
-      thresholds<-best_th[,5:(ncol(HL_df)-1)]
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
       best_comb_chr_l1<-paste(thresholds, collapse=" & ")
   
   # For the best th from level 2
@@ -142,8 +148,44 @@ if(next_level_chr=="level2"){
       # Extract first row 
       best_th<-HL_df[1,]
       # extract the thresholds 
-      thresholds<-best_th[,5:(ncol(HL_df)-1)]
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
       best_comb_chr_l2<-paste(thresholds, collapse=" & ")
+}else if(next_level_chr=="level4"){
+   # Best of level 1
+      # Set the wd to where the concatenation results are 
+      setwd(paste0(general_folder, "/output_subset", subset, "/level_", (level-2), "/concat_results"))
+      # Load the relevant dataframe 
+      filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", 1, ".Rda"), full.names=TRUE)
+      load(filenames[length(filenames)])
+      # Extract first row 
+      best_th<-HL_df[1,]
+      # extract the thresholds 
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
+      best_comb_chr_l1<-paste(thresholds, collapse=" & ")
+  
+  # For the best th from level 2
+      # Set the wd to where the concatenation results are 
+      setwd(paste0(general_folder, "/output_subset", subset, "/level_", (level-1), "/concat_results"))
+      # Load the relevant dataframe 
+      filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", 2, ".Rda"), full.names=TRUE)
+      load(filenames[length(filenames)])
+      # Extract first row 
+      best_th<-HL_df[1,]
+      # extract the thresholds 
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
+      best_comb_chr_l2<-paste(thresholds, collapse=" & ")
+  # For the best th from level 3
+      # Set the wd to where the concatenation results are 
+      setwd(paste0(general_folder, "/output_subset", subset, "/level_", level, "/concat_results"))
+      # Load the relevant dataframe 
+      filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", level, ".Rda"), full.names=TRUE)
+      load(filenames[length(filenames)])
+      # Extract first row 
+      best_th<-HL_df[1,]
+      # extract the thresholds 
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
+      best_comb_chr_l3<-paste(thresholds, collapse=" & ")
+  
 }
 
 
@@ -167,16 +209,36 @@ if(next_level_chr=="level1"){
    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
                                         model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
 }else if(next_level_chr=="level3"){
-    # Select the right part of the tree 
-    #selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
-    # save it
-    #write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                         #model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    
+    #Select the right part of the tree
+    selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
+    #save it
+    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                         model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+} else if(next_level_chr=="level4"){
+   # Selec the best values
+  thresholds<-best_th[,5:(ncol(HL_df)-2)]
+  # List all objects in the workspace
+  all_objects <- ls()
+  # Filter objects that start with 'best_comb'
+  best_comb_objects <- (ls())[grep("^best_comb", ls())]
+  # Initialize an empty list to store values
+  values <- list()
+  # Loop through each object and extract its value
+  for (obj in best_comb_objects) {
+  values[[obj]] <- get(obj)
+  }
+  # Combine the values into a dataframe
+  best_comb_df <- do.call(rbind, lapply(values, as.data.frame))
+  names(best_comb_df)<-c("thresholds")
+  # set wd 
+  setwd(paste0(general_folder, "/final_results"))
+      write.table(best_comb_df, file=paste0('optimal_th_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                         model_type,'.csv'), row.names = T, col.names = F)
   
-  # Selec the best values
-  thresholds<-best_th[,5:(ncol(HL_df)-1)]
-}
-
+}else{
+  print("Problem with level settings")
+  }
 
 ```
 
