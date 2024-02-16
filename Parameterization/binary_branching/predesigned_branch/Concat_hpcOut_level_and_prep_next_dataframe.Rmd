@@ -185,7 +185,6 @@ if(next_level_chr=="level2"){
       # extract the thresholds 
       thresholds<-best_th[,5:(ncol(HL_df)-2)]
       best_comb_chr_l3<-paste(thresholds, collapse=" & ")
-  
 }
 
 

@@ -205,10 +205,11 @@ if (modelType==0){
   
   
 } else if (modelType==41|modelType==51|modelType==61){
+  print(paste("this is R, we have modeltype="))
   # This is a 2 variale - 1 theshold model - subset 2 - non-hoarder
   # Set the thresholds 
   v1_th1<-thresholds[1]
-  v2_th2<-thresholds[2]
+  v2_th1<-thresholds[2]
   
   # Add some information to the output data 
   args<-as.data.frame(t(args))
