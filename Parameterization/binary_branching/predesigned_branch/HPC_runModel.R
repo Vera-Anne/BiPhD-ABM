@@ -205,7 +205,8 @@ if (modelType==0){
   
   
 } else if (modelType==41|modelType==51|modelType==61){
-  print(paste("this is R, we have modeltype="))
+  # print for output file 
+  print(paste("this is R, we have modeltype=", modelType))
   # This is a 2 variale - 1 theshold model - subset 2 - non-hoarder
   # Set the thresholds 
   v1_th1<-thresholds[1]
@@ -245,6 +246,8 @@ if (modelType==0){
   
   
 }else if(modelType==42|modelType==52|modelType==62){
+  # print for output file 
+  print(paste("this is R, we have modeltype=", modelType))
   
   # This is a 2 variale - 2 theshold model - subset 2 - leftover-hoarder
   # Set the thresholds 
@@ -286,11 +289,13 @@ if (modelType==0){
   
   
 }else if (modelType==431|modelType==531|modelType==631|modelType==432|modelType==532|modelType==632){
+  # print for output file 
+  print(paste("this is R, we have modeltype=", modelType))
   
   # This is a 2 variale - 23theshold model - subset 2 - leftover-hoarder
   # Set the thresholds 
   v1_th1<-thresholds[1]
-  v2_th2<-thresholds[2]
+  v2_th1<-thresholds[2]
   v1_th2<-thresholds[3]
   v2_th2<-thresholds[4]
   v1_th3<-thresholds[5]

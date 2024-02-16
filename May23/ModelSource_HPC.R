@@ -3786,8 +3786,7 @@ mod_5_1_hpc<-function(days, N, env_type, th_forage_sc, th_forage_fr, daylight_h)
   
   # clean up cluster 
   stopImplicitCluster()
-  
-  #return(outcome_4_1)
+  # Put backinto global environment
   assign(paste0('outcome_5_1_env', env_type),outcome_5_1, envir=.GlobalEnv)
   
   create_df_func(outputFile = outcome_5_1, modelType = '51', env_type= env_type)
@@ -4679,10 +4678,10 @@ mod_6_1_hpc<-function(days, N, env_type, th_forage_sc, th_forage_flr, daylight_h
   # clean up cluster 
   stopImplicitCluster()
   
-  #return(outcome_4_1)
+  # Put into global environment
   assign(paste0('outcome_6_1_env', env_type),outcome_6_1, envir=.GlobalEnv)
   
-  create_df_func(outputFile = outcome_5_1, modelType = '61', env_type= env_type)
+  create_df_func(outputFile = outcome_6_1, modelType = '61', env_type= env_type)
   
 } # end of model 6.1 function - HPC 
 
@@ -5137,7 +5136,7 @@ mod_6_3_1_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_fora
 } # end of model 6.3.1 function - HPC
 
 
-# model 5.3.2 : direct hoarding bird with foraging up top  - HPC
+# model 6.3.2 : direct hoarding bird with foraging up top  - HPC
 mod_6_3_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_sc3, th_forage_flr1, th_forage_flr2, th_forage_flr3, daylight_h){
   # make some of the variables global for saving 
   days<<-days
