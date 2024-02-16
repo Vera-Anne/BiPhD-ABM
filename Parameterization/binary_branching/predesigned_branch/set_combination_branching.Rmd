@@ -68,6 +68,25 @@ start_max_v2_th2<-4
       output_branches<<-c(th_b1, th_b2, th_b3, th_b4, step_size)
       return(output_branches)
     }
+
+
+# Branching for 6 
+    branch_func_6<-function(range_min, range_max){
+      # determine stepsize
+      step_size<<-((range_max-range_min)/6)
+      
+      # Set the value for the threshold for each branch
+      th_b1<-range_min + (step_size/2)
+      th_b2<-(th_b1+step_size)
+      th_b3<-(th_b2+step_size)
+      th_b4<-(th_b3+step_size)
+      th_b5<-(th_b4+step_size)
+      th_b6<-(th_b5+step_size)
+      
+      # concatenate output 
+      output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, step_size)
+      return(output_branches)
+    }
 ```
 
 Old function for tree-branching

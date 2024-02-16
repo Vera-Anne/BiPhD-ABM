@@ -252,7 +252,7 @@ if (modelType==0){
   # This is a 2 variale - 2 theshold model - subset 2 - leftover-hoarder
   # Set the thresholds 
   v1_th1<-thresholds[1]
-  v2_th2<-thresholds[2]
+  v2_th1<-thresholds[2]
   v1_th2<-thresholds[3]
   v2_th2<-thresholds[4]
   
