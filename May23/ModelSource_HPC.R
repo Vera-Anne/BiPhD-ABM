@@ -4732,7 +4732,7 @@ env_func_6_1_par_hpc<-function(days, N, th_forage_sc, th_forage_flr, daylight_h,
 ##   Model 6.2: Leftover-hoarding bird, Access to SC and FLR           ##
 #########################################################################
 
-# model 5.2 - HPC 
+# model 6.2 - HPC 
 mod_6_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_flr1, th_forage_flr2, daylight_h){
   # make some of the variables global for saving 
   days<<-days
@@ -4815,7 +4815,7 @@ mod_6_2_hpc<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage
         
         if (sleep_count[i,t]==0){
           
-          # RULE SPECIFIC FOR MODEL 5.2 
+          # RULE SPECIFIC FOR MODEL 6.2 
           
           # Only access to stomach-content, birds need to retrieve if the stomach content is below the lowest threshold 
           # There also needs to be a minimum number of caches available 
