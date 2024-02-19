@@ -115,6 +115,7 @@ tree_func_x1<-function(model_type, branch_num){
               for (j in 1:nrow(tree_output_list[[i-1]])){
                   if(j==1){
                     level_list<-list()
+                    stepsize_list_j<-list()
                   }
                   # Calculate the new minimum for th1 
                   cur_min<-(tree_output_list[[1]][[1]][[j]]-(0.5*stepsize_list[[1]][[1]]))
@@ -126,7 +127,7 @@ tree_func_x1<-function(model_type, branch_num){
                   out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
    
                   # Extract the stepsize - I know this overwrites, but it doesn't matter; should all be there same 
-                  stepsize_list[[i]]<-as.data.frame(out[branch_num+1])
+                  stepsize_list_j[[j]]<-as.data.frame(out[branch_num+1])
      
                   # Add the output to the list 
                   level_list[[j]]<-as.data.frame(out[1:branch_num])
@@ -147,6 +148,7 @@ tree_func_x1<-function(model_type, branch_num){
              names(level_list)<-name_vector_j
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
+            stepsize_list[[i]]<-stepsize_list_j
             
           }else if(i==3){
             # For level 3 
@@ -156,24 +158,26 @@ tree_func_x1<-function(model_type, branch_num){
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
+                    stepsize_list_j<-list()
                   }
                   # There are going to be 6 lists in here, we'll need to look at each of them 
                   # The defualt here would be 16 
                   for (k in 1:nrow(tree_output_list[[2]][[j]])){
                       if(k==1){
                         list_new_th<-list()
+                        stepsize_list_k<-list()
                       }
                       # Calculate the new minimum 
-                      cur_min<-(tree_output_list[[2]][[j]][[1]][[k]]-(0.5*stepsize_list[[i-1]][[1]]))
+                      cur_min<-(tree_output_list[[2]][[j]][[1]][[k]]-(0.5*stepsize_list[[2]][[j]][[1]]))
 
                       # calculate the new maximum 
-                      cur_max<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[i-1]][[1]]))
+                      cur_max<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[2]][[j]][[1]]))
                 
                       # run the function 
                       out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
                   
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
-                      stepsize_list[[i]]<-as.data.frame(out[branch_num+1])
+                      stepsize_list_k[[k]]<-as.data.frame(out[branch_num+1])
       
                       # Add the output to the list 
                       list_new_th[[k]]<-as.data.frame(out[1:branch_num])
@@ -193,6 +197,7 @@ tree_func_x1<-function(model_type, branch_num){
 
               # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
+              stepsize_list_j[[j]]<-stepsize_list_k
               
               # Determine current name 
               cur_name<-(paste(tree_output_list[[1]][[1]][[j]]))
@@ -248,7 +253,7 @@ tree_func_x2<-function(model_type, branch_num){
       }else{print("there is a problem with model_type")}
       
       depth<-3
-      # Start the loop that will go thrugh the number of steps as set in 'depth' 
+      # Start the loop that will go through the number of steps as set in 'depth' 
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
@@ -261,9 +266,9 @@ tree_func_x2<-function(model_type, branch_num){
               out_th1<-branch_func(range_min = start_min_th1, range_max = start_max_th1, branch_num = branch_num)
               out_th2<-branch_func(range_min= start_min_th2, range_max = start_max_th2, branch_num = branch_num)
             # Extract the stepsize 
-              stepsize_list[[i]]<-as.data.frame(cbind(out_th1[5], out_th2[5]))
+              stepsize_list[[i]]<-as.data.frame(cbind(out_th1[length(out_th1)], out_th2[length(out_th2)]))
             # Create a grid with all the possible combinations of th1 and th 2 
-              grid<-expand.grid(out_th1[1:4], out_th2[1:4])
+              grid<-expand.grid(out_th1[1:(length(out_th1)-1)], out_th2[1:(length(out_th2)-1)])
               colnames(grid)<-c("th1", "th2")
             # Subset this for cases where th2 > th 1 
               grid<-grid%>%
@@ -279,6 +284,7 @@ tree_func_x2<-function(model_type, branch_num){
               for (j in 1:nrow(tree_output_list[[i-1]])){
                   if(j==1){
                     level_list<-list()
+                    stepsize_list_j<-list()
                   }
                   # Calculate the new minimum for th1 
                   cur_min_th1<-(tree_output_list[[i-1]][[1]][[j]]-(0.5*stepsize_list[[i-1]][[1]]))
@@ -292,29 +298,33 @@ tree_func_x2<-function(model_type, branch_num){
                   out_th2<-branch_func(range_min = cur_min_th2, range_max = cur_max_th2, branch_num = branch_num)
                   
                   # Extract the stepsize - I know this overwrites, but it doesn't matter; should all be there same 
-                  stepsize_list[[i]]<-as.data.frame(cbind(out_th1[5], out_th2[5]))
+                  stepsize_list_j[[j]]<-as.data.frame(cbind(out_th1[length(out_th1)], out_th2[length(out_th2)]))
       
                   # Create a grid with all the possible combinations of th1 and th 2 
-                  grid<-expand.grid(out_th1[1:4], out_th2[1:4])
+                  grid<-expand.grid((out_th1[1:(length(out_th1)-1)]), (out_th2[1:(length(out_th2)-1)]))
                   colnames(grid)<-c("th1", "th2")
                   # Subset this for cases where th2 > th 1 
                   grid<-grid%>%
                     filter(th1<th2)
+                  
                   # Add the output to the list 
                   level_list[[j]]<-grid
-                  
-                  
-              }
+                  # Set up naming
+                  cur_name<-(paste(tree_output_list[[1]][[1]][[j]], "&", tree_output_list[[1]][[2]][[j]]))
+                  # attach to vector 
+                      if(j==1){
+                        name_vector_j<-cur_name
+                      }else{
+                        name_vector_j<-c(name_vector_j, cur_name)
+                      }
+              } # j loop end 
+            
             # sort naming 
-            names(level_list)<-c(
-                                        (paste(tree_output_list[[1]][[1]][[1]], "&", tree_output_list[[1]][[2]][[1]])), 
-                                        (paste(tree_output_list[[1]][[1]][[2]], "&", tree_output_list[[1]][[2]][[2]])),
-                                        (paste(tree_output_list[[1]][[1]][[3]], "&", tree_output_list[[1]][[2]][[3]])),
-                                        (paste(tree_output_list[[1]][[1]][[4]], "&", tree_output_list[[1]][[2]][[4]])),
-                                        (paste(tree_output_list[[1]][[1]][[5]], "&", tree_output_list[[1]][[2]][[5]])),
-                                        (paste(tree_output_list[[1]][[1]][[6]], "&", tree_output_list[[1]][[2]][[6]])))
+            names(level_list)<-name_vector_j
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
+            stepsize_list[[i]]<-stepsize_list_j
+
             
           }else if(i==3){
             # For level 3 
@@ -323,29 +333,31 @@ tree_func_x2<-function(model_type, branch_num){
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
+                    stepsize_list_j<-list()
                   }
                   # There are going to be 6 lists in here, we'll need to look at each of them 
-                  # The defualt here would be 16 
+                  # The default here would be 16 
                   for (k in 1:nrow(tree_output_list[[2]][[j]])){
                       if(k==1){
                         list_new_th<-list()
+                        stepsize_list_k<-list()
                       }
                       # Calculate the new minimum for th1 
-                      cur_min_th1<-(tree_output_list[[2]][[j]][[1]][[k]]-(0.5*stepsize_list[[i-1]][[1]]))
-                      cur_min_th2<-(tree_output_list[[2]][[j]][[2]][[k]]-(0.5*stepsize_list[[i-1]][[2]]))
+                      cur_min_th1<-(tree_output_list[[2]][[j]][[1]][[k]]-(0.5*stepsize_list[[2]][[j]][[1]]))
+                      cur_min_th2<-(tree_output_list[[2]][[j]][[2]][[k]]-(0.5*stepsize_list[[2]][[j]][[2]]))
                       # calculate the new maximum 
-                      cur_max_th1<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[i-1]][[1]]))
-                      cur_max_th2<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[i-1]][[2]]))
+                      cur_max_th1<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[2]][[j]][[1]]))
+                      cur_max_th2<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[2]][[j]][[2]]))
                 
                       # run the function 
                       out_th1<-branch_func(range_min = cur_min_th1, range_max = cur_max_th1, branch_num = branch_num)
                       out_th2<-branch_func(range_min = cur_min_th2, range_max = cur_max_th2, branch_num = branch_num)
                   
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
-                      stepsize_list[[i]]<-as.data.frame(cbind(out_th1[5], out_th2[5]))
+                      stepsize_list_k[[k]]<-as.data.frame(cbind(out_th1[length(out_th1)], out_th2[length(out_th2)]))
       
                       # Create a grid with all the possible combinations of th1 and th 2 
-                      grid<-expand.grid(out_th1[1:4], out_th2[1:4])
+                      grid<-expand.grid(out_th1[1:(length(out_th1)-1)], out_th2[1:(length(out_th2)-1)])
                       colnames(grid)<-c("th1", "th2")
                       # Subset this for cases where th2 > th 1 
                       grid<-grid%>%
@@ -362,32 +374,43 @@ tree_func_x2<-function(model_type, branch_num){
                   }else{
                     name_vector_k<-c(name_vector_k, cur_name)
                   }
+                      
                   } # end k-loop 
               
               # names 
               names(list_new_th)<-name_vector_k
               # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
-            }
-            # sort naming 
-            names(level_list)<-c(
-                                        (paste(tree_output_list[[1]][[1]][[1]], "&", tree_output_list[[1]][[2]][[1]])), 
-                                        (paste(tree_output_list[[1]][[1]][[2]], "&", tree_output_list[[1]][[2]][[2]])),
-                                        (paste(tree_output_list[[1]][[1]][[3]], "&", tree_output_list[[1]][[2]][[3]])),
-                                        (paste(tree_output_list[[1]][[1]][[4]], "&", tree_output_list[[1]][[2]][[4]])),
-                                        (paste(tree_output_list[[1]][[1]][[5]], "&", tree_output_list[[1]][[2]][[5]])),
-                                        (paste(tree_output_list[[1]][[1]][[6]], "&", tree_output_list[[1]][[2]][[6]])))
-            # add to the tree outcome
-            tree_output_list[[i]]<-level_list
-          }
-        
+              stepsize_list_j[[j]]<-stepsize_list_k
+              # Names for j-level 
+              cur_name<-(paste(tree_output_list[[1]][[1]][[j]], "&", tree_output_list[[1]][[2]][[j]]))
+              # attach to vector 
+                  if(j==1){
+                    name_vector_j<-cur_name
+                  }else{
+                    name_vector_j<-c(name_vector_j, cur_name)
+                  }
+            } # end J-loop 
+                # sort naming 
+                names(level_list)<-name_vector_j
+                # add to the tree outcome
+                tree_output_list[[i]]<-level_list
+                stepsize_list[[i]]<-stepsize_list_j
+              
+              } # level 3 end 
+            
       } # end the for loop 
-   names(tree_output_list)<-c("level1", "level2", "level3")
-   # save it 
-    setwd(file_folder)
-    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x2_mod", model_type, ".Rda"))
-   return(tree_output_list)
-} # End hte function 
+    
+      # Fix names 
+      names(tree_output_list)<-c("level1", "level2", "level3")
+      # save it 
+      setwd(file_folder)
+      save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x2_mod", model_type, ".Rda"))
+      # Return to global 
+      return(tree_output_list)
+    
+} # End the function 
+
 ```   
 x.3
 ```{r build subset 1 x.3 models }
@@ -448,22 +471,23 @@ tree_func_x3<-function(model_type, branch_num){
               for (j in 1:nrow(tree_output_list[[1]])){
                   if(j==1){
                     level_list<-list()
+                    stepsize_list_j<-list()
                   }
                   # Calculate the new minimum for th1 
-                  cur_min_th1<-(tree_output_list[[i-1]][[1]][[j]]-(0.5*stepsize_list[[i-1]][[1]]))
-                  cur_min_th2<-(tree_output_list[[i-1]][[2]][[j]]-(0.5*stepsize_list[[i-1]][[2]]))
-                  cur_min_th3<-(tree_output_list[[i-1]][[3]][[j]]-(0.5*stepsize_list[[i-1]][[3]]))
+                  cur_min_th1<-(tree_output_list[[i-1]][[1]][[j]]-(0.5*stepsize_list[[1]][[1]]))
+                  cur_min_th2<-(tree_output_list[[i-1]][[2]][[j]]-(0.5*stepsize_list[[1]][[2]]))
+                  cur_min_th3<-(tree_output_list[[i-1]][[3]][[j]]-(0.5*stepsize_list[[1]][[3]]))
                   # calculate the new maximum 
-                  cur_max_th1<-(tree_output_list[[i-1]][[1]][[j]]+(0.5*stepsize_list[[i-1]][[1]]))
-                  cur_max_th2<-(tree_output_list[[i-1]][[2]][[j]]+(0.5*stepsize_list[[i-1]][[2]]))
-                  cur_max_th3<-(tree_output_list[[i-1]][[3]][[j]]+(0.5*stepsize_list[[i-1]][[3]]))
+                  cur_max_th1<-(tree_output_list[[i-1]][[1]][[j]]+(0.5*stepsize_list[[1]][[1]]))
+                  cur_max_th2<-(tree_output_list[[i-1]][[2]][[j]]+(0.5*stepsize_list[[1]][[2]]))
+                  cur_max_th3<-(tree_output_list[[i-1]][[3]][[j]]+(0.5*stepsize_list[[1]][[3]]))
                   # run the function 
                   out_th1<-branch_func(range_min = cur_min_th1, range_max = cur_max_th1, branch_num = branch_num)
                   out_th2<-branch_func(range_min = cur_min_th2, range_max = cur_max_th2, branch_num = branch_num)
                   out_th3<-branch_func(range_min = cur_min_th3, range_max = cur_max_th3, branch_num = branch_num)
                   
                   # Extract the stepsize - I know this overwrites, but it doesn't matter; should all be there same 
-                  stepsize_list[[i]]<-as.data.frame(cbind(out_th1[branch_num+1], out_th2[branch_num+1], out_th3[branch_num+1]))
+                  stepsize_list_j[[j]]<-as.data.frame(cbind(out_th1[branch_num+1], out_th2[branch_num+1], out_th3[branch_num+1]))
       
                   # Create a grid with all the possible combinations of th1 and th 2 
                   grid<-expand.grid(out_th1[1:branch_num], out_th2[1:branch_num], out_th3[1:branch_num])
@@ -471,24 +495,25 @@ tree_func_x3<-function(model_type, branch_num){
                   # Subset this for cases where th2 > th 1 
                   grid<-grid%>%
                     filter(th1<th2 & th2<th3)
+          
                   # Add the output to the list 
                   level_list[[j]]<-grid
-              }
+                  # Set up naming
+                  cur_name<-(paste(tree_output_list[[1]][[1]][[j]], "&", tree_output_list[[1]][[2]][[j]], "&", tree_output_list[[1]][[3]][[j]]))
+                  # attach to vector 
+                      if(j==1){
+                        name_vector_j<-cur_name
+                      }else{
+                        name_vector_j<-c(name_vector_j, cur_name)
+                      }
+              } # j loop end 
+            
             # sort naming 
-            names(level_list)<-c((paste(tree_output_list[[1]][[1]][[1]], "&", 
-                                        tree_output_list[[1]][[2]][[1]], "&" ,
-                                        tree_output_list[[1]][[3]][[1]])),
-                                 (paste(tree_output_list[[1]][[1]][[2]], "&", 
-                                        tree_output_list[[1]][[2]][[2]], "&" , 
-                                        tree_output_list[[1]][[3]][[2]])),
-                                  (paste(tree_output_list[[1]][[1]][[3]], "&", 
-                                         tree_output_list[[1]][[2]][[3]], "&" , 
-                                         tree_output_list[[1]][[3]][[3]])),
-                                  (paste(tree_output_list[[1]][[1]][[4]], "&", 
-                                         tree_output_list[[1]][[2]][[4]], "&" , 
-                                         tree_output_list[[1]][[3]][[4]])))
+            names(level_list)<-name_vector_j
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
+            stepsize_list[[i]]<-stepsize_list_j
+
           }else if(i==3){
             # For level 3 
             # Set the branch number back to 4 if needed 
@@ -496,27 +521,29 @@ tree_func_x3<-function(model_type, branch_num){
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
+                    stepsize_list_j<-list()
                   }
                   # There are going to be 6 lists in here, we'll need to look at each of them 
-                  # The defualt here would be 16 
+                  # The default here would be 16 
                   for (k in 1:nrow(tree_output_list[[2]][[j]])){
                       if(k==1){
                         list_new_th<-list()
+                        stepsize_list_k<-list()
                       }
                       # Calculate the new minimum for th1 
-                      cur_min_th1<-(tree_output_list[[2]][[j]][[1]][[k]]-(0.5*stepsize_list[[i-1]][[1]]))
-                      cur_min_th2<-(tree_output_list[[2]][[j]][[2]][[k]]-(0.5*stepsize_list[[i-1]][[2]]))
-                      cur_min_th3<-(tree_output_list[[2]][[j]][[3]][[k]]-(0.5*stepsize_list[[i-1]][[3]]))
+                      cur_min_th1<-(tree_output_list[[2]][[j]][[1]][[k]]-(0.5*stepsize_list[[2]][[j]][[1]]))
+                      cur_min_th2<-(tree_output_list[[2]][[j]][[2]][[k]]-(0.5*stepsize_list[[2]][[j]][[2]]))
+                      cur_min_th3<-(tree_output_list[[2]][[j]][[3]][[k]]-(0.5*stepsize_list[[2]][[j]][[3]]))
                       # calculate the new maximum 
-                      cur_max_th1<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[i-1]][[1]]))
-                      cur_max_th2<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[i-1]][[2]]))
-                      cur_max_th3<-(tree_output_list[[2]][[j]][[3]][[k]]+(0.5*stepsize_list[[i-1]][[3]]))
+                      cur_max_th1<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[2]][[j]][[1]]))
+                      cur_max_th2<-(tree_output_list[[2]][[j]][[2]][[k]]+(0.5*stepsize_list[[2]][[j]][[2]]))
+                      cur_max_th3<-(tree_output_list[[2]][[j]][[3]][[k]]+(0.5*stepsize_list[[2]][[j]][[3]]))
                       # run the function 
                       out_th1<-branch_func(range_min = cur_min_th1, range_max = cur_max_th1, branch_num = branch_num)
                       out_th2<-branch_func(range_min = cur_min_th2, range_max = cur_max_th2, branch_num = branch_num)
                       out_th3<-branch_func(range_min = cur_min_th3, range_max = cur_max_th3, branch_num = branch_num)
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
-                      stepsize_list[[i]]<-as.data.frame(cbind(out_th1[branch_num+1], out_th2[branch_num+1], out_th3[branch_num+1]))
+                      stepsize_list_k[[k]]<-as.data.frame(cbind(out_th1[branch_num+1], out_th2[branch_num+1], out_th3[branch_num+1]))
                       # Create a grid with all the possible combinations of th1 and th 2 
                       grid<-expand.grid(out_th1[1:branch_num], out_th2[1:branch_num], out_th3[1:branch_num])
                       colnames(grid)<-c("th1", "th2", "th3")
@@ -525,7 +552,6 @@ tree_func_x3<-function(model_type, branch_num){
                         filter(th1<th2 & th2<th3)
                       # Add the output to the list 
                       list_new_th[[k]]<-grid
-                      
                       # do something about the  names 
                       cur_name<-(paste(tree_output_list[[2]][[j]][[1]][[k]], "&", tree_output_list[[2]][[j]][[2]][[k]], "&", tree_output_list[[2]][[j]][[3]][[k]]))
                   # attach to vector 
@@ -542,26 +568,36 @@ tree_func_x3<-function(model_type, branch_num){
                    
             # Add the list with thresholds to the level list
               level_list[[j]]<-list_new_th
-            }
+              stepsize_list_j[[j]]<-stepsize_list_k
+
+            # Set up naming
+              cur_name<-(paste(tree_output_list[[1]][[1]][[j]], "&", tree_output_list[[1]][[2]][[j]], "&", tree_output_list[[1]][[3]][[j]]))
+            # attach to vector 
+                if(j==1){
+                        name_vector_j<-cur_name
+                }else{
+                        name_vector_j<-c(name_vector_j, cur_name)
+                      }
+            } # j loop end 
+            
             # sort naming 
-            names(level_list)<-c((paste(tree_output_list[[1]][[1]][[1]], "&", tree_output_list[[1]][[2]][[1]], "&" ,
-                                        tree_output_list[[1]][[3]][[1]])), 
-                                  (paste(tree_output_list[[1]][[1]][[2]], "&", tree_output_list[[1]][[2]][[2]], "&" ,
-                                         tree_output_list[[1]][[3]][[2]])),
-                                  (paste(tree_output_list[[1]][[1]][[3]], "&", tree_output_list[[1]][[2]][[3]], "&" ,
-                                         tree_output_list[[1]][[3]][[3]])),
-                                  (paste(tree_output_list[[1]][[1]][[4]], "&", tree_output_list[[1]][[2]][[4]], "&" ,
-                                         tree_output_list[[1]][[3]][[4]])))
+            names(level_list)<-name_vector_j
             # add to the tree outcome
             tree_output_list[[i]]<-level_list
-          }
+            stepsize_list[[i]]<-stepsize_list_j
+
+          } # end of level 3 
+        
       } # end the for loop 
-   names(tree_output_list)<-c("level1", "level2", "level3")
+      
+    # fix the names 
+      names(tree_output_list)<-c("level1", "level2", "level3")
    # save it 
     setwd(file_folder)
     save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x3_mod", model_type, ".Rda"))
    return(tree_output_list)
-} # End hte function 
+} # End the function 
+
 ```
 
 ## Run the functions 
@@ -570,19 +606,19 @@ Run the tree-function for the 1 variable models
 First, x.1 models 
 
 ```{r run branching, include=TRUE, message=F, warning=F}
-out_sub1_x1<-tree_func_x1(model_type = 11, branch_num = 6)
+out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 6)
 ```
 
 The subset 1 x.2 models 
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x2<-tree_func_x2(model_type = 22, branch_num = 4)
+out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 6)
 ```
 
 The subset 1 x.3 models
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x3<-tree_func_x3(model_type = 232, branch_num = 4)
+out_sub1_x3<-tree_func_x3(model_type = 332, branch_num = 6)
 ```
 
 ## January 2024: 
