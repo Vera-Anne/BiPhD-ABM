@@ -11,6 +11,8 @@ output: html_document
 library(dplyr)
 
 library(stringr) # to select the 2nd digit of a number with the str_sub() function 
+
+library(beepr) # beep when done 
 ```
 
 ## Background
@@ -22,31 +24,6 @@ setwd(file_folder)
 
 ```
 
-## Dummy variables 
-These are useful when coding/debugging 
-```{r create some dummies, include=T, echo=F, message=F, eval=F}
-start_min_th1<-0
-start_max_th1<-0.4
-
-start_min_th2<-0
-start_max_th2<-0.4
-
-start_min_th3<-0
-start_max_th3<-4
-
-branch_num<-4
-
-
-start_min_v1_th1<-0
-start_max_v1_th1<-0.4
-start_min_v2_th1<-0
-start_max_v2_th1<-4
-
-start_min_v1_th2<-0
-start_max_v1_th2<-0.4
-start_min_v2_th2<-0
-start_max_v2_th2<-4
-```
 
 
 ## Functions for single -variable models 
@@ -55,138 +32,48 @@ start_max_v2_th2<-4
 
 # Basic branching function 
     branch_func<-function(range_min, range_max, branch_num){
+      
       # determine stepsize
       step_size<<-((range_max-range_min)/branch_num)
       
-      # Set the value for the threshold for each branch
-      th_b1<-range_min + (step_size/2)
-      th_b2<-(th_b1+step_size)
-      th_b3<-(th_b2+step_size)
-      th_b4<-(th_b3+step_size)
+      if (branch_num==4){
+        # Set the value for the threshold for each branch
+        th_b1<-range_min + (step_size/2)
+        th_b2<-(th_b1+step_size)
+        th_b3<-(th_b2+step_size)
+        th_b4<-(th_b3+step_size)
+        
+        # concatenate output 
+        output_branches<<-c(th_b1, th_b2, th_b3, th_b4, step_size)
+      } else if(branch_num==6){
+        # Set the value for the threshold for each branch
+          th_b1<-range_min + (step_size/2)
+          th_b2<-(th_b1+step_size)
+          th_b3<-(th_b2+step_size)
+          th_b4<-(th_b3+step_size)
+          th_b5<-(th_b4+step_size)
+          th_b6<-(th_b5+step_size)
       
-      # concatenate output 
-      output_branches<<-c(th_b1, th_b2, th_b3, th_b4, step_size)
+        # concatenate output 
+        output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, step_size)
+      }
+      
+      # return branching output 
       return(output_branches)
     }
 
-
-# Branching for 6 
-    branch_func_6<-function(range_min, range_max){
-      # determine stepsize
-      step_size<<-((range_max-range_min)/6)
-      
-      # Set the value for the threshold for each branch
-      th_b1<-range_min + (step_size/2)
-      th_b2<-(th_b1+step_size)
-      th_b3<-(th_b2+step_size)
-      th_b4<-(th_b3+step_size)
-      th_b5<-(th_b4+step_size)
-      th_b6<-(th_b5+step_size)
-      
-      # concatenate output 
-      output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, step_size)
-      return(output_branches)
-    }
 ```
 
-Old function for tree-branching
-```{r old tree branching}
-# 
-# # Build a tree 
-  #   tree_func_x1<-function(start_min, start_max, branch_num, depth){
-  # 
-  #     # Start the loop that will go thrugh the number of steps as set in 'depth'
-  #     for (i in 1:depth){
-  #       # Generate a list for the output
-  #         if (i==1){
-  #           tree_output_list<-list()
-  # 
-  #       # Run the function
-  #         out<-branch_func(range_min = start_min, range_max = start_max, branch_num = branch_num)
-  #       # Add the output
-  #         tree_output_list[1]<-out[[1]]
-  #         tree_output_list[2]<-out[[2]]
-  #         tree_output_list[3]<-out[[3]]
-  #         tree_output_list[4]<-out[[4]]
-  # 
-  #         names<-c(out[[1]], out[[2]], out[[3]], out[[4]])
-  #         names(tree_output_list)<-names
-  #         } else if (i==2){
-  # 
-  #       # if i = 2 or higher
-  # 
-  #       # Set previous step stepsize
-  #       step_size_prev_step<-step_size
-  # 
-  #       # Determine the new ranges for each of the 4 branches
-  #       for (j in 1:branch_num){
-  # 
-  #         # Calculate the new minimum
-  #         cur_min<-(tree_output_list[[j]][[1]]-(0.5*step_size_prev_step))
-  #         cur_max<-(tree_output_list[[j]][[1]]+(0.5*step_size_prev_step))
-  # 
-  #         # run the function
-  #         out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
-  # 
-  # # add it to the list
-  #         tree_output_list[[j]][1]<-list(out[1])
-  #         tree_output_list[[j]][2]<-list(out[2])
-  #         tree_output_list[[j]][3]<-list(out[3])
-  #         tree_output_list[[j]][4]<-list(out[4])
-  # 
-  #         names<-c(out[[1]], out[[2]], out[[3]], out[[4]])
-  #         names(tree_output_list[[j]])<-names
-  # 
-  #       } # end of 4 branches
-  # 
-  # 
-  # }else if (i==3){
-  #           # Set previous step stepsize
-  #       step_size_prev_step<-step_size
-  # 
-  #       # Determine the new ranges for each of the 4 branches
-  #       for (k in 1:branch_num){
-  # 
-  #         for(l in 1:branch_num){
-  # 
-  #         # Calculate the new minimum
-  #         cur_min<-(tree_output_list[[k]][[l]]-(0.5*step_size_prev_step))
-  #         cur_max<-(tree_output_list[[k]][[l]]+(0.5*step_size_prev_step))
-  # 
-  #         # run the function
-  #         out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
-  # 
-  #         # add it to the list
-  #         tree_output_list[[k]][[l]][1]<-list(out[1])
-  #         tree_output_list[[k]][[l]][2]<-list(out[2])
-  #         tree_output_list[[k]][[l]][3]<-list(out[3])
-  #         tree_output_list[[k]][[l]][4]<-list(out[4])
-  # 
-  # 
-  #         names<-c(out[[1]], out[[2]], out[[3]], out[[4]])
-  #         names(tree_output_list[[k]][[l]])<-names
-  #         } # end of the for loop 'l'
-  # 
-  # 
-  #       } # end of 4 branches
-  # }
-  #     }# end of the for loop
-  # 
-  #     return(tree_output_list)
-  #   } # en dof the funciton
-
-
-# Also load the function file dependencies in order to run the models
-  # setwd("C:/Local_R/BiPhD-ABM/May23")
-  # source('MOD_1_FuncSource.R')
-  # source('ModelSource.R')
-```
 
 New tree-branching fucntions from 31/01/24
 x.1 
 ```{r subset 1 tree branching functions}
 
 tree_func_x1<-function(model_type, branch_num){
+    # Branch_num sets the number of branches for the first level
+    # level 2 and 3 always have branch_num = 4 
+    
+    # Set the starting values 
       if(model_type==11){
         start_min<-0
         start_max<-0.4
@@ -201,9 +88,11 @@ tree_func_x1<-function(model_type, branch_num){
       # Set the level depth 
       depth<-3
       
-      
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
+        # Log the original branch number
+        branch_num_og<-branch_num
+        
         # Generate a list for the output 
           if (i==1){
             # Create an empty list 
@@ -220,6 +109,9 @@ tree_func_x1<-function(model_type, branch_num){
               
           }else if(i==2){
             # So for level 2
+            # Set the branch number back to 4 if needed 
+            branch_num<-4 
+            
               for (j in 1:nrow(tree_output_list[[i-1]])){
                   if(j==1){
                     level_list<-list()
@@ -258,8 +150,9 @@ tree_func_x1<-function(model_type, branch_num){
             
           }else if(i==3){
             # For level 3 
-            # This can't be the same as 2, because the structure of teh list won't be the same 
-            # For any additional levels this would probably be teh case. 
+            # Set the branch number back to 4 if needed 
+            branch_num<-4 
+
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
@@ -275,11 +168,9 @@ tree_func_x1<-function(model_type, branch_num){
 
                       # calculate the new maximum 
                       cur_max<-(tree_output_list[[2]][[j]][[1]][[k]]+(0.5*stepsize_list[[i-1]][[1]]))
-    
                 
                       # run the function 
                       out<-branch_func(range_min = cur_min, range_max = cur_max, branch_num = branch_num)
-          
                   
                       # Extract the stepsize (overwrites, but should all be teh same anyway )
                       stepsize_list[[i]]<-as.data.frame(out[branch_num+1])
@@ -325,9 +216,13 @@ tree_func_x1<-function(model_type, branch_num){
    names(tree_output_list)<-c("level1", "level2", "level3")
    # save it 
     setwd(file_folder)
-    save(tree_output_list, file=paste0("branch_sub1_x1_mod", model_type, ".Rda"))
+    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x1_mod", model_type, ".Rda"))
    return(tree_output_list)
-} # End hte function 
+    
+    # Beep when done 
+    beep()
+    print(paste("set branching tree for mod=", model_type , "and Branch number level 1 = ", branch_num_og))
+} # End the function 
    
 ```
 x.2 
@@ -357,6 +252,8 @@ tree_func_x2<-function(model_type, branch_num){
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
+            # Log the original branch number
+            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -376,6 +273,9 @@ tree_func_x2<-function(model_type, branch_num){
               
           }else if(i==2){
             # So for level 2
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
+            
               for (j in 1:nrow(tree_output_list[[i-1]])){
                   if(j==1){
                     level_list<-list()
@@ -418,8 +318,8 @@ tree_func_x2<-function(model_type, branch_num){
             
           }else if(i==3){
             # For level 3 
-            # This can't be the same as 2, because the structure of teh list won't be the same 
-            # For any additional levels this would probably be teh case. 
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
@@ -485,7 +385,7 @@ tree_func_x2<-function(model_type, branch_num){
    names(tree_output_list)<-c("level1", "level2", "level3")
    # save it 
     setwd(file_folder)
-    save(tree_output_list, file=paste0("branch_sub1_x2_mod", model_type, ".Rda"))
+    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x2_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
 ```   
@@ -521,6 +421,8 @@ tree_func_x3<-function(model_type, branch_num){
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
+            # Log the original branch number
+            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -541,6 +443,8 @@ tree_func_x3<-function(model_type, branch_num){
               
           }else if(i==2){
             # So for level 2
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
               for (j in 1:nrow(tree_output_list[[1]])){
                   if(j==1){
                     level_list<-list()
@@ -587,8 +491,8 @@ tree_func_x3<-function(model_type, branch_num){
             tree_output_list[[i]]<-level_list
           }else if(i==3){
             # For level 3 
-            # This can't be the same as 2, because the structure of teh list won't be the same 
-            # For any additional levels this would probably be teh case. 
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
@@ -655,7 +559,7 @@ tree_func_x3<-function(model_type, branch_num){
    names(tree_output_list)<-c("level1", "level2", "level3")
    # save it 
     setwd(file_folder)
-    save(tree_output_list, file=paste0("branch_sub1_x3_mod", model_type, ".Rda"))
+    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x3_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
 ```
@@ -666,11 +570,7 @@ Run the tree-function for the 1 variable models
 First, x.1 models 
 
 ```{r run branching, include=TRUE, message=F, warning=F}
-#outcome_21<-tree_func(start_min = 0, start_max = 4, branch_num = 4, depth = 3) # old code 
-#outcome_11<-tree_func(start_min = 0, start_max=0.4, branch_num = 4, depth=3)  # old code 
-#outcome_31<-tree_func(start_min = -0.6, start_max=0.6, branch_num = 4, depth=3) # old code 
-
-out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 4)
+out_sub1_x1<-tree_func_x1(model_type = 11, branch_num = 6)
 ```
 
 The subset 1 x.2 models 
@@ -684,1323 +584,6 @@ The subset 1 x.3 models
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
 out_sub1_x3<-tree_func_x3(model_type = 232, branch_num = 4)
 ```
-
-## Different approach: run the model directly
-
-```{r work through combination tree 1.1, include=T, message=F, warning=F}
-# branch_4_optimization_x1<-function(model_type, range_min_start, range_max_start){
-#   
-#   ##### LEVEL 1 
-#       # Run the branch function 
-#       vals_l1<-branch_func(range_min = range_min_start, range_max = range_max_start, branch_num = 4)
-#       
-#       # Now run the model 
-#       for (i in 1:4){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_1_results<<-list()
-#         }
-#         # Set current th 
-#         cur_th<-vals_l1[i]
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:25){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==11){
-#                 env_func_1_1_par(days = 30, N= 1000, th_forage_sc = cur_th, daylight_h = 8, modelType = 11)
-#               }else if(model_type==21){
-#                 env_func_2_1_par(days = 30, N= 1000, th_forage_fr = cur_th, daylight_h = 8, modelType = 21)
-#               }else if(model_type==31){
-#                 env_func_3_1_par(days = 30, N= 1000, th_forage_flr = cur_th, daylight_h = 8, modelType = 31)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th)
-#           # add to list
-#           level_1_results[[i]]<<-mean_perf
-#           # mark that things are working
-#           print(paste("Done with level 1 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l1<-data.frame(matrix(unlist(level_1_results), nrow=4, byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th")
-#       colnames(halflife_out_l1)<-names
-#       
-#       # select highest outcome
-#       max_HL_l1<-max(halflife_out_l1$HL)
-#       best_l1<-halflife_out_l1[halflife_out_l1$HL==max_HL_l1, ]
-#       best_th_l1<-best_l1[1,2]
-#       
-#   #### LEVEL 2 
-#       # Calculate the new ranges for level 2 (this uses the stepsize that comes out of the branching function in level 1 )
-#       range_min_l2<-(best_th_l1-(step_size/2))
-#       range_max_l2<-(best_th_l1+(step_size/2))
-#       
-#       # Run the branch function 
-#       vals_l2<-branch_func(range_min = range_min_l2, range_max = range_max_l2, branch_num = 4)
-#       
-#        # Now run the model 
-#       for (i in 1:4){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_2_results<<-list()
-#         }
-#         # Set current th 
-#         cur_th<-vals_l2[i]
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:25){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==11){
-#                 env_func_1_1_par(days = 30, N= 1000, th_forage_sc = cur_th, daylight_h = 8, modelType = 11)
-#               }else if(model_type==21){
-#                 env_func_2_1_par(days = 30, N= 1000, th_forage_fr = cur_th, daylight_h = 8, modelType = 21)
-#               }else if(model_type==31){
-#                 env_func_3_1_par(days = 30, N= 1000, th_forage_flr = cur_th, daylight_h = 8, modelType = 31)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th)
-#           # add to list
-#           level_2_results[[i]]<<-mean_perf
-#         
-#         # mark that things are working
-#         print(paste("Done with level 2 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l2<-data.frame(matrix(unlist(level_2_results), nrow=4, byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th")
-#       colnames(halflife_out_l2)<-names
-#       
-#       # select highest outcome
-#       max_HL_l2<-max(halflife_out_l2$HL)
-#       best_l2<-halflife_out_l2[halflife_out_l2$HL==max_HL_l2, ]
-#       best_th_l2<-best_l2[1,2]
-#    
-#     #### LEVEL 3 
-#       # Calculate the new ranges for level 2 (this uses the stepsize that comes out of the branching function in level 1 )
-#       range_min_l3<-(best_th_l2-(step_size/2))
-#       range_max_l3<-(best_th_l2+(step_size/2))
-#       
-#       # Run the branch function 
-#       vals_l3<-branch_func(range_min = range_min_l3, range_max = range_max_l3, branch_num = 4)
-#       
-#        # Now run the model 
-#       for (i in 1:4){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_3_results<<-list()
-#         }
-#         # Set current th 
-#         cur_th<-vals_l3[i]
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:25){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==11){
-#                 env_func_1_1_par(days = 30, N= 1000, th_forage_sc = cur_th, daylight_h = 8, modelType = 11)
-#               }else if(model_type==21){
-#                 env_func_2_1_par(days = 30, N= 1000, th_forage_fr = cur_th, daylight_h = 8, modelType = 21)
-#               }else if(model_type==31){
-#                 env_func_3_1_par(days = 30, N= 1000, th_forage_flr = cur_th, daylight_h = 8, modelType = 31)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th)
-#           # add to list
-#           level_3_results[[i]]<<-mean_perf
-#         
-#         # mark that things are working
-#         print(paste("Done with level 3 ", i))
-#       } # end of 1-4 branching loop - level 3
-#       
-#       halflife_out_l3<-data.frame(matrix(unlist(level_3_results), nrow=4, byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL", "th")
-#       colnames(halflife_out_l3)<-names
-#       
-#       # select highest outcome
-#       max_HL_l3<-max(halflife_out_l3$HL)
-#       best_l3<-halflife_out_l3[halflife_out_l3$HL==max_HL_l3, ]
-#       best_th_l3<-best_l3[1,2]
-#       
-#       # Output the best threshold 
-#       return_list<-list(level_1_results, level_2_results, level_3_results, best_l3)
-#       return(return_list)
-# 
-# } # end of function 
-
-```
-
-
-### Run the new function 
-```{r run the 4 branch x.1 function, include=T, message=F, warning=F}
-# return_list_11<-branch_4_optimization_x1(model_type = 11, range_min_start = 0, range_max_start = 0.4)
-# 
-# return_list_21<-branch_4_optimization_x1(model_type = 21, range_min_start = 0, range_max_start = 4)
-# 
-# return_list_31<-branch_4_optimization_x1(model_type = 31, range_min_start = -0.6, range_max_start = 0.6)
-```
-
-## Now make a function for the 2 threshold models 
-```{r function for 2 thrshold models, include=T, message=F, warning=F}
-# branch_4_optimization_x2<-function(model_type, range_min_start_th1, range_max_start_th1, range_min_start_th2, range_max_start_th2){
-#   
-#   ##### LEVEL 1 
-#       # Run the branch function 
-#       vals_l1_th1<-branch_func(range_min = range_min_start_th1, range_max = range_max_start_th1, branch_num = 4)
-#       # save the stepsize used for this
-#       step_size_l1_th1<-step_size
-#       # run for second threshold 
-#       vals_l1_th2<-branch_func(range_min = range_min_start_th2, range_max = range_max_start_th2, branch_num = 4)
-#       # save the stepsize for this 
-#       step_size_l1_th2<-step_size
-#       
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l1_th1<-vals_l1_th1[1:4]
-#           vals_l1_th2<-vals_l1_th2[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l1_grid<-expand.grid(vals_l1_th1, vals_l1_th2)
-#           names<-c("th1", "th2")
-#           colnames(l1_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 
-#           l1_grid<-l1_grid[l1_grid$th1<l1_grid$th2, ]
-#       
-#       # Now run the model 
-#       for (i in 1:nrow(l1_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_1_results<-list()
-#         }
-#         # Set current thresholds 
-#         cur_th1<-l1_grid[i,1]
-#         cur_th2<-l1_grid[i,2]
-#         
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:5){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==12){
-#                 env_func_1_2_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , daylight_h = 8, modelType = 12)
-#               }else if(model_type==22){
-#                 env_func_2_2_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , daylight_h = 8, modelType = 22)
-#               }else if(model_type==32){
-#                 env_func_3_2_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , daylight_h = 8, modelType = 32)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=5, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2)
-#           # add to list
-#           level_1_results[[i]]<-mean_perf
-#           # mark that things are working
-#           print(paste("Done with level 1 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l1<-data.frame(matrix(unlist(level_1_results), nrow=nrow(l1_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2")
-#       colnames(halflife_out_l1)<-names
-#       
-#       # select highest outcome
-#       max_HL_l1<-max(halflife_out_l1$HL)
-#       best_l1<-halflife_out_l1[halflife_out_l1$HL==max_HL_l1, ]
-#       #best_ths_l1<-best_l1[1,2]
-#       
-#   #### LEVEL 2 
-#       # Calculate the new ranges for level 2 
-#           # For threshold 1 
-#           range_min_l2_th1<-(best_l1$th1-(step_size_l1_th1/2))
-#           range_max_l2_th1<-(best_l1$th1+(step_size_l1_th1/2))
-#           # Same for threshold 2
-#           range_min_l2_th2<-(best_l1$th2-(step_size_l1_th2/2))
-#           range_max_l2_th2<-(best_l1$th2+(step_size_l1_th2/2))
-#       
-#       # Run the branch function 
-#           # for th 1
-#           vals_l2_th1<-branch_func(range_min = range_min_l2_th1, range_max = range_max_l2_th1, branch_num = 4)
-#           # stepseize
-#           step_size_l2_th1<-step_size
-#           # run for th 2
-#           vals_l2_th2<-branch_func(range_min = range_min_l2_th2, range_max = range_max_l2_th2, branch_num = 4)
-#           # save the stepsize for later
-#           step_size_l2_th2<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l2_th1<-vals_l2_th1[1:4]
-#           vals_l2_th2<-vals_l2_th2[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l2_grid<-expand.grid(vals_l2_th1, vals_l2_th2)
-#           names<-c("th1", "th2")
-#           colnames(l2_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 
-#           l2_grid<-l2_grid[l2_grid$th1<l2_grid$th2, ]
-#       
-#        # Now run the model 
-#       for (i in 1:nrow(l2_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_2_results<-list()
-#         }
-#         
-#         # Set current thresholds 
-#         cur_th1<-l2_grid[i,1]
-#         cur_th2<-l2_grid[i,2]
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:5){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==12){
-#                 env_func_1_2_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , daylight_h = 8, modelType = 12)
-#               }else if(model_type==22){
-#                 env_func_2_2_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , daylight_h = 8, modelType = 22)
-#               }else if(model_type==32){
-#                 env_func_3_2_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , daylight_h = 8, modelType = 32)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=5, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2)
-#           # add to list
-#           level_2_results[[i]]<-mean_perf
-#         
-#         # mark that things are working
-#         print(paste("Done with level 2 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l2<-data.frame(matrix(unlist(level_2_results), nrow=nrow(l2_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2")
-#       colnames(halflife_out_l2)<-names
-#       
-#       # select highest outcome
-#       max_HL_l2<-max(halflife_out_l2$HL)
-#       best_l2<-halflife_out_l2[halflife_out_l2$HL==max_HL_l2, ]
-#      
-#    
-#     #### LEVEL 3 
-#       # Calculate the new ranges for level 2 
-#           # For threshold 1 
-#           range_min_l3_th1<-(best_l2$th1-(step_size_l2_th1/2))
-#           range_max_l3_th1<-(best_l2$th1+(step_size_l2_th1/2))
-#           # Same for threshold 2
-#           range_min_l3_th2<-(best_l2$th2-(step_size_l2_th2/2))
-#           range_max_l3_th2<-(best_l2$th2+(step_size_l2_th2/2))
-#       
-#       # Run the branch function 
-#           # for th 1
-#           vals_l3_th1<-branch_func(range_min = range_min_l3_th1, range_max = range_max_l3_th1, branch_num = 4)
-#           # stepseize
-#           step_size_l3_th1<-step_size
-#           # run for th 2
-#           vals_l3_th2<-branch_func(range_min = range_min_l3_th2, range_max = range_max_l3_th2, branch_num = 4)
-#           # save the stepsize for later
-#           step_size_l3_th2<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l3_th1<-vals_l3_th1[1:4]
-#           vals_l3_th2<-vals_l3_th2[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l3_grid<-expand.grid(vals_l3_th1, vals_l3_th2)
-#           names<-c("th1", "th2")
-#           colnames(l3_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 
-#           l3_grid<-l3_grid[l3_grid$th1<l3_grid$th2, ]
-#        
-#       # Now run the model 
-#         for (i in 1:nrow(l3_grid)){
-#           if (i==1){
-#             # Create empty list for results 
-#             level_3_results<-list()
-#           }
-#         # Set current thresholds 
-#         cur_th1<-l3_grid[i,1]
-#         cur_th2<-l3_grid[i,2]
-#           # Run the model 25 times in the 12 environments and take the average
-#             for (j in 1:5){
-#               if (j==1){
-#                 out_per_run_list<-list()
-#               }
-#               # Run the model 
-#               if(model_type==12){
-#                 env_func_1_2_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , daylight_h = 8, modelType = 12)
-#               }else if(model_type==22){
-#                 env_func_2_2_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , daylight_h = 8, modelType = 22)
-#               }else if(model_type==32){
-#                 env_func_3_2_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , daylight_h = 8, modelType = 32)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#             out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2)
-#             print(paste(j))
-#             } # end of loop for 25 run s
-#             
-#             # bind together
-#             out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=5, byrow=TRUE),stringsAsFactors=FALSE)
-#             colnames(out_per_run_df)<-"HL"
-#             # Now take the average for the threshold 
-#             mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2)
-#             # add to list
-#             level_3_results[[i]]<-mean_perf
-#           
-#           # mark that things are working
-#           print(paste("Done with level 3 ", i))
-#         } # end of 1-4 branching loop - level 3
-#       
-#       halflife_out_l3<-data.frame(matrix(unlist(level_3_results), nrow=nrow(l3_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL", "th1", "th2")
-#       colnames(halflife_out_l3)<-names
-#       
-#       # select highest outcome
-#       max_HL_l3<-max(halflife_out_l3$HL)
-#       best_l3<-halflife_out_l3[halflife_out_l3$HL==max_HL_l3, ]
-#   
-#       # Output the best threshold 
-#       return_list<-list(level_1_results, level_2_results, level_3_results, best_l3)
-#       return(return_list)
-# 
-# } # end of function 
-# 
-# # The HPC function 
-# branch_4_optimization_x2_hpc<-function(model_type, range_min_start_th1, range_max_start_th1, range_min_start_th2, range_max_start_th2){
-#   
-#   ##### LEVEL 1 
-#       # Run the branch function 
-#       vals_l1_th1<-branch_func(range_min = range_min_start_th1, range_max = range_max_start_th1, branch_num = 4)
-#       # save the stepsize used for this
-#       step_size_l1_th1<-step_size
-#       # run for second threshold 
-#       vals_l1_th2<-branch_func(range_min = range_min_start_th2, range_max = range_max_start_th2, branch_num = 4)
-#       # save the stepsize for this 
-#       step_size_l1_th2<-step_size
-#       
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l1_th1<-vals_l1_th1[1:4]
-#           vals_l1_th2<-vals_l1_th2[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l1_grid<-expand.grid(vals_l1_th1, vals_l1_th2)
-#           names<-c("th1", "th2")
-#           colnames(l1_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 
-#           l1_grid<-l1_grid[l1_grid$th1<l1_grid$th2, ]
-#       
-#       # Now run the model 
-#       for (i in 1:nrow(l1_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_1_results<-list()
-#         }
-#         # Set current thresholds 
-#         cur_th1<-l1_grid[i,1]
-#         cur_th2<-l1_grid[i,2]
-#         
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:25){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==12){
-#                 env_func_1_2_par_hpc(days = days, N=N , th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , daylight_h = daylight_h, modelType = 12)
-#               }else if(model_type==22){
-#                 env_func_2_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , daylight_h = daylight_h, modelType = 22)
-#               }else if(model_type==32){
-#                 env_func_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , daylight_h = daylight_h, modelType = 32)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2)
-#           # add to list
-#           level_1_results[[i]]<-mean_perf
-#           # mark that things are working
-#           print(paste("Done with level 1 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l1<-data.frame(matrix(unlist(level_1_results), nrow=nrow(l1_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2")
-#       colnames(halflife_out_l1)<-names
-#       
-#       # select highest outcome
-#       max_HL_l1<-max(halflife_out_l1$HL)
-#       best_l1<-halflife_out_l1[halflife_out_l1$HL==max_HL_l1, ]
-#       #best_ths_l1<-best_l1[1,2]
-#       
-#   #### LEVEL 2 
-#       # Calculate the new ranges for level 2 
-#           # For threshold 1 
-#           range_min_l2_th1<-(best_l1$th1-(step_size_l1_th1/2))
-#           range_max_l2_th1<-(best_l1$th1+(step_size_l1_th1/2))
-#           # Same for threshold 2
-#           range_min_l2_th2<-(best_l1$th2-(step_size_l1_th2/2))
-#           range_max_l2_th2<-(best_l1$th2+(step_size_l1_th2/2))
-#       
-#       # Run the branch function 
-#           # for th 1
-#           vals_l2_th1<-branch_func(range_min = range_min_l2_th1, range_max = range_max_l2_th1, branch_num = 4)
-#           # stepseize
-#           step_size_l2_th1<-step_size
-#           # run for th 2
-#           vals_l2_th2<-branch_func(range_min = range_min_l2_th2, range_max = range_max_l2_th2, branch_num = 4)
-#           # save the stepsize for later
-#           step_size_l2_th2<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l2_th1<-vals_l2_th1[1:4]
-#           vals_l2_th2<-vals_l2_th2[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l2_grid<-expand.grid(vals_l2_th1, vals_l2_th2)
-#           names<-c("th1", "th2")
-#           colnames(l2_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 
-#           l2_grid<-l2_grid[l2_grid$th1<l2_grid$th2, ]
-#       
-#        # Now run the model 
-#       for (i in 1:nrow(l2_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_2_results<-list()
-#         }
-#         
-#         # Set current thresholds 
-#         cur_th1<-l2_grid[i,1]
-#         cur_th2<-l2_grid[i,2]
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:25){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==12){
-#                 env_func_1_2_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , daylight_h = daylight_h, modelType = 12)
-#               }else if(model_type==22){
-#                 env_func_2_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , daylight_h = daylight_h, modelType = 22)
-#               }else if(model_type==32){
-#                 env_func_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , daylight_h = daylight_h, modelType = 32)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2)
-#           # add to list
-#           level_2_results[[i]]<-mean_perf
-#         
-#         # mark that things are working
-#         print(paste("Done with level 2 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l2<-data.frame(matrix(unlist(level_2_results), nrow=nrow(l2_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2")
-#       colnames(halflife_out_l2)<-names
-#       
-#       # select highest outcome
-#       max_HL_l2<-max(halflife_out_l2$HL)
-#       best_l2<-halflife_out_l2[halflife_out_l2$HL==max_HL_l2, ]
-#      
-#    
-#     #### LEVEL 3 
-#       # Calculate the new ranges for level 2 
-#           # For threshold 1 
-#           range_min_l3_th1<-(best_l2$th1-(step_size_l2_th1/2))
-#           range_max_l3_th1<-(best_l2$th1+(step_size_l2_th1/2))
-#           # Same for threshold 2
-#           range_min_l3_th2<-(best_l2$th2-(step_size_l2_th2/2))
-#           range_max_l3_th2<-(best_l2$th2+(step_size_l2_th2/2))
-#       
-#       # Run the branch function 
-#           # for th 1
-#           vals_l3_th1<-branch_func(range_min = range_min_l3_th1, range_max = range_max_l3_th1, branch_num = 4)
-#           # stepseize
-#           step_size_l3_th1<-step_size
-#           # run for th 2
-#           vals_l3_th2<-branch_func(range_min = range_min_l3_th2, range_max = range_max_l3_th2, branch_num = 4)
-#           # save the stepsize for later
-#           step_size_l3_th2<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l3_th1<-vals_l3_th1[1:4]
-#           vals_l3_th2<-vals_l3_th2[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l3_grid<-expand.grid(vals_l3_th1, vals_l3_th2)
-#           names<-c("th1", "th2")
-#           colnames(l3_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 
-#           l3_grid<-l3_grid[l3_grid$th1<l3_grid$th2, ]
-#        
-#       # Now run the model 
-#         for (i in 1:nrow(l3_grid)){
-#           if (i==1){
-#             # Create empty list for results 
-#             level_3_results<-list()
-#           }
-#         # Set current thresholds 
-#         cur_th1<-l3_grid[i,1]
-#         cur_th2<-l3_grid[i,2]
-#           # Run the model 25 times in the 12 environments and take the average
-#             for (j in 1:5){
-#               if (j==1){
-#                 out_per_run_list<-list()
-#               }
-#               # Run the model 
-#               if(model_type==12){
-#                 env_func_1_2_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , daylight_h = daylight_h, modelType = 12)
-#               }else if(model_type==22){
-#                 env_func_2_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , daylight_h = daylight_h, modelType = 22)
-#               }else if(model_type==32){
-#                 env_func_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , daylight_h = daylight_h, modelType = 32)
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#             out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2)
-#             print(paste(j))
-#             } # end of loop for 25 run s
-#             
-#             # bind together
-#             out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#             colnames(out_per_run_df)<-"HL"
-#             # Now take the average for the threshold 
-#             mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2)
-#             # add to list
-#             level_3_results[[i]]<-mean_perf
-#           
-#           # mark that things are working
-#           print(paste("Done with level 3 ", i))
-#         } # end of 1-4 branching loop - level 3
-#       
-#       halflife_out_l3<-data.frame(matrix(unlist(level_3_results), nrow=nrow(l3_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL", "th1", "th2")
-#       colnames(halflife_out_l3)<-names
-#       
-#       # select highest outcome
-#       max_HL_l3<-max(halflife_out_l3$HL)
-#       best_l3<-halflife_out_l3[halflife_out_l3$HL==max_HL_l3, ]
-#   
-#       # Output the best threshold 
-#       return_list<-list(level_1_results, level_2_results, level_3_results, best_l3)
-#       return(return_list)
-# 
-# } # end of function for hpc 
-# 
-
-```
-
-### Run the function 
-```{r run x.2 models function, include=T, warning=F, message=F}
-# return_list_12<-branch_4_optimization_x2(model_type=12, range_min_start_th1=0, range_max_start_th1=0.4, range_min_start_th2=0, range_max_start_th2 = 0.4)
-# 
-# return_list_22<-branch_4_optimization_x2(model_type=22, range_min_start_th1=0, range_max_start_th1=4, range_min_start_th2=0, range_max_start_th2 = 4)
-# 
-# return_list_32<-branch_4_optimization_x2(model_type=32, range_min_start_th1=-0.6, range_max_start_th1=0.6, range_min_start_th2=-0.6, range_max_start_th2 = 0.6)
-# 
-
-```
-
-## Now make the functions for the x.3 models 
-```{r function for 3 thrshold models, include=T, message=F, warning=F}
-# branch_4_optimization_x3<-function(model_type, range_min_start_th1, range_max_start_th1, range_min_start_th2, range_max_start_th2, range_min_start_th3, range_max_start_th3){
-#   
-#   ##### LEVEL 1 
-#       # Run the branch function 
-#       vals_l1_th1<-branch_func(range_min = range_min_start_th1, range_max = range_max_start_th1, branch_num = 4)
-#       # save the stepsize used for this
-#       step_size_l1_th1<-step_size
-#       # run for second threshold 
-#       vals_l1_th2<-branch_func(range_min = range_min_start_th2, range_max = range_max_start_th2, branch_num = 4)
-#       # save the stepsize for this 
-#       step_size_l1_th2<-step_size
-#       # run for thrid threshold 
-#       vals_l1_th3<-branch_func(range_min = range_min_start_th3, range_max = range_max_start_th3, branch_num = 4)
-#       # save the stepsize for this 
-#       step_size_l1_th3<-step_size
-#       
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l1_th1<-vals_l1_th1[1:4]
-#           vals_l1_th2<-vals_l1_th2[1:4]
-#           vals_l1_th3<-vals_l1_th3[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l1_grid<-expand.grid(vals_l1_th1, vals_l1_th2, vals_l1_th3)
-#           names<-c("th1", "th2", "th3")
-#           colnames(l1_grid)<-names
-#           
-#           # For models x.2 of the first subset, th2 needs to be higher than th1 and th3 higher than th2
-#           l1_grid<-l1_grid[((l1_grid$th1<l1_grid$th2)&(l1_grid$th3>l1_grid$th2)), ]
-#       
-#       # Now run the model 
-#       for (i in 1:nrow(l1_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_1_results<-list()
-#         }
-#         # Set current thresholds 
-#         cur_th1<-l1_grid[i,1]
-#         cur_th2<-l1_grid[i,2]
-#         cur_th3<-l1_grid[i,3]
-#         
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:5){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==131){
-#                 env_func_1_3_1_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = 8, modelType = 131)
-#                 
-#               }else if(model_type==132){
-#                 env_func_1_3_2_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = 8, modelType = 132)
-#                 
-#               }else if(model_type==231){
-#                 env_func_2_3_1_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = 8, modelType = 231)
-#                 
-#               }else if(model_type==232){
-#                 env_func_2_3_2_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = 8, modelType = 232)
-#                 
-#               }else if(model_type==331){
-#                 env_func_3_3_1_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = 8, modelType = 331)
-#                 
-#               }else if(model_type==332){
-#                   env_func_3_3_2_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = 8, modelType = 332)
-#                 
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2, cur_th3)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=5, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2, cur_th3)
-#           # add to list
-#           level_1_results[[i]]<-mean_perf
-#           # mark that things are working
-#           print(paste("Done with level 1 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l1<-data.frame(matrix(unlist(level_1_results), nrow=nrow(l1_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2", "th3")
-#       colnames(halflife_out_l1)<-names
-#       
-#       # select highest outcome
-#       max_HL_l1<-max(halflife_out_l1$HL)
-#       best_l1<-halflife_out_l1[halflife_out_l1$HL==max_HL_l1, ]
-#       #best_ths_l1<-best_l1[1,2]
-#       
-#   #### LEVEL 2 
-#       # Calculate the new ranges for level 2 
-#           # For threshold 1 
-#           range_min_l2_th1<-(best_l1$th1-(step_size_l1_th1/2))
-#           range_max_l2_th1<-(best_l1$th1+(step_size_l1_th1/2))
-#           # Same for threshold 2
-#           range_min_l2_th2<-(best_l1$th2-(step_size_l1_th2/2))
-#           range_max_l2_th2<-(best_l1$th2+(step_size_l1_th2/2))
-#           # and threshold 3
-#           range_min_l2_th3<-(best_l1$th3-(step_size_l1_th3)/2)
-#           range_max_l2_th3<-(best_l1$th3+(step_size_l1_th3)/2)
-#       
-#       # Run the branch function 
-#           vals_l2_th1<-branch_func(range_min = range_min_l2_th1, range_max = range_max_l2_th1, branch_num = 4)
-#           # save the stepsize used for this
-#           step_size_l2_th1<-step_size
-#           # run for second threshold 
-#           vals_l2_th2<-branch_func(range_min = range_min_l2_th2, range_max = range_max_l2_th2, branch_num = 4)
-#           # save the stepsize for this 
-#           step_size_l2_th2<-step_size
-#           # run for thrid threshold 
-#           vals_l2_th3<-branch_func(range_min = range_min_l2_th3, range_max = range_max_l2_th3, branch_num = 4)
-#           # save the stepsize for this 
-#           step_size_l2_th3<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l2_th1<-vals_l2_th1[1:4]
-#           vals_l2_th2<-vals_l2_th2[1:4]
-#           vals_l2_th3<-vals_l2_th3[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l2_grid<-expand.grid(vals_l2_th1, vals_l2_th2, vals_l2_th3)
-#           names<-c("th1", "th2", "th3")
-#           colnames(l2_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 and th3 higher than th2 
-#           l2_grid<-l2_grid[((l2_grid$th1<l2_grid$th2)&(l2_grid$th3>l2_grid$th2)), ]
-#       
-#       # Now run the model 
-#       for (i in 1:nrow(l2_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_2_results<-list()
-#         }
-#         
-#         # Set current thresholds 
-#         cur_th1<-l2_grid[i,1]
-#         cur_th2<-l2_grid[i,2]
-#         cur_th3<-l2_grid[i,3]
-#         
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:5){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#          # Run the model 
-#               if(model_type==131){
-#                 env_func_1_3_1_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = 8, modelType = 131)
-#                 
-#               }else if(model_type==132){
-#                 env_func_1_3_2_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = 8, modelType = 132)
-#                 
-#               }else if(model_type==231){
-#                 env_func_2_3_1_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = 8, modelType = 231)
-#                 
-#               }else if(model_type==232){
-#                 env_func_2_3_2_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = 8, modelType = 232)
-#                 
-#               }else if(model_type==331){
-#                 env_func_3_3_1_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = 8, modelType = 331)
-#                 
-#               }else if(model_type==332){
-#                   env_func_3_3_2_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = 8, modelType = 332)
-#                 
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2, cur_th3)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=5, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2, cur_th3)
-#           # add to list
-#           level_2_results[[i]]<-mean_perf
-#         
-#         # mark that things are working
-#         print(paste("Done with level 2 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l2<-data.frame(matrix(unlist(level_2_results), nrow=nrow(l2_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2", "th3")
-#       colnames(halflife_out_l2)<-names
-#       
-#       # select highest outcome
-#       max_HL_l2<-max(halflife_out_l2$HL)
-#       best_l2<-halflife_out_l2[halflife_out_l2$HL==max_HL_l2, ]
-#      
-#    
-#     #### LEVEL 3 
-#       # Calculate the new ranges for level 3
-#           # For threshold 1 
-#           range_min_l3_th1<-(best_l2$th1-(step_size_l2_th1/2))
-#           range_max_l3_th1<-(best_l2$th1+(step_size_l2_th1/2))
-#           # Same for threshold 2
-#           range_min_l3_th2<-(best_l2$th2-(step_size_l2_th2/2))
-#           range_max_l3_th2<-(best_l2$th2+(step_size_l2_th2/2))
-#           # and threshold 3
-#           range_min_l3_th3<-(best_l2$th3-(step_size_l2_th3)/2)
-#           range_max_l3_th3<-(best_l2$th3+(step_size_l2_th3)/2)
-#       
-#       
-#       # Run the branch function 
-#           # for th 1
-#           vals_l3_th1<-branch_func(range_min = range_min_l3_th1, range_max = range_max_l3_th1, branch_num = 4)
-#           # stepseize
-#           step_size_l3_th1<-step_size
-#           # run for th 2
-#           vals_l3_th2<-branch_func(range_min = range_min_l3_th2, range_max = range_max_l3_th2, branch_num = 4)
-#           # save the stepsize for later
-#           step_size_l3_th2<-step_size
-#           # run for thrid threshold 
-#           vals_l3_th3<-branch_func(range_min = range_min_l3_th3, range_max = range_max_l3_th3, branch_num = 4)
-#           # save the stepsize for this 
-#           step_size_l3_th3<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l3_th1<-vals_l3_th1[1:4]
-#           vals_l3_th2<-vals_l3_th2[1:4]
-#           vals_l3_th3<-vals_l3_th3[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l3_grid<-expand.grid(vals_l3_th1, vals_l3_th2, vals_l3_th3)
-#           names<-c("th1", "th2", "th3")
-#           colnames(l3_grid)<-names
-#           
-#           # For models x.2 of the first subset, th2 needs to be higher than th1 and th3 higher than th2
-#           l3_grid<-l3_grid[((l2_grid$th1<l3_grid$th2)&(l3_grid$th3>l3_grid$th2)), ]
-#        
-#       # Now run the model 
-#         for (i in 1:nrow(l3_grid)){
-#           if (i==1){
-#             # Create empty list for results 
-#             level_3_results<-list()
-#           }
-#         # Set current thresholds 
-#         cur_th1<-l3_grid[i,1]
-#         cur_th2<-l3_grid[i,2]
-#         cur_th3<-l3_grid[i,3]
-#           # Run the model 25 times in the 12 environments and take the average
-#             for (j in 1:5){
-#               if (j==1){
-#                 out_per_run_list<-list()
-#               }
-#        # Run the model 
-#               if(model_type==131){
-#                 env_func_1_3_1_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = 8, modelType = 131)
-#                 
-#               }else if(model_type==132){
-#                 env_func_1_3_2_par(days = 10, N= 100, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = 8, modelType = 132)
-#                 
-#               }else if(model_type==231){
-#                 env_func_2_3_1_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = 8, modelType = 231)
-#                 
-#               }else if(model_type==232){
-#                 env_func_2_3_2_par(days = 10, N= 100, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = 8, modelType = 232)
-#                 
-#               }else if(model_type==331){
-#                 env_func_3_3_1_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = 8, modelType = 331)
-#                 
-#               }else if(model_type==332){
-#                   env_func_3_3_2_par(days = 10, N= 100, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = 8, modelType = 332)
-#                 
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#             # add the output 
-#             out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2, cur_th3)
-#             print(paste(j))
-#             } # end of loop for 25 run s
-#             
-#             # bind together
-#             out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=5, byrow=TRUE),stringsAsFactors=FALSE)
-#             colnames(out_per_run_df)<-"HL"
-#             # Now take the average for the threshold 
-#             mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2, cur_th3)
-#             # add to list
-#             level_3_results[[i]]<-mean_perf
-#           
-#           # mark that things are working
-#           print(paste("Done with level 3 ", i))
-#         } # end of 1-4 branching loop - level 3
-#       
-#       halflife_out_l3<-data.frame(matrix(unlist(level_3_results), nrow=nrow(l3_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL", "th1", "th2", "th3")
-#       colnames(halflife_out_l3)<-names
-#       
-#       # select highest outcome
-#       max_HL_l3<-max(halflife_out_l3$HL)
-#       best_l3<-halflife_out_l3[halflife_out_l3$HL==max_HL_l3, ]
-#   
-#       # Output the best threshold 
-#       return_list<-list(level_1_results, level_2_results, level_3_results, best_l3)
-#       return(return_list)
-# 
-# } # end of function 
-# 
-# 
-# # For use on the HPC
-# branch_4_optimization_x3_hpc<-function(model_type, range_min_start_th1, range_max_start_th1, range_min_start_th2, range_max_start_th2, range_min_start_th3, range_max_start_th3){
-#   
-#   ##### LEVEL 1 
-#       # Run the branch function 
-#       vals_l1_th1<-branch_func(range_min = range_min_start_th1, range_max = range_max_start_th1, branch_num = 4)
-#       # save the stepsize used for this
-#       step_size_l1_th1<-step_size
-#       # run for second threshold 
-#       vals_l1_th2<-branch_func(range_min = range_min_start_th2, range_max = range_max_start_th2, branch_num = 4)
-#       # save the stepsize for this 
-#       step_size_l1_th2<-step_size
-#       # run for thrid threshold 
-#       vals_l1_th3<-branch_func(range_min = range_min_start_th3, range_max = range_max_start_th3, branch_num = 4)
-#       # save the stepsize for this 
-#       step_size_l1_th3<-step_size
-#       
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l1_th1<-vals_l1_th1[1:4]
-#           vals_l1_th2<-vals_l1_th2[1:4]
-#           vals_l1_th3<-vals_l1_th3[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l1_grid<-expand.grid(vals_l1_th1, vals_l1_th2, vals_l1_th3)
-#           names<-c("th1", "th2", "th3")
-#           colnames(l1_grid)<-names
-#           
-#           # For models x.2 of the first subset, th2 needs to be higher than th1 and th3 higher than th2
-#           l1_grid<-l1_grid[((l1_grid$th1<l1_grid$th2)&(l1_grid$th3>l1_grid$th2)), ]
-#       
-#       # Now run the model 
-#       for (i in 1:nrow(l1_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_1_results<-list()
-#         }
-#         # Set current thresholds 
-#         cur_th1<-l1_grid[i,1]
-#         cur_th2<-l1_grid[i,2]
-#         cur_th3<-l1_grid[i,3]
-#         
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:25){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#             # Run the model 
-#               if(model_type==131){
-#                 env_func_1_3_1_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType = 131)
-#               }else if(model_type==132){
-#                 env_func_1_3_2_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType = 132)
-#                 
-#               }else if(model_type==231){
-#                 env_func_2_3_1_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = daylight_h, modelType = 231)
-#                 
-#               }else if(model_type==232){
-#                 env_func_2_3_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = daylight_h, modelType = 232)
-#                 
-#               }else if(model_type==331){
-#                 env_func_3_3_1_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = daylight_h, modelType = 331)
-#                 
-#               }else if(model_type==332){
-#                   env_func_3_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = daylight_h, modelType = 332)
-#                 
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2, cur_th3)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2, cur_th3)
-#           # add to list
-#           level_1_results[[i]]<-mean_perf
-#           # mark that things are working
-#           print(paste("Done with level 1 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l1<-data.frame(matrix(unlist(level_1_results), nrow=nrow(l1_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2", "th3")
-#       colnames(halflife_out_l1)<-names
-#       
-#       # select highest outcome
-#       max_HL_l1<-max(halflife_out_l1$HL)
-#       best_l1<-halflife_out_l1[halflife_out_l1$HL==max_HL_l1, ]
-#       #best_ths_l1<-best_l1[1,2]
-#       
-#   #### LEVEL 2 
-#       # Calculate the new ranges for level 2 
-#           # For threshold 1 
-#           range_min_l2_th1<-(best_l1$th1-(step_size_l1_th1/2))
-#           range_max_l2_th1<-(best_l1$th1+(step_size_l1_th1/2))
-#           # Same for threshold 2
-#           range_min_l2_th2<-(best_l1$th2-(step_size_l1_th2/2))
-#           range_max_l2_th2<-(best_l1$th2+(step_size_l1_th2/2))
-#           # and threshold 3
-#           range_min_l2_th3<-(best_l1$th3-(step_size_l1_th3)/2)
-#           range_max_l2_th3<-(best_l1$th3+(step_size_l1_th3)/2)
-#       
-#       # Run the branch function 
-#           vals_l2_th1<-branch_func(range_min = range_min_l2_th1, range_max = range_max_l2_th1, branch_num = 4)
-#           # save the stepsize used for this
-#           step_size_l2_th1<-step_size
-#           # run for second threshold 
-#           vals_l2_th2<-branch_func(range_min = range_min_l2_th2, range_max = range_max_l2_th2, branch_num = 4)
-#           # save the stepsize for this 
-#           step_size_l2_th2<-step_size
-#           # run for thrid threshold 
-#           vals_l2_th3<-branch_func(range_min = range_min_l2_th3, range_max = range_max_l2_th3, branch_num = 4)
-#           # save the stepsize for this 
-#           step_size_l2_th3<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l2_th1<-vals_l2_th1[1:4]
-#           vals_l2_th2<-vals_l2_th2[1:4]
-#           vals_l2_th3<-vals_l2_th3[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l2_grid<-expand.grid(vals_l2_th1, vals_l2_th2, vals_l2_th3)
-#           names<-c("th1", "th2", "th3")
-#           colnames(l2_grid)<-names
-#           
-#           # For models x.1 of the first subset, th2 needs to be higher than th1 and th3 higher than th2 
-#           l2_grid<-l2_grid[((l2_grid$th1<l2_grid$th2)&(l2_grid$th3>l2_grid$th2)), ]
-#       
-#       # Now run the model 
-#       for (i in 1:nrow(l2_grid)){
-#         if (i==1){
-#           # Create empty list for results 
-#           level_2_results<-list()
-#         }
-#         
-#         # Set current thresholds 
-#         cur_th1<-l2_grid[i,1]
-#         cur_th2<-l2_grid[i,2]
-#         cur_th3<-l2_grid[i,3]
-#         
-#         # Run the model 25 times in the 12 environments and take the average
-#           for (j in 1:5){
-#             if (j==1){
-#               out_per_run_list<-list()
-#             }
-#          # Run the model 
-#               if(model_type==131){
-#                 env_func_1_3_1_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType = 131)
-#               }else if(model_type==132){
-#                 env_func_1_3_2_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType = 132)
-#                 
-#               }else if(model_type==231){
-#                 env_func_2_3_1_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = daylight_h, modelType = 231)
-#                 
-#               }else if(model_type==232){
-#                 env_func_2_3_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = daylight_h, modelType = 232)
-#                 
-#               }else if(model_type==331){
-#                 env_func_3_3_1_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = daylight_h, modelType = 331)
-#                 
-#               }else if(model_type==332){
-#                   env_func_3_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = daylight_h, modelType = 332)
-#                 
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#           # add the outcome 
-#           out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2, cur_th3)
-#           print(paste(j))
-#           } # end of loop for 25 run s
-#           
-#           # bind together
-#           out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#           colnames(out_per_run_df)<-"HL"
-#           # Now take the average for the threshold 
-#           mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2, cur_th3)
-#           # add to list
-#           level_2_results[[i]]<-mean_perf
-#         
-#         # mark that things are working
-#         print(paste("Done with level 2 ", i))
-#       } # end of 1-4 branching loop
-#       
-#       halflife_out_l2<-data.frame(matrix(unlist(level_2_results), nrow=nrow(l2_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL",  "th1", "th2", "th3")
-#       colnames(halflife_out_l2)<-names
-#       
-#       # select highest outcome
-#       max_HL_l2<-max(halflife_out_l2$HL)
-#       best_l2<-halflife_out_l2[halflife_out_l2$HL==max_HL_l2, ]
-#      
-#    
-#     #### LEVEL 3 
-#       # Calculate the new ranges for level 3
-#           # For threshold 1 
-#           range_min_l3_th1<-(best_l2$th1-(step_size_l2_th1/2))
-#           range_max_l3_th1<-(best_l2$th1+(step_size_l2_th1/2))
-#           # Same for threshold 2
-#           range_min_l3_th2<-(best_l2$th2-(step_size_l2_th2/2))
-#           range_max_l3_th2<-(best_l2$th2+(step_size_l2_th2/2))
-#           # and threshold 3
-#           range_min_l3_th3<-(best_l2$th3-(step_size_l2_th3)/2)
-#           range_max_l3_th3<-(best_l2$th3+(step_size_l2_th3)/2)
-#       
-#       
-#       # Run the branch function 
-#           # for th 1
-#           vals_l3_th1<-branch_func(range_min = range_min_l3_th1, range_max = range_max_l3_th1, branch_num = 4)
-#           # stepseize
-#           step_size_l3_th1<-step_size
-#           # run for th 2
-#           vals_l3_th2<-branch_func(range_min = range_min_l3_th2, range_max = range_max_l3_th2, branch_num = 4)
-#           # save the stepsize for later
-#           step_size_l3_th2<-step_size
-#           # run for thrid threshold 
-#           vals_l3_th3<-branch_func(range_min = range_min_l3_th3, range_max = range_max_l3_th3, branch_num = 4)
-#           # save the stepsize for this 
-#           step_size_l3_th3<-step_size
-#           
-#       # Generate the possible combinations 
-#           # Take out the stepsize 
-#           vals_l3_th1<-vals_l3_th1[1:4]
-#           vals_l3_th2<-vals_l3_th2[1:4]
-#           vals_l3_th3<-vals_l3_th3[1:4]
-#           
-#           # Generate a grid with the possible combinations 
-#           l3_grid<-expand.grid(vals_l3_th1, vals_l3_th2, vals_l3_th3)
-#           names<-c("th1", "th2", "th3")
-#           colnames(l3_grid)<-names
-#           
-#           # For models x.2 of the first subset, th2 needs to be higher than th1 and th3 higher than th2
-#           l3_grid<-l3_grid[((l2_grid$th1<l3_grid$th2)&(l3_grid$th3>l3_grid$th2)), ]
-#        
-#       # Now run the model 
-#         for (i in 1:nrow(l3_grid)){
-#           if (i==1){
-#             # Create empty list for results 
-#             level_3_results<-list()
-#           }
-#         # Set current thresholds 
-#         cur_th1<-l3_grid[i,1]
-#         cur_th2<-l3_grid[i,2]
-#         cur_th3<-l3_grid[i,3]
-#           # Run the model 25 times in the 12 environments and take the average
-#             for (j in 1:5){
-#               if (j==1){
-#                 out_per_run_list<-list()
-#               }
-#     # Run the model 
-#               if(model_type==131){
-#                 env_func_1_3_1_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType = 131)
-#               }else if(model_type==132){
-#                 env_func_1_3_2_par_hpc(days = days, N= N, th_forage_sc1 = cur_th1 , th_forage_sc2 = cur_th2 , th_forage_sc3 = cur_th3, daylight_h = daylight_h, modelType = 132)
-#                 
-#               }else if(model_type==231){
-#                 env_func_2_3_1_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = daylight_h, modelType = 231)
-#                 
-#               }else if(model_type==232){
-#                 env_func_2_3_2_par_hpc(days = days, N= N, th_forage_fr1 = cur_th1 , th_forage_fr2 = cur_th2 , th_forage_fr3 = cur_th3, daylight_h = daylight_h, modelType = 232)
-#                 
-#               }else if(model_type==331){
-#                 env_func_3_3_1_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = daylight_h, modelType = 331)
-#                 
-#               }else if(model_type==332){
-#                   env_func_3_3_2_par_hpc(days = days, N= N, th_forage_flr1 = cur_th1 , th_forage_flr2 = cur_th2 , th_forage_flr3 = cur_th3, daylight_h = daylight_h, modelType = 332)
-#                 
-#               }else{
-#                 print('problem with model_type settings')
-#               }
-#             # add the output 
-#             out_per_run_list[j]<-cbind(output_env_func[[1]][1], cur_th1, cur_th2, cur_th3)
-#             print(paste(j))
-#             } # end of loop for 25 run s
-#             
-#             # bind together
-#             out_per_run_df<-data.frame(matrix(unlist(out_per_run_list), nrow=25, byrow=TRUE),stringsAsFactors=FALSE)
-#             colnames(out_per_run_df)<-"HL"
-#             # Now take the average for the threshold 
-#             mean_perf<-c(mean(out_per_run_df$HL), cur_th1, cur_th2, cur_th3)
-#             # add to list
-#             level_3_results[[i]]<-mean_perf
-#           
-#           # mark that things are working
-#           print(paste("Done with level 3 ", i))
-#         } # end of 1-4 branching loop - level 3
-#       
-#       halflife_out_l3<-data.frame(matrix(unlist(level_3_results), nrow=nrow(l3_grid), byrow=TRUE),stringsAsFactors=FALSE)
-#       names<-c("HL", "th1", "th2", "th3")
-#       colnames(halflife_out_l3)<-names
-#       
-#       # select highest outcome
-#       max_HL_l3<-max(halflife_out_l3$HL)
-#       best_l3<-halflife_out_l3[halflife_out_l3$HL==max_HL_l3, ]
-#   
-#       # Output the best threshold 
-#       return_list<-list(level_1_results, level_2_results, level_3_results, best_l3)
-#       return(return_list)
-# 
-# } # end of function for hpc 
-
-
-```
-
-## Run the function 
-```{r run x.3 models function, include=T, warning=F, message=F}
-# return_list_131<-branch_4_optimization_x3(model_type=131, range_min_start_th1=0, range_max_start_th1=0.4, range_min_start_th2=0, range_max_start_th2 = 0.4,  range_min_start_th3=0, range_max_start_th3 = 0.4)
-# 
-# return_list_132<-branch_4_optimization_x3(model_type=132, range_min_start_th1=0, range_max_start_th1=0.4, range_min_start_th2=0, range_max_start_th2 = 0.4,  range_min_start_th3=0, range_max_start_th3 = 0.4)
-# 
-# return_list_231<-branch_4_optimization_x3(model_type=231, range_min_start_th1=0, range_max_start_th1=4, range_min_start_th2=0, range_max_start_th2 = 4,  range_min_start_th3=0, range_max_start_th3 = 4)
-# 
-# return_list_232<-branch_4_optimization_x3(model_type=232, range_min_start_th1=0, range_max_start_th1=4, range_min_start_th2=0, range_max_start_th2 = 4,  range_min_start_th3=0, range_max_start_th3 = 4)
-# 
-# return_list_331<-branch_4_optimization_x3(model_type=331, range_min_start_th1=-0.6, range_max_start_th1=0.6, range_min_start_th2=-0.6, range_max_start_th2 = 0.6,  range_min_start_th3=-0.6, range_max_start_th3 = 0.6)
-# 
-# return_list_332<-branch_4_optimization_x3(model_type=332, range_min_start_th1=-0.6, range_max_start_th1=0.6, range_min_start_th2=-0.6, range_max_start_th2 = 0.6,  range_min_start_th3=-0.6, range_max_start_th3 = 0.6)
-
-```
-
 
 ## January 2024: 
 I re-wrote the x.1, x.2 and x.3 fucntions for subset 1. They are outlined above. 
@@ -2033,6 +616,8 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
+            # Log the original branch number
+            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -2058,6 +643,8 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
               
           }else if(i==2){
             # So for level 2
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
               for (j in 1:nrow(tree_output_list[[1]])){
                   if(j==1){
                     level_list<-list()
@@ -2105,8 +692,8 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
             
           }else if(i==3){
             # For level 3 
-            # This can't be the same as 2, because the structure of teh list won't be the same 
-            # For any additional levels this would probably be teh case. 
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
@@ -2178,7 +765,7 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
     names(tree_output_list)<-c("level1", "level2", "level3")
     # save it 
     setwd(file_folder)
-    save(tree_output_list, file=paste0("branch_sub2_x1_mod", model_type, ".Rda"))
+    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub2_x1_mod", model_type, ".Rda"))
     return(tree_output_list)
 } # End the function 
 ```
@@ -2234,6 +821,8 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
+            # Log the original branch number
+            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -2266,6 +855,8 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
               
           }else if(i==2){
             # So for level 2
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
               for (j in 1:nrow(tree_output_list[[1]])){
                   if(j==1){
                     level_list<-list()
@@ -2328,8 +919,8 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
             
           }else if(i==3){
             # For level 3 
-            # This can't be the same as 2, because the structure of teh list won't be the same 
-            # For any additional levels this would probably be teh case. 
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
             for (j in 1:length(tree_output_list[[2]])){
                   if(j==1){
                     level_list<-list()
@@ -2417,7 +1008,7 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
    names(tree_output_list)<-c("level1", "level2", "level3")
   # save it 
     setwd(file_folder)
-    save(tree_output_list, file=paste0("branch_sub2_x2_mod", model_type, ".Rda"))
+    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub2_x2_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End hte function 
 ```
@@ -2489,6 +1080,8 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
+            # Log the original branch number
+            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -2531,6 +1124,8 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
               
           }else if(i==2){
             # So for level 2
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
               for (j in 1:nrow(tree_output_list[[1]])){
                   if(j==1){
                     level_list<-list()
@@ -2614,8 +1209,8 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
             
           }else if(i==3){
             # For level 3 
-            # This can't be the same as 2, because the structure of teh list won't be the same 
-            # For any additional levels this would probably be teh case. 
+            # Set the branch number back to 4 if needed 
+            branch_num<-4
             for (j in 1:length(tree_output_list[[2]])){
               
                   if(j==1){
@@ -2737,89 +1332,7 @@ out_sub2_x3<-tree_func_sub2_x3(model_type=632, branch_num = 4)
 
 I have now ran all the branches for all the models. Here is some code that can help me to select the correct dataframe for the next HPC run. I'm going to stop trying to do this all at once, it's taken too much time :( (02/02/24)
 
-```{r saving seperate branching dataframes}
-# Settings for what you watn to do
-subset<-1
-model_type<-331
-level<-"level2" # Whcih level are you about to run? (you  need to select here from the premade branch)
 
-
-
-
-# Code to run 
-if(level=="level2"){
-# Extract best values from previous level 
-  # Set the wd to where the concatenation results are 
-  prev_level<-as.numeric(substr(level, nchar(level), nchar(level)))-1
-  setwd(paste0(file_folder, "/output_subset", subset, "/level_", prev_level, "/concat_results"))
-  
-  # Load the relevant dataframe 
-  filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", prev_level, ".Rda"), full.names=TRUE)
-  load(filenames[1])
-  
-  # Extract first row 
-  best_th<-HL_df[1,]
-  # extract the thresholds 
-  thresholds<-best_th[,5:(ncol(HL_df)-1)]
-  best_comb_chr<-paste(thresholds, collapse=" & ")
-}else if(level=="level3"){
-  # For the best th from level 1 
-  # Set the wd to where the concatenation results are 
-  prev_level<-as.numeric(substr(level, nchar(level), nchar(level)))-2
-  setwd(paste0(file_folder, "/output_subset", subset, "/level_", prev_level, "/concat_results"))
-  
-  # Load the relevant dataframe 
-  filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", prev_level, ".Rda"), full.names=TRUE)
-  load(filenames[1])
-  # Extract first row 
-  best_th<-HL_df[1,]
-  # extract the thresholds 
-  thresholds<-best_th[,5:(ncol(HL_df)-1)]
-  best_comb_chr_l1<-paste(thresholds, collapse=" & ")
-  
-  # For the best th from level 2
-  # Set the wd to where the concatenation results are 
-  prev_level<-as.numeric(substr(level, nchar(level), nchar(level)))-1
-  setwd(paste0(file_folder, "/output_subset", subset, "/level_", prev_level, "/concat_results"))
-  
-  # Load the relevant dataframe 
-  filenames <- list.files(pattern=paste0("*MOD_", model_type, "_lev", prev_level, ".Rda"), full.names=TRUE)
-  load(filenames[1])
-  # Extract first row 
-  best_th<-HL_df[1,]
-  # extract the thresholds 
-  thresholds<-best_th[,5:(ncol(HL_df)-1)]
-  best_comb_chr_l2<-paste(thresholds, collapse=" & ")
-}
-
-
-
-# It is best for the HPC to take a csv that does not have column headings 
-# I've done something similar in the original optimization code --> use the write.table function 
-
-# First, select teh dataframe taht you want 
-# Just lodaing it from the folder is probs easiest 
-setwd(file_folder)
-load(paste0("branch_sub", subset, "_x", (str_sub(model_type, 2, 2)), "_mod", model_type, ".Rda"))
-
-# Then select what you want to do 
-
-if(level=="level1"){
-  selected_df<-tree_output_list[[level]]
-  # save it
-   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
-   #write.csv(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
-}else if(level=="level2"){
-  selected_df<-tree_output_list[[level]][[paste(best_comb_chr)]]
-    # You're there 
-   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
-}else if(level=="level3"){
-    selected_df<-tree_output_list[[level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
-    # You're there 
-   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_x",  (str_sub(model_type, 2,2)), "_mod", model_type, '_', level, '.csv'), row.names = F, col.names = F)
-}
-
-
-```
+19/02/2024: Added the option for branching with 6 splits in the first level. The plan is to run this again for the 1st subset to see if this produces better results. 
 
 

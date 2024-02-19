@@ -5342,7 +5342,7 @@ env_func_6_3_1_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forag
   stopImplicitCluster()
   
   # Create the variable called halflife_input
-  halflife_input<-outcome_env_5_3_1_par
+  halflife_input<-outcome_env_6_3_1_par
   
   # run the t_halflife function 
   t_halflife_func(halflife_input)
@@ -5365,7 +5365,7 @@ env_func_6_3_1_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forag
 } # end environment function loop for 6.3.1 - HPC
 
 
-# The one that runs parallel - HPC
+# The one that runs parallel - HPC - model 6.3.2 
 env_func_6_3_2_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3,
                                  th_forage_flr1, th_forage_flr2, th_forage_flr3, daylight_h, modelType){
   # for parallel computing 
