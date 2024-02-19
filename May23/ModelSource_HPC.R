@@ -5366,8 +5366,8 @@ env_func_6_3_1_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forag
 
 
 # The one that runs parallel - HPC
-env_func_5_3_2_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3,
-                                 th_forage_fr1, th_forage_fr2, th_forage_fr3, daylight_h, modelType){
+env_func_6_3_2_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc3,
+                                 th_forage_flr1, th_forage_flr2, th_forage_flr3, daylight_h, modelType){
   # for parallel computing 
   require(doParallel)
   require(foreach)
@@ -5376,10 +5376,10 @@ env_func_5_3_2_par_hpc<-function(days, N, th_forage_sc1, th_forage_sc2, th_forag
   # Set number of environments 
   num_env<-12 
   # parallel loop 
-  outcome_env_5_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+  outcome_env_6_3_2_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
     
     # single model run 
-    mod_5_3_2_hpc(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3= th_forage_sc3,
+    mod_6_3_2_hpc(days = days, N = N, env_type = i, th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3= th_forage_sc3,
                   th_forage_flr1 = th_forage_flr1, th_forage_flr2 = th_forage_flr2, th_forage_flr3= th_forage_flr3, daylight_h = daylight_h)
   }
   
