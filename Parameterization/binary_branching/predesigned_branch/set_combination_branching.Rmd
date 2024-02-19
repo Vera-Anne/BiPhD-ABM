@@ -70,6 +70,8 @@ x.1
 ```{r subset 1 tree branching functions}
 
 tree_func_x1<-function(model_type, branch_num){
+    # set original branch number
+    branch_num_og<-branch_num
     # Branch_num sets the number of branches for the first level
     # level 2 and 3 always have branch_num = 4 
     
@@ -90,9 +92,6 @@ tree_func_x1<-function(model_type, branch_num){
       
       # Start the loop that will go thrugh the number of steps as set in 'depth' 
       for (i in 1:depth){
-        # Log the original branch number
-        branch_num_og<-branch_num
-        
         # Generate a list for the output 
           if (i==1){
             # Create an empty list 
@@ -221,6 +220,7 @@ tree_func_x1<-function(model_type, branch_num){
    names(tree_output_list)<-c("level1", "level2", "level3")
    # save it 
     setwd(file_folder)
+    print(branch_num_og)
     save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x1_mod", model_type, ".Rda"))
    return(tree_output_list)
     
@@ -230,11 +230,19 @@ tree_func_x1<-function(model_type, branch_num){
 } # End the function 
    
 ```
+
+First run  x.1 models 
+
+```{r run branching, include=TRUE, message=F, warning=F}
+out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 4)
+```
 x.2 
 ```{r write sub1 x.2 models}
     
 # Build a tree for the x.2 models (subset 1 - one variable)
 tree_func_x2<-function(model_type, branch_num){
+    # set original branch number
+    branch_num_og<-branch_num
       if(model_type==12){
         start_min_th1<-0
         start_max_th1<-0.4
@@ -257,8 +265,6 @@ tree_func_x2<-function(model_type, branch_num){
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
-            # Log the original branch number
-            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -412,10 +418,20 @@ tree_func_x2<-function(model_type, branch_num){
 } # End the function 
 
 ```   
+
+
+Run subset 1 x.2 models 
+
+```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
+out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 6)
+```
+
 x.3
 ```{r build subset 1 x.3 models }
     
 tree_func_x3<-function(model_type, branch_num){
+    # set original branch number
+    branch_num_og<-branch_num
        if((model_type==131)|(model_type==132)){
         start_min_th1<-0
         start_max_th1<-0.4
@@ -444,8 +460,7 @@ tree_func_x3<-function(model_type, branch_num){
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
-            # Log the original branch number
-            branch_num_og<-branch_num
+
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -600,22 +615,7 @@ tree_func_x3<-function(model_type, branch_num){
 
 ```
 
-## Run the functions 
-Run the tree-function for the 1 variable models 
-
-First, x.1 models 
-
-```{r run branching, include=TRUE, message=F, warning=F}
-out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 6)
-```
-
-The subset 1 x.2 models 
-
-```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 6)
-```
-
-The subset 1 x.3 models
+Run the subset 1 x.3 models
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
 out_sub1_x3<-tree_func_x3(model_type = 332, branch_num = 6)
@@ -628,6 +628,7 @@ Then, I worked on the second subset of models: they have 2 variables that decisi
 
 Start with the simplest model: a non-hoarding bird, access to 2 variables, each with 1 threshold. 
 The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the code are for 'threshold number'. So for example, a model with both SC and FR, each with 3 thresholds would have v1 (SC) and v3 (FR). For each of those there would be a th1, th2 and th3. 
+
 ```{r make subset 2 x.1 models}
 # Non hoarder 2 variables 
     tree_func_sub2_x1<-function(model_type, branch_num){
