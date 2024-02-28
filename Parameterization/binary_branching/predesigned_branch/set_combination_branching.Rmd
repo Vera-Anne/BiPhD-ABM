@@ -632,6 +632,9 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
 ```{r make subset 2 x.1 models}
 # Non hoarder 2 variables 
     tree_func_sub2_x1<-function(model_type, branch_num){
+      # set original branch number
+      branch_num_og<-branch_num
+      # settings 
       if(model_type==41){
         start_min_v1_th1<-0
         start_max_v1_th1<-4
@@ -653,8 +656,6 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
-            # Log the original branch number
-            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -809,13 +810,16 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
 
 Run the non-hoarding, 2 variables, 1 th model: 
 ```{r run subset 2 x1}
-out_sub2_x1<-tree_func_sub2_x1(model_type=51, branch_num = 4)
+out_sub2_x1<-tree_func_sub2_x1(model_type=61, branch_num = 6)
 ```
 
 Now, write teh code for the second subset, the leftover hoarders. This has 2 energy proxy variables and each of these has 2 thresholds. 
 ```{r make subset 2 x.2 models}
 # Non hoarder 2 variables 
     tree_func_sub2_x2<-function(model_type, branch_num){
+      # set original branch number
+      branch_num_og<-branch_num
+      # settings 
       if(model_type==42){
         
         # variable 1 = FR
@@ -858,8 +862,6 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
-            # Log the original branch number
-            branch_num_og<-branch_num
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -1047,14 +1049,14 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
     setwd(file_folder)
     save(tree_output_list, file=paste0("branch", branch_num_og, "_sub2_x2_mod", model_type, ".Rda"))
    return(tree_output_list)
-} # End hte function 
+} # End the function 
 ```
 
 Subset 2 - x.2
 Run the leftove rhoarding, 2 variables, 2 th model: 
 ```{r run subset 2 x2}
 
-out_sub2_x2<-tree_func_sub2_x2(model_type=62, branch_num = 4)
+out_sub2_x2<-tree_func_sub2_x2(model_type=62, branch_num = 6)
 
 ```
 
@@ -1065,8 +1067,11 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
 
 # Non hoarder 2 variables 
     tree_func_sub2_x3<-function(model_type, branch_num){
+            # Log the original branch number
+            branch_num_og<-branch_num
       
       if((model_type==431)|(model_type==432)){
+
         # variable 1 = FR
         start_min_v1_th1<-0
         start_max_v1_th1<-4
@@ -1117,8 +1122,7 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
       for (i in 1:depth){
         # Generate a list for the output 
           if (i==1){
-            # Log the original branch number
-            branch_num_og<-branch_num
+
             # Create an empty list 
             tree_output_list<-list()
             stepsize_list<-list()
@@ -1355,16 +1359,14 @@ Now, write hte function for the 2nd subset, direct hoarders with 2 variables and
     names(tree_output_list)<-c("level1", "level2", "level3")
     # save it 
     setwd(file_folder)
-    save(tree_output_list, file=paste0("branch_sub2_x3_mod", model_type, ".Rda"))
+    save(tree_output_list, file=paste0("branch", branch_num_og, "_sub2_x3_mod", model_type, ".Rda"))
    return(tree_output_list)
-} # End hte function 
+} # End the function 
 ```
 
 Run the direct hoarder , 2 variables, 3 th model: 
 ```{r run subset 2 x3}
-
-out_sub2_x3<-tree_func_sub2_x3(model_type=632, branch_num = 4)
-
+out_sub2_x3<-tree_func_sub2_x3(model_type=631, branch_num = 4)
 ```
 
 I have now ran all the branches for all the models. Here is some code that can help me to select the correct dataframe for the next HPC run. I'm going to stop trying to do this all at once, it's taken too much time :( (02/02/24)
