@@ -134,6 +134,7 @@ GA1 <- ga(type = "real-valued",
           suggestions = suggestedSol,
           popSize = 50, maxiter = 1)
 head(GA1@population)
+
 ```
 
 As it can be seen, the first two solutions considered are those provided, whereas the rest is filled randomly as usual. A full search can be obtained as follows:
@@ -148,7 +149,7 @@ GA <- ga(type = "real-valued",
 summary(GA)
 ```
 
-Constrained optimization. This might be useful to me, as it looks like you can set constraints to how the variables should be related to eachother. The example uses an inequality constraint. I could for example specify that my second paramter (lets call it X[2]) needs to be larger than my first parameter (X[1]). Something like: X[2]-X[1]>0
+Constrained optimization. This might be useful to me, as it looks like you can set constraints to how the variables should be related to eachother. The example uses an inequality constraint. I could for example specify that my second parameter (lets call it X[2]) needs to be larger than my first parameter (X[1]). Something like: X[2]-X[1]>0
 
 The following code initializes the function (CAM) as well as the constraint functions 
 
@@ -270,7 +271,7 @@ summary(GA)
 
 ```
 ```{r plot the first GA, include=T, warning=F, message=F}
-plot(GA)
+plot(GA, ylim=c(0, 5000))
 
 ```
 So what would this look like with the constrictions in place? 
