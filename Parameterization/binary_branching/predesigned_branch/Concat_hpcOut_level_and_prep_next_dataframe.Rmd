@@ -19,9 +19,9 @@ This code will take the output from the HPC from a specific level. It then conca
 
 ## Basic settings 
 ```{r settings}
-model_type<-231
-level<-1           # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
-subset<-1
+model_type<-432
+level<-0           # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
+subset<-2
 branch_type<-6
 ```
 
@@ -185,57 +185,115 @@ if(next_level_chr=="level2"){
       best_comb_chr_l3<-paste(thresholds, collapse=" & ")
 }
 
-
-
-# Go into the folder that has the premade branches 
-setwd(general_folder)
-load(paste0("branch", branch_type, "_sub", subset, "_x", (str_sub(model_type, 2, 2)), "_mod", model_type, ".Rda"))
-
-# Then select what you want to do 
-
-if(next_level_chr=="level1"){
-  # Select the right part of the tree 
-  selected_df<-tree_output_list[[next_level]]
-  # save it
-   write.table(selected_df, file=paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                        model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
-}else if(next_level_chr=="level2"){
-  # Select the right part of the tree 
-  selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr)]]
-    # save it 
-   write.table(selected_df, file=paste0('th_HPC_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                        model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
-}else if(next_level_chr=="level3"){
+# For the larger subset 2 models, the entire branch can not be made at once (working memory limits)
+if(subset==2 && str_sub(model_type, 2, 2)==3){
+   
+  # Go into the folder that has the premade branches 
+    setwd(general_folder)
     
-    #Select the right part of the tree
-    selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
-    #save it
-    write.table(selected_df, file=paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                         model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
-} else if(next_level_chr=="level4"){
-   # Selec the best values
-  thresholds<-best_th[,5:(ncol(HL_df)-2)]
-  # List all objects in the workspace
-  all_objects <- ls()
-  # Filter objects that start with 'best_comb'
-  best_comb_objects <- (ls())[grep("^best_comb", ls())]
-  # Initialize an empty list to store values
-  values <- list()
-  # Loop through each object and extract its value
-  for (obj in best_comb_objects) {
-  values[[obj]] <- get(obj)
-  }
-  # Combine the values into a dataframe
-  best_comb_df <- do.call(rbind, lapply(values, as.data.frame))
-  names(best_comb_df)<-c("thresholds")
-  # set wd 
-  setwd(paste0(general_folder, "/final_results"))
-      write.table(best_comb_df, file=paste0('optimal_th_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
-                                         model_type,'.csv'), row.names = T, col.names = F)
+    if(next_level_chr=="level1"){
+      # Load level 1 branch
+      load(paste0("branch", branch_type, "_sub", subset, "_x", (str_sub(model_type, 2, 2)), "_mod", model_type, "_l1.Rda"))
+      # Select the right part of the tree 
+      selected_df<-tree_output_list[[1]]
+      # save it
+       write.table(selected_df, file=paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                            model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    }else if(next_level_chr=="level2"){
+      # Load level 2 branch
+      load(paste0("branch", branch_type, "_sub", subset, "_x", (str_sub(model_type, 2, 2)), "_mod", model_type, "_l2.Rda"))
+      # Select the right part of the tree 
+      selected_df<-tree_output_list[[1]][[paste(best_comb_chr)]]
+      # save it 
+      write.table(selected_df, file=paste0('th_HPC_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                            model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    }else if(next_level_chr=="level3"){
+      print("STOP have not sorted branching for level 3 yet. ")
+        # 
+        # #Select the right part of the tree
+        # selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
+        # #save it
+        # write.table(selected_df, file=paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
+        #                                      model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    } else if(next_level_chr=="level4"){
+      print("STOP have not sorted branching for level 3 yet. ")
+      #  # Selec the best values
+      # thresholds<-best_th[,5:(ncol(HL_df)-2)]
+      # # List all objects in the workspace
+      # all_objects <- ls()
+      # # Filter objects that start with 'best_comb'
+      # best_comb_objects <- (ls())[grep("^best_comb", ls())]
+      # # Initialize an empty list to store values
+      # values <- list()
+      # # Loop through each object and extract its value
+      # for (obj in best_comb_objects) {
+      # values[[obj]] <- get(obj)
+      # }
+      # # Combine the values into a dataframe
+      # best_comb_df <- do.call(rbind, lapply(values, as.data.frame))
+      # names(best_comb_df)<-c("thresholds")
+      # # set wd 
+      # setwd(paste0(general_folder, "/final_results"))
+      #     write.table(best_comb_df, file=paste0('optimal_th_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+      #                                        model_type,'.csv'), row.names = T, col.names = F)
+      # 
+    }else{
+      print("Problem with level settings")
+    }
+  
+  # And then for models where the entire branch can be loaded at once: 
   
 }else{
-  print("Problem with level settings")
-  }
+    # Go into the folder that has the premade branches 
+    setwd(general_folder)
+    load(paste0("branch", branch_type, "_sub", subset, "_x", (str_sub(model_type, 2, 2)), "_mod", model_type, ".Rda"))
+    
+    # Then select what you want to do 
+    
+    if(next_level_chr=="level1"){
+      # Select the right part of the tree 
+      selected_df<-tree_output_list[[next_level]]
+      # save it
+       write.table(selected_df, file=paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                            model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    }else if(next_level_chr=="level2"){
+      # Select the right part of the tree 
+      selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr)]]
+        # save it 
+       write.table(selected_df, file=paste0('th_HPC_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                            model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    }else if(next_level_chr=="level3"){
+        
+        #Select the right part of the tree
+        selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]
+        #save it
+        write.table(selected_df, file=paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                             model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
+    } else if(next_level_chr=="level4"){
+       # Selec the best values
+      thresholds<-best_th[,5:(ncol(HL_df)-2)]
+      # List all objects in the workspace
+      all_objects <- ls()
+      # Filter objects that start with 'best_comb'
+      best_comb_objects <- (ls())[grep("^best_comb", ls())]
+      # Initialize an empty list to store values
+      values <- list()
+      # Loop through each object and extract its value
+      for (obj in best_comb_objects) {
+      values[[obj]] <- get(obj)
+      }
+      # Combine the values into a dataframe
+      best_comb_df <- do.call(rbind, lapply(values, as.data.frame))
+      names(best_comb_df)<-c("thresholds")
+      # set wd 
+      setwd(paste0(general_folder, "/final_results"))
+          write.table(best_comb_df, file=paste0('optimal_th_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                             model_type,'.csv'), row.names = T, col.names = F)
+      
+    }else{
+      print("Problem with level settings")
+    }
+} # end of 'normal' branches 
 
 ```
 
