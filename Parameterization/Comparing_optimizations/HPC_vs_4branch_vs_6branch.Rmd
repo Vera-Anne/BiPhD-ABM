@@ -13,7 +13,7 @@ editor_options:
  library(ggplot2)
 # library(tidyverse)
 # library(flextable)      # Doing normal looking tables 
-# library(plotly)         # For the 3D scatterplot 
+ library(plotly)         # For the 3D scatterplot 
  library(gridExtra)      # grids of ggplots 
 # library(grid)     
 # library(viridis)        # for colours 
@@ -105,7 +105,7 @@ plot_x1<-ggplot(gold_list2[[i]][[1]], aes(x=th, y=mean_HL))+
   ggtitle(label=paste("Predicted halflife per threshold value (25x1000x12) - Model=", model))+
   vera_theme()+
   # Best value optimisation golden search 
-  geom_point(data=gold_list2[[i]][[2]], aes(x=th, y=mean_HL), col="goldenrod", size=5)+
+  geom_point(data=gold_list2[[i]][[2]], aes(x=th, y=mean_HL), col="black", size=5)+
   # Best value 4branch 
   geom_point(data=branch4_list[[i]], aes(x=`1`, y=mean_survival), col="chocolate", size=5)+
   # Best value 6branch 
@@ -121,16 +121,17 @@ gridExtra::grid.arrange(grobs = plot_list)
 ## Subset 1 - Models x.2 - Leftover hoarders 
 Load the files needed and give them recognizable names. 
 ```{r sub1 modx.1, include = TRUE, message=FALSE, warning=FALSE}
-models_x1<-c("12", "22", "32")
+models_x2<-c("12", "22", "32")
 
 # loop through all 3 
 for (i in 1:3){
-  model<-models_x1[i]
+  model<-models_x2[i]
   if (i==1){
     gold_list1<-list();gold_list2<-list();branch4_list<-list();branch6_list<-list();plot_list<-list()
 }
 
-# get the results from golden search phase 1
+# get the results from golden search phase 1 
+    # Phase 1 contains 1 single run for each of the combinations 
       setwd(paste0(gold_folder, "/", model, "/phase_1/concat_results"))
      # get the files in the folder 
       filenames <- list.files(pattern="*.Rda", full.names=TRUE)
@@ -139,6 +140,7 @@ for (i in 1:3){
         gold_list1[[i]]<-HL_df
         
 # get results from golden search phase 2
+    # Phase 2 contains 25x run for the best 1000 combinations from phase 1
     setwd(paste0(gold_folder, "/", model, "/phase_2/concat_results"))
     # get the files in the folder 
     filenames <- list.files(pattern="*.Rda", full.names=TRUE)
@@ -147,6 +149,7 @@ for (i in 1:3){
         gold_list2[[i]]<-phase2_concat_outcome
       
 # Get the results from the 4-branch 
+    # This will just be 1 combination that was found to be best 
     setwd(paste0(branch4_folder))
     # select the file you need
     filenames <- list.files(pattern=paste0("*MOD_",model, "_lev3.Rda"), full.names=TRUE)
@@ -158,6 +161,7 @@ for (i in 1:3){
     branch4_list[[i]]<-best_branch4
 
 # Get the results from the 6-branch 
+    # This will just be 1 combination that was found to be best 
     setwd(paste0(branch6_folder))
     # select the file you need
     filenames <- list.files(pattern=paste0("*MOD_",model, "_lev3.Rda"), full.names=TRUE)
@@ -168,29 +172,275 @@ for (i in 1:3){
     rm(HL_df)
     branch6_list[[i]]<-best_branch6
 
-# Make the graph 
-    th1<-unique(gold_list1[[i]]$th1)
-    th2<-unique(gold_list1[[i]]$th2)
-    grid<-expand.grid(th1, th2)
-    colnames(grid)<-c("th1", "th2")
-    grid<-left_join(grid, gold_list1[[1]])
-    grid[is.na(grid)]<-0
     
-  # create a matrix with the values for HL
-      HL_matrix<-matrix(data=grid$mean, ncol=49)
-      # Plot
-      p<-plot_ly(x=th1, y=th2, z=HL_matrix, type="surface")
+    
+  # Preparation for the graph 
+    if(model==12){
+          # x-values that should have been there 
+          th1<-linspace(0, 0.4, 50)
+          th2<-linspace(0, 0.4, 50)
+      
+    } else if(model==22){
+          # x-values that should have been there 
+          th1<-linspace(0, 4, 50)
+          th2<-linspace(0, 4, 50)
+    } else if(model==32){
+                # x-values that should have been there 
+          th1<-linspace(-0.6, 0.6, 50)
+          th2<-linspace(-0.6, 0.6, 50)
+    } else{print("something wrong with model settings")}
 
+    
+    # Then for everyone: 
+          df_merge<-expand.grid(th1,th2)
+          colnames(df_merge)<-c("th1", "th2")
+          
+          # merge so we have complet ematrix 
+          merged<-merge(df_merge, gold_list1[[i]], all=T)
+          merged[is.na(merged)]<-0
+          
+          # create a matrix with the values for HL
+          HL_matrix<-matrix(data=merged$mean, ncol=50)
+          
+          list<-list()
+          list$x<-th1
+          list$y<-th2
+          list$z<-HL_matrix
+          # Create a surface plot
+          plot <- plot_ly(z = ~list$z,
+                          x = ~list$x,
+                          y = ~list$y, 
+                          opacity=0.999999
+                          #colorscale = list(c(0,  1), c("black", "white"))
+                          )%>%add_surface
+          
+          # Add axis labels
+          plot <- plot %>% layout(scene = list(xaxis = list(title = "Threshold 1"),
+                                         yaxis = list(title = "Threshold 2"),
+                                         zaxis = list(title = "Mean Survival Rate")), 
+                            legend = list(title=list(text="HL in TS")),
+                            title = list(text=paste('Predicted halflife per th combi (1x1000x12) - model=', model),
+                                         y=0.95, x=0.5, xanchor="center", yanchor="center"))
+    # Add markers for specific points 
+    plot <- plot %>% 
+      add_markers(data = as.data.frame(gold_list2[[i]][[2]]), x = ~th1, y = ~th2, z = ~mean_HL, color = I("black"))%>%
+      add_markers(data=as.data.frame(branch4_list[[i]]), x=~`1`, y=~`2`, z=~mean_survival, color=I("chocolate"))%>%
+      add_markers(data=as.data.frame(branch6_list[[i]]), x=~`1`, y=~`2`, z=~mean_survival, color=I("lightseagreen"))
+    plot
+
+  
 # put in the list
-plot_list[[i]]<-p
-p
+plot_list[[i]]<-plot
+plot
 
-
+rm(df_merge)
 } # end of for loop 
 
 gridExtra::grid.arrange(grobs = plot_list)
 
 ```
+
+
+
+### subset 1 x.3 models
+
+```{r x.3 subset 1 }
+models_x3<-c("131", "231", "331", "132", "232", "332")
+
+model<-"231"
+
+
+
+# get the results from golden search phase 1 
+    # Phase 1 contains 1 single run for each of the combinations 
+      setwd(paste0(gold_folder, "/", model, "/phase_1/concat_results"))
+     # get the files in the folder 
+      filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+     # load the file 
+        load(filenames[length(filenames)])
+        gold_list1<-HL_df
+        
+# get results from golden search phase 2
+    # Phase 2 contains 25x run for the best 1000 combinations from phase 1
+    setwd(paste0(gold_folder, "/", model, "/phase_2/concat_results"))
+    # get the files in the folder 
+    filenames <- list.files(pattern="*.Rda", full.names=TRUE)
+    # load the file 
+        load(filenames[length(filenames)])
+        gold_list2<-phase2_concat_outcome
+      
+# Get the results from the 4-branch 
+    # This will just be 1 combination that was found to be best 
+    setwd(paste0(branch4_folder))
+    # select the file you need
+    filenames <- list.files(pattern=paste0("*MOD_",model, "_lev3.Rda"), full.names=TRUE)
+    # You want the last one (made most recently)
+    load(filenames[length(filenames)])
+    # best from branch 4
+    best_branch4<-HL_df[1,]
+    rm(HL_df)
+    branch4_list<-best_branch4
+
+# Get the results from the 6-branch 
+    # This will just be 1 combination that was found to be best 
+    setwd(paste0(branch6_folder))
+    # select the file you need
+    filenames <- list.files(pattern=paste0("*MOD_",model, "_lev3.Rda"), full.names=TRUE)
+    # You want the last one (made most recently)
+    load(filenames[length(filenames)])
+    # best from branch 6
+    best_branch6<-HL_df[1,]
+    rm(HL_df)
+    branch6_list<-best_branch6
+
+    
+    
+  # Preparation for the graph 
+    if(model==131|model==132){
+          # x-values that should have been there 
+          th1<-linspace(0, 0.4, 50)
+          th2<-linspace(0, 0.4, 50)
+          th3<-th2
+      
+    } else if(model==231|model==232){
+          # x-values that should have been there 
+          th1<-linspace(0, 4, 50)
+          th2<-linspace(0, 4, 50)
+          th3<-th2
+    } else if(model==331|model==332){
+                # x-values that should have been there 
+          th1<-linspace(-0.6, 0.6, 50)
+          th2<-linspace(-0.6, 0.6, 50)
+          th3<-th2
+    } else{print("something wrong with model settings")}
+
+    
+    # Then for everyone: 
+          df_merge<-expand.grid(th1,th2, th3)
+          colnames(df_merge)<-c("th1", "th2", "th3")
+          
+          # merge so we have complet ematrix 
+          merged<-left_join(df_merge, gold_list1)
+          #merged[is.na(merged)]<-0
+          
+          
+          
+          fig <- plot_ly(gold_list1,x = ~th1,y = ~th2,z = ~th3,color = ~mean, marker = list(symbol = 'circle', 
+                                       sizemode = 'diameter'),sizes = c(0.01, 150))
+          
+          
+          
+          
+          fig <- fig %>% add_markers()
+          fig <- fig %>% layout(scene = list(title = list(title = paste('model', model)),
+                               yaxis = list(title = 'th2'),
+                               zaxis = list(title = 'th3'), 
+                               xaxis = list(title = "th1")))
+
+fig
+          
+          
+          
+          
+          
+          
+          
+          
+          # merge so we have complet ematrix 
+          merged<-merge(df_merge, gold_list1, all=T)
+          merged[is.na(merged)]<-0
+          
+          # create a matrix with the values for HL
+          HL_matrix<-matrix(data=merged$mean, ncol=50)
+          
+          list<-list()
+          list$x<-th1
+          list$y<-th2
+          list$z<-HL_matrix
+          # Create a surface plot
+          plot <- plot_ly(z = ~list$z,
+                          x = ~list$x,
+                          y = ~list$y, 
+                          opacity=0.999999
+                          #colorscale = list(c(0,  1), c("black", "white"))
+                          )%>%add_surface
+          
+          # Add axis labels
+          plot <- plot %>% layout(scene = list(xaxis = list(title = "Threshold 1"),
+                                         yaxis = list(title = "Threshold 2"),
+                                         zaxis = list(title = "Mean Survival Rate")), 
+                            legend = list(title=list(text="HL in TS")),
+                            title = list(text=paste('Predicted halflife per th combi (1x1000x12) - model=', model),
+                                         y=0.95, x=0.5, xanchor="center", yanchor="center"))
+    # Add markers for specific points 
+    plot <- plot %>% 
+      add_markers(data = as.data.frame(gold_list2[[i]][[2]]), x = ~th1, y = ~th2, z = ~mean_HL, color = I("black"))%>%
+      add_markers(data=as.data.frame(branch4_list[[i]]), x=~`1`, y=~`2`, z=~mean_survival, color=I("chocolate"))%>%
+      add_markers(data=as.data.frame(branch6_list[[i]]), x=~`1`, y=~`2`, z=~mean_survival, color=I("lightseagreen"))
+    plot
+}
+
+```
+
+Plot the parameter space 
+```{r plot32}
+# x-values that should have been there 
+#th1<-linspace(-0.6, 0.6, 50)
+#th2<-linspace(-0.6, 0.6, 50)
+#th3<-linspace(-0.6, 0.6, 50)
+th1<-linspace(0, 4, 50)
+th2<-linspace(0, 4, 50)
+th3<-linspace(0, 4, 50)
+# th1<-linspace(0, 0.4, 50)
+# th2<-linspace(0, 0.4, 50)
+# th3<-linspace(0, 0.4, 50)
+df_merge<-expand.grid(th1,th2, th3)
+colnames(df_merge)<-c("th1", "th2", "th3")
+
+# merge so we have complet ematrix 
+merged<-merge(df_merge, HL_df, all=T)
+merged[is.na(merged)]<-0
+fig <- plot_ly(HL_df, x = ~HL_df$th1, y = ~HL_df$th2, z = ~HL_df$th3, color = ~mean,size = ~mean, 
+             marker = list(symbol = 'circle', sizemode = 'diameter'), sizes = c(0.1, 15))
+fig <- fig %>% add_markers()
+fig <- fig %>% layout(scene = list(title = list(title = paste('model', model_type)),
+                     yaxis = list(title = 'th2'),
+                     zaxis = list(title = 'th3'), 
+                     xaxis = list(title = "th1")))
+
+fig
+
+# Add specific points (gold, branch)
+th1_dummy<-0.5714286
+th2_dummy<-1.22449
+th3_dummy<-1.306122
+mean_dummy<-2293.676
+points_df<-as.data.frame(cbind(th1_dummy, th2_dummy, th3_dummy, mean_dummy))
+fig <- fig %>% add_markers(data = points_df, x = ~th1_dummy, y = ~th2_dummy, z = ~th3_dummy, color = I('#ffcc00'))
+fig
+th1_dummy<-0.46875
+th2_dummy<-2.15625
+th3_dummy<-3.03125
+mean_dummy<-2099.277
+points_df<-as.data.frame(cbind(th1_dummy, th2_dummy, th3_dummy, mean_dummy))
+fig<-fig %>% add_markers(data = points_df, x = ~th1_dummy, y = ~th2_dummy, z = ~th3_dummy, color = I("chocolate"))
+fig
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
