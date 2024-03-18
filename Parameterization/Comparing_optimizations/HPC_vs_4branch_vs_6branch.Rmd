@@ -247,13 +247,13 @@ gridExtra::grid.arrange(grobs = plot_list)
 ```{r x.3 subset 1 }
 models_x3<-c("131", "231", "331", "132", "232", "332")
 
-model<-"231"
+model<-"131"
 
 
 
 # get the results from golden search phase 1 
     # Phase 1 contains 1 single run for each of the combinations 
-      setwd(paste0(gold_folder, "/", model, "/phase_1/concat_results"))
+      setwd(paste0(gold_folder, "/", model, "/phase_1/"))
      # get the files in the folder 
       filenames <- list.files(pattern="*.Rda", full.names=TRUE)
      # load the file 
