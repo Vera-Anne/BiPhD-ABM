@@ -17,12 +17,13 @@ editor_options:
  library(gridExtra)      # grids of ggplots 
 # library(grid)     
 # library(viridis)        # for colours 
-# library('parallel')     # for parallel computing
-# library('doParallel')   # As above 
+ library('parallel')     # for parallel computing
+ library('doParallel')   # As above 
  library(dplyr)          # merging dataframes 
 # library(psych)          # To calculate geometric mean 
 # library(ggpubr)         # using ggarrange to grid plots with side legend
 library(pracma)         # for the linsapce function 
+library(purrr)           # for map_dfr() function 
 
 ```
 
@@ -245,15 +246,16 @@ gridExtra::grid.arrange(grobs = plot_list)
 ### subset 1 x.3 models
 
 ```{r x.3 subset 1 }
-models_x3<-c("131", "231", "331", "132", "232", "332")
+# Run these just one by one, the plotting doesnt work well in loops. 
 
-model<-"131"
+model<-"332"
 
 
 
 # get the results from golden search phase 1 
     # Phase 1 contains 1 single run for each of the combinations 
-      setwd(paste0(gold_folder, "/", model, "/phase_1/"))
+      # setwd(paste0(gold_folder, "/", model, "/phase_1/"))   # This is the one ofr 131 (there were erros )
+      setwd(paste0(gold_folder, "/", model, "/phase_1/concat_results"))   # This is the one ofr 131 (there were erros )
      # get the files in the folder 
       filenames <- list.files(pattern="*.Rda", full.names=TRUE)
      # load the file 
@@ -325,199 +327,39 @@ model<-"131"
           
           
           
-          fig <- plot_ly(gold_list1,x = ~th1,y = ~th2,z = ~th3,color = ~mean, marker = list(symbol = 'circle', 
-                                       sizemode = 'diameter'),sizes = c(0.01, 150))
+          fig <- plot_ly(gold_list1,
+                         x = ~th1,
+                         y = ~th2,
+                         z = ~th3,
+                         marker=list(color = ~mean,
+                                     colorscale='Viridis', 
+                                     showscale=TRUE,
+                                     opacity=0.9))
+          fig<-fig%>%add_markers(type="scatter3d")
           
-          
-          
-          
-          fig <- fig %>% add_markers()
-          fig <- fig %>% layout(scene = list(title = list(title = paste('model', model)),
-                               yaxis = list(title = 'th2'),
-                               zaxis = list(title = 'th3'), 
-                               xaxis = list(title = "th1")))
-
-fig
-          
-          
-          
-          
-          
-          
-          
-          
-          # merge so we have complet ematrix 
-          merged<-merge(df_merge, gold_list1, all=T)
-          merged[is.na(merged)]<-0
-          
-          # create a matrix with the values for HL
-          HL_matrix<-matrix(data=merged$mean, ncol=50)
-          
-          list<-list()
-          list$x<-th1
-          list$y<-th2
-          list$z<-HL_matrix
-          # Create a surface plot
-          plot <- plot_ly(z = ~list$z,
-                          x = ~list$x,
-                          y = ~list$y, 
-                          opacity=0.999999
-                          #colorscale = list(c(0,  1), c("black", "white"))
-                          )%>%add_surface
-          
-          # Add axis labels
-          plot <- plot %>% layout(scene = list(xaxis = list(title = "Threshold 1"),
+          #fig 
+    
+         # Add axis labels
+          fig <- fig %>% layout(scene = list(xaxis = list(title = "Threshold 1"),
                                          yaxis = list(title = "Threshold 2"),
-                                         zaxis = list(title = "Mean Survival Rate")), 
+                                         zaxis = list(title = "Threshold 3")), 
                             legend = list(title=list(text="HL in TS")),
                             title = list(text=paste('Predicted halflife per th combi (1x1000x12) - model=', model),
                                          y=0.95, x=0.5, xanchor="center", yanchor="center"))
-    # Add markers for specific points 
-    plot <- plot %>% 
-      add_markers(data = as.data.frame(gold_list2[[i]][[2]]), x = ~th1, y = ~th2, z = ~mean_HL, color = I("black"))%>%
-      add_markers(data=as.data.frame(branch4_list[[i]]), x=~`1`, y=~`2`, z=~mean_survival, color=I("chocolate"))%>%
-      add_markers(data=as.data.frame(branch6_list[[i]]), x=~`1`, y=~`2`, z=~mean_survival, color=I("lightseagreen"))
-    plot
-}
+        # Add markers for specific points 
+        fig2 <- fig %>% 
+          add_trace(data=gold_list2[[2]], x=~th1, y=~th2, z=~th3, marker=list(size=10, color="black", symbol=104))%>%
+          add_trace(data=branch4_list, x=~`1`, y=~`2`, z=~`3`, marker=list(size=10, color="chocolate", symbol=104))%>%
+          add_trace(data=branch6_list, x=~`1`, y=~`2`, z=~`3`, marker=list(size=10, color="blue", symbol=104))
+          fig2
+          
 
-```
-
-Plot the parameter space 
-```{r plot32}
-# x-values that should have been there 
-#th1<-linspace(-0.6, 0.6, 50)
-#th2<-linspace(-0.6, 0.6, 50)
-#th3<-linspace(-0.6, 0.6, 50)
-th1<-linspace(0, 4, 50)
-th2<-linspace(0, 4, 50)
-th3<-linspace(0, 4, 50)
-# th1<-linspace(0, 0.4, 50)
-# th2<-linspace(0, 0.4, 50)
-# th3<-linspace(0, 0.4, 50)
-df_merge<-expand.grid(th1,th2, th3)
-colnames(df_merge)<-c("th1", "th2", "th3")
-
-# merge so we have complet ematrix 
-merged<-merge(df_merge, HL_df, all=T)
-merged[is.na(merged)]<-0
-fig <- plot_ly(HL_df, x = ~HL_df$th1, y = ~HL_df$th2, z = ~HL_df$th3, color = ~mean,size = ~mean, 
-             marker = list(symbol = 'circle', sizemode = 'diameter'), sizes = c(0.1, 15))
-fig <- fig %>% add_markers()
-fig <- fig %>% layout(scene = list(title = list(title = paste('model', model_type)),
-                     yaxis = list(title = 'th2'),
-                     zaxis = list(title = 'th3'), 
-                     xaxis = list(title = "th1")))
-
-fig
-
-# Add specific points (gold, branch)
-th1_dummy<-0.5714286
-th2_dummy<-1.22449
-th3_dummy<-1.306122
-mean_dummy<-2293.676
-points_df<-as.data.frame(cbind(th1_dummy, th2_dummy, th3_dummy, mean_dummy))
-fig <- fig %>% add_markers(data = points_df, x = ~th1_dummy, y = ~th2_dummy, z = ~th3_dummy, color = I('#ffcc00'))
-fig
-th1_dummy<-0.46875
-th2_dummy<-2.15625
-th3_dummy<-3.03125
-mean_dummy<-2099.277
-points_df<-as.data.frame(cbind(th1_dummy, th2_dummy, th3_dummy, mean_dummy))
-fig<-fig %>% add_markers(data = points_df, x = ~th1_dummy, y = ~th2_dummy, z = ~th3_dummy, color = I("chocolate"))
-fig
 
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Model 1.3.1  HPC optimization output 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/18_environments/2023-08-26-FAULTY")
-      load('opt_outcome_concat_HPC_ 131 _beforeDeprecatedFileRemoval.Rda')
-      HPC_131<-HL_df
-      rm(HL_df)
-      HPC_131<-HPC_131 %>% mutate_all(as.numeric)
-# Model 1.3.1 Local  optimization output 
-      setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/Results_June23/MOD_1_3_1/3-Optimization/2023-06-22_start")
-      load('2023-08-01_12_05_38opt_out131d30N1000dayh8num_th50.Rda')
-      local_131<-outcome_opt_df
-      rm(outcome_opt_df)
-      local_131<-na.omit(local_131)
-      local_131$th_num<-1:nrow(local_131)
-      colnames(local_131)<-c('mean', 'sd', 'th1', 'th2', 'th3', 'th_num')
-
-      
-```
-
-## Model 1.3.1 
-
-### Optimal thresholds 
-First determine which combinations of thresholds was optimal in the HPC and in the local run. 
-
-```{r determine optimal th combi, include=TRUE, message=FALSE, warning=FALSE}
-# For hpc 
-HL_opt<-HPC_131[(which.max(HPC_131$mean)),]
-# bind together 
-HL_opt<-rbind(HL_opt, (local_131[(which.max(local_131$mean)),]))
-HL_opt$type[1]<-'HPC'
-HL_opt$type[2]<-'Local'
-HL_opt %>% flextable()
-
-```
-
-### Halflife across all thresholds 
-These are different. To check if the two optimizations resulted in a similar output overall, plot the 3D image of all half-life survival. Note that I have set the colourscales so these are comparable.  
-
-```{r 3D plots of halflife per combination, include=TRUE, message=FALSE, warning=FALSE}
-# Plot the HPC outcome 
-    hpc_plot<-plot_ly(HPC_131, x = ~th1, y = ~th2, z = ~th3, 
-                      marker=list(color = ~mean, cmin=1000, cmax=3000, colorscale='Viridis', showscale=TRUE), 
-                      text=~paste('Mean HL:', mean)) %>%
-      #add_markers(color=~mean, marker=list()) %>%
-      layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
-                          yaxis = list(range=c(0, 0.4),title = 'TH2'),
-                          zaxis = list(range=c(0, 0.4),title = 'TH3')),
-             title = list(text='1.3.1 Mean Halflife (in timesteps) - HPC', y=0.95))
-# Plot the local outcome 
-    local_plot<-plot_ly(local_131, x = ~th1, y = ~th2, z = ~th3, 
-                      marker=list(color = ~mean, cmin=1000, cmax=3000, colorscale='Viridis', showscale=TRUE), 
-                      text=~paste('Mean HL:', mean)) %>%
-      #add_markers(color=~mean, marker=list()) %>%
-      layout(scene = list(xaxis = list(range=c(0, 0.4),title = 'TH1'),
-                          yaxis = list(range=c(0, 0.4),title = 'TH2'),
-                          zaxis = list(range=c(0, 0.4),title = 'TH3')),
-             title = list(text='1.3.1 Mean Halflife (in timesteps) - Local', y=0.95))
-hpc_plot
-local_plot
-```
 
 ### Run env_func() for optimal thresholds 
-The graphs look superfically the same. Now, I will run the environment functions for these specific threshold values and compare these. I run the models with the standard settings of `days`=30, `N`=1000 and `daylight_h`=8
 
 ```{r run enviornment functions opt th, include=TRUE, message=FALSE, warning=FALSE, results='hide', eval=FALSE}
 # Retrieve the function files that are needed 
@@ -525,14 +367,269 @@ setwd("C:/Local_R/BiPhD-ABM/May23")
 source('MOD_1_FuncSource.R')
 source('ModelSource.R')
 
-# run the model for otherwise the standard settings - HPC 
-env_func_1_3_1_par(days = 30, N= 1000, th_forage_sc1 = HL_opt$th1[1], th_forage_sc2 = HL_opt$th2[1], th_forage_sc3 = HL_opt$th3[1], daylight_h = 8, modelType = 131)
-HPC_env_out<-output_env_func
-# And for the local 
-env_func_1_3_1_par(days = 30, N= 1000, th_forage_sc1 = HL_opt$th1[2], th_forage_sc2 = HL_opt$th2[2], th_forage_sc3 = HL_opt$th3[2], daylight_h = 8, modelType = 131)
-loc_env_out<-output_env_func
+# Start with x.2 subset 1 
+  # 1.2 
+    gold_env_12<-env_func_1_2_par(days = 30, N = 1000, th_forage_sc1 = 0.0244898, th_forage_sc2 = 0.03265306, daylight_h = 8)
+    branch4_12<-env_func_1_2_par(days = 30, N = 1000, th_forage_sc1 = 0.053125, th_forage_sc2 = 0.103125, daylight_h = 8)
+    branch6_12<-env_func_1_2_par(days = 30, N = 1000, th_forage_sc1 = 0.02708333, th_forage_sc2 = 0.08125, daylight_h = 8)
+
+  # 2.2 
+    gold_env_22<-env_func_2_2_par(days = 30, N = 1000, th_forage_fr1 =0.6530612 , th_forage_fr2 = 1.142857, daylight_h = 8)
+    branch4_22<-env_func_2_2_par(days = 30, N = 1000, th_forage_fr1 =0.71875  , th_forage_fr2 = 1.15625, daylight_h = 8)
+    branch6_22<-env_func_2_2_par(days = 30, N = 1000, th_forage_fr1 =1.020833 , th_forage_fr2 = 1.4375, daylight_h = 8)
+    
+
+  # 3.2 
+    gold_env_32<-env_func_3_2_par(days = 30, N = 1000, th_forage_flr1 = -0.06122449, th_forage_flr2 = 0.2081633, daylight_h = 8)
+    branch4_32<-env_func_3_2_par(days = 30, N = 1000, th_forage_flr1 = 0.065625 , th_forage_flr2 = 0.459375, daylight_h = 8)
+    branch6_32<-env_func_3_2_par(days = 30, N = 1000, th_forage_flr1 = -0.06875, th_forage_flr2 = 0.11875, daylight_h = 8)
+  
 
 ```
+
+Now I have the outcomes, I need to compare their survival curves with eachother 
+
+```{r compare survival optimizations x.2}
+# create lists with model outputs in them 
+list_12<-list(gold_env_12, branch4_12, branch6_12)
+list_22<-list(gold_env_22, branch4_12, branch6_22)
+list_32<-list(gold_env_32, branch4_32, branch6_32)
+
+# set current model 
+cur_mod<-32
+
+# define variable of interest 
+int_var<-"alive"
+
+# define the 3 models 
+models<-c("gold", "4branch", "6branch")
+
+# Now loop through the 3 outputs and plot 
+  for (i in 1:3){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+    if(cur_mod==12){
+    cur_out<-list_12[[i]]
+    }else if(cur_mod==22){
+      cur_out<-list_22[[i]]
+    }else if(cur_mod==32){
+      cur_out<-list_32[[i]]
+    }
+    # Now subset for the variable of interest 
+    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
+    # Add the environment number to the dataframes 
+    for (j in 1:length(cur_out_filtered)){
+      cur_out_filtered[[j]]$env_id<-j
+      cur_out_filtered[[j]]$mod_id<-models[i]
+      #cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
+      cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>%
+        mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>%
+        mutate(food_ab=case_when(
+          env_id<5 ~ "low", 
+          env_id>4 & env_id<9 ~ "medium", 
+          env_id>8 ~ "high"
+        ))%>%
+        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
+    }
+    output_per_model_list[[i]]<-cur_out_filtered
+    
+  }
+  # for the individual dataframes 
+  total_all_models_surv<-list()
+  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
+  for (sublist in output_per_model_list) {
+    for (df in sublist) {
+      total_all_models_surv <- rbind(total_all_models_surv, df)
+    }
+  }
+  
+  
+  # plot
+  colours<-c("black", "chocolate", "lightseagreen")
+
+  plot_12<-ggplot(total_all_models_surv, aes(x=timestep, y=value))+
+        geom_line(aes(col=mod_id), lwd=1)+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values = c("goldenrod", "chocolate", "lightseagreen"))
+        #labs(fill=" ")
+
+      plot_12<-ggplotly(plot_12)
+      plot_12%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      plot_12
+
+```
+
+Now the same for the x.3.1 models: 
+
+```{r run enviornment functions gold 4 branch and 6 branch x.3.y, include=TRUE, message=FALSE, warning=FALSE, results='hide', eval=FALSE}
+
+# x.3 subset 1 
+  # 1.3.1 
+    gold_env_131<-env_func_1_3_1_par(days = 30, N = 1000, 
+                                     th_forage_sc1 = 0.01632653, 
+                                     th_forage_sc2 = 0.03265306, 
+                                     th_forage_sc3 = 0.3591837 , 
+                                     daylight_h = 8)
+    branch4_131<-env_func_1_3_1_par(days = 30, N = 1000, 
+                                    th_forage_sc1 = 0.078125, 
+                                    th_forage_sc2 = 0.103125, 
+                                    th_forage_sc3 = 0.3125,
+                                    daylight_h = 8)
+    branch6_131<-env_func_1_3_1_par(days = 30, N = 1000, 
+                                    th_forage_sc1 = 0.03125, 
+                                    th_forage_sc2 = 0.08958333, 
+                                    th_forage_sc3 = 0.29375,
+                                    daylight_h = 8)
+  # 2.3.1 
+    gold_env_231<-env_func_2_3_1_par(days = 30, N = 1000, 
+                                     th_forage_fr1 = 0.5714286, 
+                                     th_forage_fr2 = 1.306122, 
+                                     th_forage_fr3 = 1.877551 , 
+                                     daylight_h = 8)
+    branch4_231<-env_func_2_3_1_par(days = 30, N = 1000, 
+                                    th_forage_fr1 = 0.46875 , 
+                                    th_forage_fr2 = 1.34375 , 
+                                    th_forage_fr3 = 2.78125 ,
+                                    daylight_h = 8)
+    branch6_231<-env_func_2_3_1_par(days = 30, N = 1000, 
+                                    th_forage_fr1 = 0.3958333 , 
+                                    th_forage_fr2 = 1.395833 , 
+                                    th_forage_fr3 = 2.9375,
+                                    daylight_h = 8)
+
+  # 3.3.1 
+    gold_env_331<-env_func_3_3_1_par(days = 30, N = 1000, 
+                                     th_forage_flr1 = -0.1346939, 
+                                     th_forage_flr2 =0.2081633 , 
+                                     th_forage_flr3 = 0.3795918 , 
+                                     daylight_h = 8)
+    branch4_331<-env_func_3_3_1_par(days = 30, N = 1000, 
+                                    th_forage_flr1 = -0.140625 , 
+                                    th_forage_flr2 = 0.196875 , 
+                                    th_forage_flr3 =  0.365625,
+                                    daylight_h = 8)
+    branch6_331<-env_func_3_3_1_par(days = 30, N = 1000, 
+                                    th_forage_flr1 = -0.13125 , 
+                                    th_forage_flr2 = 0.21875 , 
+                                    th_forage_flr3 = 0.41875 ,
+                                    daylight_h = 8)
+```
+
+
+
+
+```{r compare survival optimizations x.3.1 }
+# create lists with model outputs in them 
+list_131<-list(gold_env_131, branch4_131, branch6_131)
+list_231<-list(gold_env_231, branch4_131, branch6_231)
+list_331<-list(gold_env_331, branch4_331, branch6_331)
+
+# set current model 
+cur_mod<-331
+
+# define variable of interest 
+int_var<-"alive"
+
+# define the 3 models 
+models<-c("gold", "4branch", "6branch")
+
+# Now loop through the 3 outputs and plot 
+  for (i in 1:3){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+    if(cur_mod==131){
+    cur_out<-list_131[[i]]
+    }else if(cur_mod==231){
+      cur_out<-list_231[[i]]
+    }else if(cur_mod==331){
+      cur_out<-list_331[[i]]
+    }
+    # Now subset for the variable of interest 
+    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
+    # Add the environment number to the dataframes 
+    for (j in 1:length(cur_out_filtered)){
+      cur_out_filtered[[j]]$env_id<-j
+      cur_out_filtered[[j]]$mod_id<-models[i]
+      #cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
+      cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>%
+        mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>%
+        mutate(food_ab=case_when(
+          env_id<5 ~ "low", 
+          env_id>4 & env_id<9 ~ "medium", 
+          env_id>8 ~ "high"
+        ))%>%
+        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
+    }
+    output_per_model_list[[i]]<-cur_out_filtered
+    
+  }
+  # for the individual dataframes 
+  total_all_models_surv<-list()
+  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
+  for (sublist in output_per_model_list) {
+    for (df in sublist) {
+      total_all_models_surv <- rbind(total_all_models_surv, df)
+    }
+  }
+  
+  
+  # plot
+  colours<-c("black", "chocolate", "lightseagreen")
+
+  plot_12<-ggplot(total_all_models_surv, aes(x=timestep, y=value))+
+        geom_line(aes(col=mod_id), lwd=1)+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values = c("goldenrod", "chocolate", "lightseagreen"))
+        #labs(fill=" ")
+
+      plot_12<-ggplotly(plot_12)
+      plot_12%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      plot_12
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 After running, I compare the survival curves of each of the threshold sets across all environments. 
 ```{r graphics survival comparison 131, include=TRUE, message=FALSE, warning=FALSE, eval=FALSE}
 # add a column 

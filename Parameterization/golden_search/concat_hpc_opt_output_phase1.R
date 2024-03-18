@@ -16,11 +16,11 @@ library(plotly)         # For the 3D scatterplot
 library(ggplot2)
 
 # set opt_type
-opt_type=131
+opt_type=132
 
 
 # Set the folder in which the results are (this is the folder that contains the batches with results) - for .x.3.y models 
-batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/12_environments/20-09-25/phase_1'
+batch_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
 # 332: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/332/12_environments/2023-10-10/phase_1"
 # 232: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/232/12_environments/2023-10-06/phase_1"
 # 231: "C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/231/12_environments/2023-10-04/phase_1"
@@ -33,7 +33,7 @@ batch_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/M
 # 21: 
 
 # Set the folder where the sperate files are (for x.1 and x.2)
-file_folder<-'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/131/12_environments/20-09-25/phase_1'
+file_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/132/12_environments/2023-10-02/phase_1"
 
   # 11 ---->
   # 12 ---->'C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/HPC/12/12_environments/2023-09-24/'
