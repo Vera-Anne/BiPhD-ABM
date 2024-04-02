@@ -429,7 +429,6 @@ out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 6)
 
 x.3
 ```{r build subset 1 x.3 models }
-    
 tree_func_x3<-function(model_type, branch_num){
     # set original branch number
     branch_num_og<-branch_num
@@ -613,7 +612,6 @@ tree_func_x3<-function(model_type, branch_num){
     save(tree_output_list, file=paste0("branch", branch_num_og, "_sub1_x3_mod", model_type, ".Rda"))
    return(tree_output_list)
 } # End the function 
-
 ```
 
 Run the subset 1 x.3 models
