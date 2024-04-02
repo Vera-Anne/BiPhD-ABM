@@ -57,6 +57,20 @@ setwd(file_folder)
       
         # concatenate output 
         output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, step_size)
+      } else if(branch_num==8){
+        print("branch num = 8")
+        # Set the value for the threshold for each branch
+          th_b1<-round(x=range_min + (step_size/2), digits = 5)
+          th_b2<-round(x=th_b1+step_size, digits=5)
+          th_b3<-round(x=th_b2+step_size, digits = 5)
+          th_b4<-round(x=th_b3+step_size, digits = 5)
+          th_b5<-round(x=th_b4+step_size, digits = 5)
+          th_b6<-round(x=th_b5+step_size, digits = 5)
+          th_b7<-round(x=th_b6+step_size, digits = 5)
+          th_b8<-round(x=th_b7+step_size, digits = 5)
+      
+        # concatenate output 
+        output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, th_b7, th_b8, step_size)
       }
       
       # return branching output 
@@ -66,7 +80,7 @@ setwd(file_folder)
 ```
 
 
-New tree-branching fucntions from 31/01/24
+New tree-branching functions from 31/01/24
 x.1 
 ```{r subset 1 tree branching functions}
 
@@ -235,7 +249,7 @@ tree_func_x1<-function(model_type, branch_num){
 First run  x.1 models 
 
 ```{r run branching, include=TRUE, message=F, warning=F}
-out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 4)
+out_sub1_x1<-tree_func_x1(model_type = 21, branch_num = 8)
 ```
 x.2 
 ```{r write sub1 x.2 models}
@@ -424,7 +438,7 @@ tree_func_x2<-function(model_type, branch_num){
 Run subset 1 x.2 models 
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 6)
+out_sub1_x2<-tree_func_x2(model_type = 12, branch_num = 8)
 ```
 
 x.3
@@ -617,7 +631,7 @@ tree_func_x3<-function(model_type, branch_num){
 Run the subset 1 x.3 models
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x3<-tree_func_x3(model_type = 332, branch_num = 6)
+out_sub1_x3<-tree_func_x3(model_type = 331, branch_num = 8)
 ```
 
 ## January 2024: 
