@@ -823,7 +823,7 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
 
 Run the non-hoarding, 2 variables, 1 th model: 
 ```{r run subset 2 x1}
-out_sub2_x1<-tree_func_sub2_x1(model_type=61, branch_num = 6)
+out_sub2_x1<-tree_func_sub2_x1(model_type=41, branch_num = 8)
 ```
 
 Now, write teh code for the second subset, the leftover hoarders. This has 2 energy proxy variables and each of these has 2 thresholds. 
@@ -1069,7 +1069,7 @@ Subset 2 - x.2
 Run the leftove rhoarding, 2 variables, 2 th model: 
 ```{r run subset 2 x2}
 
-out_sub2_x2<-tree_func_sub2_x2(model_type=62, branch_num = 6)
+out_sub2_x2<-tree_func_sub2_x2(model_type=42, branch_num = 8)
 
 ```
 
@@ -1715,8 +1715,8 @@ As a solution, I'm just going to generate the levels separately.
 
 run them 
 ```{r run the single level branches}
-tree_func_sub2_x3_l1(632, 6)
-tree_func_sub2_x3_l2(632, 6)
+tree_func_sub2_x3_l1(631, 8)
+tree_func_sub2_x3_l2(631, 8)
 #tree_func_sub2_x3_l3(431, 6)
 
 # 07/03/2024: level 3 is still too big to run. I should just run it only for hte relevant portion. 
