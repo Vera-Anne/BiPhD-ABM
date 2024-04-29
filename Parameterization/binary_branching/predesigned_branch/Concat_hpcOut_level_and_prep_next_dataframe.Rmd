@@ -21,7 +21,7 @@ This code will take the output from the HPC from a specific level. It then conca
 
 ## Basic settings 
 ```{r settings}
-model_type<-632
+model_type<-531
 level<-2  # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
 subset<-2
 branch_type<-4
@@ -38,6 +38,7 @@ This is only necessary when you are concatenating (so only for levels 1, 2 and 3
 # set working directory depending on model type
 if(level>0){
 cur_wd<-(paste0(general_folder,"/output_subset", subset,"_", branch_type, "/level_", level, "/", model_type, "/"))
+print("started")
 
 setwd(cur_wd)
 
@@ -64,7 +65,7 @@ setwd(cur_wd)
     halflife_list[[1]][5:(length(env_results[[3]])-4)] <-env_results[[3]][9:length(env_results[[3]])]  # add the actual thresholds 
     # Add the list to the outcome_concat 
     halflife_list
-  } # end for loop that runs through files in a batch-folder
+  } # end for loop that runs through all files of the simulation 
   
   # stop the cluster
   stopImplicitCluster()
@@ -98,9 +99,55 @@ Concatenate the data, summarise across the 25 repetitions, and find the combinat
   
   # Save in the folder
   save(HL_df, file=paste0('out_concat_HPC_',  format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),"_branch", branch_type, "__MOD_", model_type,'_lev', level, '.Rda'))
-  rm(HL_df)
+  #rm(HL_df)
  }
   
+```
+## Check what is missing 
+I want to know if any combinations are missing 
+```{r missing combos}
+missing_sum<-HL_df%>%
+  group_by(th_row)%>%
+  summarise(n=n())
+
+
+# Identify if everything has 25 reps 
+missing<-missing_sum%>%
+  filter(!n==25) 
+
+
+print(paste("Number of thresholds that have missing reps = ", nrow(missing)))
+print(paste("Number of thresholds out of total that should be there = ", nrow(missing_sum)))
+
+```
+
+## If missing, make a csv file to redo these
+```{r missing csv combos}
+# settings
+next_level<-(level+1)
+next_level_chr<-paste0("level", next_level) # This specifies the level that you are creating the new dataframe for. 
+
+if (nrow(missing>0)){
+
+  
+        # Find the dataframe that we used to run the current level on the HPC 
+            # Go into the folder that has the premade branches 
+            setwd(general_folder)
+            prev_selected_df<-read.csv2(paste0('th_HPC_sub', subset, "_branch", branch_type,"_x",  (str_sub(model_type, 2,2)), "_mod", 
+                                                    model_type, '_level', level, '.csv'), sep=" ", header = F)
+            prev_selected_df$th_row<-seq(1:nrow(prev_selected_df))
+          # Subset for the rows that are necessary
+            rep_selected_df<-prev_selected_df%>%
+              filter(th_row %in% missing$th_row)
+            rep_selected_df<-lapply(rep_selected_df,as.numeric)
+          # Save this 
+          write.table(rep_selected_df, file=paste0('rep_th_HPC_sub', subset, "_branch", branch_type,"_x",  
+                                                   (str_sub(model_type, 2,2)), "_mod",
+                                                   model_type, '_level',level, '.csv'), row.names = F, col.names = F)
+          
+} else{
+  print("no missing rows, make sure to check total number of thresholds! ")
+}
 ```
 
 ## Generate csv file for next level 
@@ -109,6 +156,7 @@ Take the specified best threshold and determine the new combinations that need t
 This code can be running for each level. For level 1 it will just generate the first combinations. For level 2 and 3 it will generate the dataframe for the next level, based on the outcome of the preceding level. 
 
 ```{r make the new branch}
+rm(HL_df)
 # Settings 
 next_level<-(level+1)
 next_level_chr<-paste0("level", next_level) # This specifies the level that you are creating the new dataframe for. 
