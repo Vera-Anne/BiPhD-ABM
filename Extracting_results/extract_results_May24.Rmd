@@ -1,0 +1,1416 @@
+---
+title: "Extracting model results"
+author: "Vera Vinken"
+date: "`r Sys.Date()`"
+output: html_document
+---
+  
+ 
+
+```{r packages, include=FALSE, message=T, warning=T}
+
+# If Tom (or someone else ) wants to use this on their computer --> any packages that are not installed need to be installed 
+    # List of needed packages
+    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr", "plotly", "hrbrthemes", "tibble")
+    # find which packages are needed 
+    new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
+    # install ones that were missing 
+    if(length(new_packages)>0){
+      install.packages(new_packages)
+      }
+
+# Load packages 
+  library(ggplot2)
+   library(gridExtra)       # grids of ggplots 
+  library('parallel')       # for parallel computing
+  library('doParallel')     # As above 
+  library(dplyr)            # merging dataframes, using mutate etc. 
+  library(purrr)            # To use the dataframe mapping functions 
+  library(truncnorm)        # creating normal distributions 
+  library(data.table)
+  library(foreach)
+  library(doParallel)
+  library(ggpubr)             # To arrange plots 
+  library(gridExtra)          # for grid.arrange 
+  library(pracma)
+  library(stringr)
+  library(plotly)
+  library(hrbrthemes)
+  library(tibble)
+
+```
+
+## Background 
+
+This script should do the following: 
+
+- run each of the models with the optimal values 
+- concatenate this all into a big dataframe
+- That dataframe should be ready for the shiny. 
+
+## Set working directories & Load sourcefiles 
+
+If this is running from the shared Rproject, this should all be automated. 
+```{r set wd and load sourcefiles, include=TRUE, message=FALSE, echo=F, warning=FALSE}
+# Set directories 
+  # # Where are the sourcefiles located? 
+  sourcefile_wd<- "C:/Local_R/BiPhD-ABM/May23"      
+  # # Specify the parent folder where you want to save results 
+  # #parent_saving_wd<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/Post_param_results_October23" 
+
+# Load the sourcefiles 
+  setwd(sourcefile_wd)
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+
+```
+
+
+## Comparing model results 
+
+### Specify what data you are interested in 
+
+* `models`: Here you can input which models you want to compare with each other, make sure to put them between `""` and don't include `,` or `.` in the model numbers. E.g. use `11`, `12` and `332`.  If you are just interested in 1 model, this is fine as well. Models x.1 are the non-hoarding models. x.2 are the left-over hoarders. models x.3.1 are direct hoarders that have hoarding as the 'top' behaviour (above highest threshold). Models x.3.2 are direct hoarders that have resting as the 'top' behaviour (above the highest threshold). As a default, this is set to all models, if you want to change this you need to run the code from scratch, which will take more time. 
+
+
+* `int_var`: Here you specify your variable of interest. These are only relevant for the graphs that are split per enviornment, where you will visualise the chosen variable across the 12 environments 
+    * `eat` = proportion of alive birds that are eating at any given timestep. This is eat-only behaviour. Either birds that have 'eating' as a seperate beahviour. Or leftover-hoarding birds that foud a food item to eat, but it is not enough to hoard as well. 
+    * `eat_hoard` = proportion of alive birds that are doing the 'eat and hoard leftovers' behaviour at any given timestep. Note that this is only an option for X.2 models. And only in the case that they find enough items so they can hoard something. 
+    * `forage` = proportion of alive birds that goes out to forage. Foraging happens before the 'eating' behaviour, before the 'direct hoarding' behaviour and before 'eat_haording' behaviour. 
+    * `dir_hoard`= the proportion of alive birds that does the 'direct hoarding' behaviour at any given timestep. Note that only X.3.Y models can do this. 
+    * `alive` = The percentage of birds that is alive at any given timestep 
+    * `caches` = The number of caches birds have at any give timestep. Note that non-hoarding species do get a starting level of cahches, they just cannot access them. 
+    * `find_food` = The number of food items that are found in each step 
+    * `fat_res` = The fat reserve of alive birds in each timestep 
+    * `stom_con`= The stomach content of alive birds in each timestep 
+    * `fat_loss_r` = The fat loss rate of alive birds in each timestep 
+    * `mass`= The mass of alive birds in each timestep 
+    * `predation` = Average of successful predation attempts in each timestep 
+    * `rest` = The proportion of alive birds that is resting in each timestep 
+    * `retrieve` = The proportion of alive birds that is retrieving in each timestep. Note this is only possible for hoarding models (X.2 and X.3.Y)
+    * `sleep`= The proportion of alive birds that is sleeping in any given timestep 
+    * `cache_decay` = The average of decayed caches in every given timestep 
+    * `temp` = Temperature in degrees Celcius 
+    
+* `num_birds`: specify the number of individual birds you want to run each model for (default = 1000). Only change this if you want to run the models from scratch. You also need to change which code chunks are running in that case. 
+
+* `daylight_h`: specify how many daylight hours you want (default = 8). Only change this if you want to run the models from scratch. You also need to change which code chunks are running in that case. 
+
+* `days`: specify how many days you want in your simulation (default = 30). Only change this if you want to run the models from scratch. You also need to change which code chunks are running in that case. 
+
+
+```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
+models<-c("11", "21", "31", "41", "51", "61",
+          "12", "22", "32","42", "52", "62" ,
+          "131", "231", "331", "431", "531", "631",
+          "132", "232", "332", "432", "432", "632") 
+
+# If you are using the previously generated data, do not change these the code will use teh default settings 
+num_birds<-1000
+daylight_h<-8
+days<-30 
+```
+
+### Repeat current settings 
+The current run includes the following settings: 
+
+* **Models to be evaluated** = `r models`
+* **Variable of interest** (if we are looking at split environments) = `r int_var`
+* **Number of birds** = `r num_birds`
+* **Daylight hours** = `r daylight_h`
+* **Number of days in simulation** = `r days`
+
+
+Then follows the code that loops through each of the models specified and runs them for 30 days and 1000 individuals. In future, I'll make this flexible at the top as well, but for now it is hard coded. The code is not printed here, but you can look at it in the Rmarkdown file. This is followed by code for the visualization. What is visualized depends on the above input variables. 
+
+```{r loop through models to run, include=F, warning=F, message=F, eval=F}
+for (i in 1:length(models)){
+  
+  if (i==1){
+    env_func_out_list<-list()
+  }
+  
+  if (models[i]==11){
+    # Code that runs 11
+    env_func_1_1_par(days = days, N= num_birds, th_forage_sc = 0.008163265, daylight_h = daylight_h, modelType = 11) 
+  }else if (models[i]==12){
+    # Code that runs 12 
+    env_func_1_2_par(days = days, N= num_birds, th_forage_sc1 = 0.0244898, th_forage_sc2 = 0.03265306 , daylight_h = daylight_h, modelType = 12)
+  } else if (models[i]==131){
+    # Code that runs 131 
+      env_func_1_3_1_par(days = days, N= num_birds, th_forage_sc1 = 0.01632653 , th_forage_sc2 = 0.03265306, th_forage_sc3 = 0.3591837 , daylight_h = daylight_h, modelType = 131)
+  } else if (models[i]==132){
+    # Code that runs 132
+        env_func_1_3_2_par(days = days, N= num_birds, th_forage_sc1 =0.008163265, th_forage_sc2 =0.01632653, th_forage_sc3 =0.03265306, daylight_h = daylight_h, modelType = 132)
+  } else if (models[i]==21){
+    # Code that runs 21 
+    env_func_2_1_par(days = days, N= num_birds, th_forage_fr = 1.714286, daylight_h = daylight_h, modelType = 21)
+  } else if (models[i]==22){
+    # Code that runs 22 
+    env_func_2_2_par(days = days, N= num_birds, th_forage_fr1 = 0.6530612, th_forage_fr2 = 1.142857 , daylight_h = daylight_h, modelType = 22)
+  } else if (models[i]==231){
+    # Code that runs 231 
+      env_func_2_3_1_par(days = days, N= num_birds, th_forage_fr1 = 0.5714286, th_forage_fr2 =1.306122 , th_forage_fr3 = 1.877551 , daylight_h = daylight_h, modelType = 231)
+  } else if (models[i]==232){
+    # Code that runs 232 
+    env_func_2_3_2_par(days = days, N= num_birds, th_forage_fr1 = 0.5714286, th_forage_fr2 = 1.22449, th_forage_fr3 = 1.306122, daylight_h = daylight_h, modelType = 232)
+  } else if (models[i]==31){
+    # Code that runs 31 
+    env_func_3_1_par(days = days, N= num_birds, th_forage_flr = 0.2326531, daylight_h = daylight_h, modelType = 31)
+  } else if (models[i]==32){
+    # Code that runs 32 
+    env_func_3_2_par(days = days, N= num_birds, th_forage_flr1 = -0.06122449, th_forage_flr2 = 0.2081633, daylight_h = daylight_h, modelType = 32)
+  } else if (models[i]==331){
+    # Code that runs 331 
+    env_func_3_3_1_par(days = days, N= num_birds, th_forage_flr1 = -0.1346939, th_forage_flr2 = 0.2081633, th_forage_flr3 = 0.3795918, daylight_h = daylight_h, modelType = 331)
+    
+  } else if (models[i]==332){
+    env_func_3_3_2_par(days = days, N= num_birds, th_forage_flr1 = -0.1346939, th_forage_flr2 = 0.2326531, th_forage_flr3 = 0.2571429, daylight_h = 8, modelType = 332)
+  }
+  
+  output_env_func[[3]]<-models[i]
+  
+  # Now save the result of this iteration in a meaningful way 
+  env_func_out_list[[i]]<-output_env_func
+  
+  print(paste("model done=", models[i]))
+  
+}
+
+# make sure that the lists inside the list have the right name 
+names(env_func_out_list)<-models
+# setwd(sourcefile_wd)
+# save(env_func_out_list, file="results.Rda")
+
+```
+
+```{r pull existing results, include=T, warning=F, message=F, eval=T}
+setwd("C:/Local_R/BiPHD-ABM/")
+load( "results.Rda" )
+```
+
+
+```{r prepare df for limits in graphs, include=F, warning=F, error=F}
+# Create the dataframe with the limits for all variables 
+int_var_names<-c("eat", "eat_hoard", "forage", "dir_hoard", "alive", "caches", "find_food", "fat_res", "stom_con", "fat_loss_r", "mass", "predation", "rest", "retrieve", "sleep", "cache_decay", "temp")
+min<-c(0, 0, 0, 0, 0, 0, 0, 0, 0, -0.65, 0, 0, 0, 0, 0, 0, -15)
+max<-c(1, 1, 1, 1, 1, 100, 1, 4.1, 0.45, 0.65, 15, 1, 1, 1, 1, 3, 15)
+lim_df<-as.data.frame(cbind(int_var_names, min, max))
+
+# Create dataframe with current variable of interest 
+int_var_df<-as.data.frame(int_var)
+colnames(int_var_df)<-c("int_var_names")
+
+# Select the relevant row for future using 
+lim_df_int<-lim_df%>%
+  right_join(int_var_df, by="int_var_names")
+
+# Determine the colour list 
+all_models<-c("11", "12", "131", "132", "21", "22", "231", "232", "31", "32", "331", "332")
+all_colours<-c("#000000", "#3636A2", "#1094D6", "#5656FF", "#882255", "#FF685D", "#CC6677", "#FFBAB5", "#91CC60",  "#A7B398", "#9BA042", "#E2CA26")
+colours_hoard_foc<-c("#797979", "#167D4D", "#FFCE67", "#DC7A89", "#000000", "#51BF66", "#DED191", "#882255", "#D6D6D6", "#79A793", "#CC9B35", "#AA4499" )
+colours_prox_foc<-c("#167D4D", "#83B35B", "#08A6DA", "#022586", "#FFCE67",  "#CC9B35", "#FFB166", "#A48C12", "#882255", "#AA4499", "#D08C96", "#FF3F5C" )
+# add linteype as well
+linetype<-c(1, 2, 3, 4)
+col_df<-as.data.frame(cbind(all_models, all_colours, colours_hoard_foc, colours_prox_foc, linetype))
+
+# Now select the relevant ones 
+mod_df<-as.data.frame(models)
+colnames(mod_df)<-c("all_models")
+
+# no wuse joining to selec thtem from the colour dataframe 
+lim_col_df<-col_df%>%
+  right_join(mod_df, by="all_models")
+
+# change the names for clarity 
+# models<-c("1.1: SC-Non H", "1.2: SC-left H", "1.3.1: SC-Dir H-Htop", "1.3.2: SC-Dir H-Rtop", 
+#                             "2.1: FR-Non H", "2.2: FR-left H", "2.3.1: FR-Dir H-Htop", "2.3.2: FR-Dir H-Rtop", 
+#                             "3.1: FCR-Non H", "3.2: FCR-left H", "3.3.1: FCR-Dir H-Htop", "3.3.2: FCR-Dir H-Rtop")
+# names(env_func_out_list)<-c("1.1: SC-Non H", "1.2: SC-left H", "1.3.1: SC-Dir H-Htop", "1.3.2: SC-Dir H-Rtop", 
+#                             "2.1: FR-Non H", "2.2: FR-left H", "2.3.1: FR-Dir H-Htop", "2.3.2: FR-Dir H-Rtop", 
+#                             "3.1: FCR-Non H", "3.2: FCR-left H", "3.3.1: FCR-Dir H-Htop", "3.3.2: FCR-Dir H-Rtop")
+
+```
+
+
+### Survival across the selected models 
+The following graph shows how the different models survive across the environments. Survival is hte proportion of birds alive at any given timestep. 
+
+#### Mean across all environments: 
+```{r visualise  mean data wrange, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
+
+focus<-"all_colours"
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-env_func_out_list[[models[i]]]
+    
+      # create empty list
+      cur_mod_df<-list()
+      
+      # Concatenate the dataframes in the list 
+      for (df in cur_out[[2]]){
+        cur_mod_df<-rbind(cur_mod_df, df)
+      }
+      # summarize them by variable and timestep 
+      cur_mod_df_sum<-cur_mod_df%>%
+        group_by(timestep, id)%>%
+        summarise(mean_val = mean(value, na.rm=T))%>%
+        mutate(mod_id=models[i])%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+        mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))
+
+      output_per_model_list[[i]]<-cur_mod_df_sum
+  }
+  
+  mean_var_per_model_total<-bind_rows(output_per_model_list)
+  
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+  
+  
+```
+
+```{r visualise  mean graph, include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=5}
+
+  plot_var<-ggplot(mean_var_per_model_total[mean_var_per_model_total$id=="alive",], aes(x=timestep, y=mean_val))+
+    geom_line(aes( col=leg_name, linetype=line_id))+
+    #ggtitle(label=paste("Survival  - Average across 12 env. " ))+
+    theme(plot.title=element_text(face='bold'), 
+          axis.title.x = element_text(face='bold' ), 
+          axis.title.y=element_text(face='bold'), 
+          strip.text=element_text(), 
+          legend.text=element_text())+
+    ylim(c(0,1))+
+    scale_color_manual(values=colours)+
+    ylab(label="Proportion birds alive")
+ 
+  plot_var<-ggplotly(plot_var)
+  plot_var%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+
+```
+
+#### Split by enevironment 
+```{r visualise the outcome survival data wrangle  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+# legend<-c("1.1: SC-Non H", "1.2: SC-left H", "1.3.1: SC-Dir H-Htop", "1.3.2: SC-Dir H-Rtop",
+#                             "2.1: FR-Non H", "2.2: FR-left H", "2.3.1: FR-Dir H-Htop", "2.3.2: FR-Dir H-Rtop",
+#                             "3.1: FCR-Non H", "3.2: FCR-left H", "3.3.1: FCR-Dir H-Htop", "3.3.2: FCR-Dir H-Rtop")
+int_var<-"alive"
+# First determine if you wanted the output split by environment or not 
+# I think it makes sense to always print the survival (as you will alwasy be interested in this)
+  # plot_env_12_comp_func(env_func_out_list = env_func_out_list, models = models, int_var = "alive", focus="all_colours")
+focus="all_colours"
+# Loop through the models to extract the correct variable 
+  for (i in 1:length(models)){
+    if (i==1){
+      output_per_model_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+    cur_out<-env_func_out_list[[models[i]]]
+    # Now subset for the variable of interest 
+    cur_out_filtered<-lapply(cur_out[[2]], function(df){subset(df, id==paste(int_var))})
+    # Add the environment number to the dataframes 
+    for (j in 1:length(cur_out_filtered)){
+      cur_out_filtered[[j]]$env_id<-j
+      cur_out_filtered[[j]]$mod_id<-models[i]
+      cur_out_filtered[[j]]$line_id<-lim_col_df[lim_col_df$all_models==models[i], 5]
+      cur_out_filtered[[j]]<-cur_out_filtered[[j]]%>%
+        mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(temp=if_else((.$env_id=="1"|.$env_id=="3"|.$env_id=="5"|.$env_id=="7"|.$env_id=="9"|.$env_id=="11"), "low", "high"))%>%
+        mutate(food_ab=case_when(
+          env_id<5 ~ "low", 
+          env_id>4 & env_id<9 ~ "medium", 
+          env_id>8 ~ "high"
+        ))%>%
+        mutate(food_pred=if_else((.$env_id=="1"|.$env_id=="2"|.$env_id=="5"|.$env_id=="6"|.$env_id=="9"|.$env_id=="10"), "poisson", "bonanza"))
+    }
+    output_per_model_list[[i]]<-cur_out_filtered
+    
+  }
+  # for the individual dataframes 
+  total_all_models_surv<-list()
+  # loop through each of the models  and retrieve all 12 dataframes to put in the 'individual dataframe list' 
+  for (sublist in output_per_model_list) {
+    for (df in sublist) {
+      total_all_models_surv <- rbind(total_all_models_surv, df)
+    }
+  }
+
+  
+  # Now you want to produce a grid of plots, where data is split per environment 
+    # On your x-axis you want time "timestep" 
+    # On you y-axis you want the value of the chosen variable 'value' 
+  
+  # select colours
+  if(focus=="colours_hoard_foc"){
+    colours<-lim_col_df$colours_hoard_foc
+  }else if(focus=="colours_prox_foc"){
+    colours<-lim_col_df$colours_prox_foc
+  }else if(focus=="all_colours"){
+    colours<-lim_col_df$all_colours
+  }
+  
+```
+
+```{r visualise the outcome survival graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+
+  
+      plot_12<-ggplot(total_all_models_surv, aes(x=timestep, y=value))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        labs(fill=" ")
+
+      plot_12<-ggplotly(plot_12)
+      plot_12%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      #plot_12
+```
+
+#### Effects of temperature 
+
+```{r compare temperatures, include=T, message=F, warning=F, echo=F}
+
+# add the temp info and regroup 
+temp_average_all<-total_all_models_surv%>%
+  group_by(timestep,leg_name, temp, line_id, id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+```
+
+
+```{r compare temperatures graph , include=T, message=F, warning=F, echo=F}
+facet_order<-c("low", "high")
+temp_average_all$temp <- factor(temp_average_all$temp, levels = facet_order)
+
+plot<-ggplot(temp_average_all[temp_average_all$id=="alive",], aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~temp, nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+
+#### Effects of Food abundancy 
+
+```{r compare food abundancy, include=T, message=F, warning=F, echo=F}
+
+# add the temp info and regroup 
+food_ab_average_all<-total_all_models_surv%>%
+  group_by(timestep,leg_name, food_ab, line_id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+```
+
+
+```{r compare food abundancy graph , include=T, message=F, warning=F, echo=F}
+facet_order<-c("low", "medium", "high")
+food_ab_average_all$food_ab <- factor(food_ab_average_all$food_ab, levels = facet_order)
+
+plot<-ggplot(food_ab_average_all, aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~food_ab, nrow=3)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+
+#### Effects of Food predictability
+
+```{r compare food predictability, include=T, message=F, warning=F, echo=F}
+
+# add the temp info and regroup 
+food_pred_average_all<-total_all_models_surv%>%
+  group_by(timestep,leg_name, food_pred, line_id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+```
+
+```{r compare food predictability  graph , include=T, message=F, warning=F, echo=F}
+facet_order<-c("poisson", "bonanza")
+food_pred_average_all$food_pred <- factor(food_pred_average_all$food_pred, levels = facet_order)
+
+plot<-ggplot(food_pred_average_all, aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~food_pred,nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+```
+
+### Energy proxies 
+```{r aggregate for daily patterns, include=TRUE, message=F, warning=F, echo=F,fig.width=17, fig.height=8}
+# Input here will be the env_func_out_list 
+
+for (i in 1:length(models)){
+  
+  if (i==1){
+    agg_list<-list()
+  }
+  # Select hte current list with the 12 dataframes 
+  cur_mod<-env_func_out_list[[models[i]]][[2]]
+  
+  # Cut off the first 3 days 
+  
+  # add the env row 
+  for (j in 1:length(cur_mod)){
+    cur_mod[[j]]<-cur_mod[[j]]%>%filter(timestep>216)
+    cur_mod[[j]]$env_id<-j
+  }
+  # bind it all together 
+  cur_mod<-bind_rows(cur_mod)
+  # add the timestep within day 
+  cur_mod<-cur_mod%>%
+    mutate(timestep_within_day=timestep%%72)
+    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
+  
+  # Now summarise the dataframe by timestep within day 
+  agg_cur_mod<-cur_mod%>%
+    group_by(id, env_id, timestep_within_day)%>%
+    summarise(mean_value_day=mean(value, na.rm=T)) %>%#, 
+             # mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
+    mutate(mod_id=rep(models[i]))%>%
+     mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+  
+  # Now add to list
+  agg_list[[i]]<-agg_cur_mod
+}
+
+# bind them all together in a dataframe 
+agg_day_df<-bind_rows(agg_list)
+
+
+# When including the 3 first days (e.g. when showing dead model examples: )
+
+for (i in 1:length(models)){
+  
+  if (i==1){
+    agg_list_unfilt<-list()
+  }
+  # Select hte current list with the 12 dataframes 
+  cur_mod<-env_func_out_list[[models[i]]][[2]]
+  
+  # Cut off the first 3 days 
+  
+  # add the env row 
+  for (j in 1:length(cur_mod)){
+    #cur_mod[[j]]<-cur_mod[[j]]%>%filter(timestep>216)
+    cur_mod[[j]]$env_id<-j
+  }
+  # bind it all together 
+  cur_mod<-bind_rows(cur_mod)
+  # add the timestep within day 
+  cur_mod<-cur_mod%>%
+    mutate(timestep_within_day=timestep%%72)
+    #mutate(timestep_within_day = replace(timestep_within_day, timestep_within_day == 0, 72))
+  
+  # Now summarise the dataframe by timestep within day 
+  agg_cur_mod<-cur_mod%>%
+    group_by(id, env_id, timestep_within_day)%>%
+    summarise(mean_value_day=mean(value, na.rm=T)) %>%#, 
+             # mean_ts_within_day=mean(timestep_within_day, na.rm=T))%>%
+    mutate(mod_id=rep(models[i]))%>%
+     mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])
+  
+  # Now add to list
+  agg_list_unfilt[[i]]<-agg_cur_mod
+}
+
+# bind them all together in a dataframe 
+agg_day_df_unfilt<-bind_rows(agg_list_unfilt)
+
+
+```
+
+#### Average over all 12 environments 
+
+```{r check mean across environment for all values, include=TRUE, message=F, warning=F, echo=F}
+
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      mean_vars_day_pat_list<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id)%>%
+        summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+      mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+         mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+    # Add to list 
+      mean_vars_day_pat_list[[i]]<-cur_mean_out
+  }
+  
+  all_vars_day_pat_tot<-bind_rows(mean_vars_day_pat_list)
+  
+
+  # unfiltered 
+  
+  
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      mean_vars_day_pat_list_unfilt<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list_unfilt[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id)%>%
+        summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
+         mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+      mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+         mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+    # Add to list 
+      mean_vars_day_pat_list_unfilt[[i]]<-cur_mean_out
+  }
+  
+  all_vars_day_pat_tot_unfilt<-bind_rows(mean_vars_day_pat_list_unfilt)
+  
+
+
+```
+
+```{r plot all variables across enviornments in daily patterns, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+
+plot<-ggplot(all_vars_day_pat_tot[all_vars_day_pat_tot$id=="stom_con"|all_vars_day_pat_tot$id=="fat_res"|all_vars_day_pat_tot$id=="fat_loss_r", ], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y',nrow=6)+
+        coord_cartesian(xlim=c(0, 25))+
+        #ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
+        labs(y="SC  -  FR  -  FCR (in gram or gram/2 hours)", x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text( face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text(face='bold'))+
+  scale_color_manual(values=colours)+
+  labs(fill=" ")
+
+
+p<-ggplotly(plot)
+p%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+
+```
+
+
+#### Stomach content 
+
+```{r check mean across environment for all valuessss, include=TRUE, message=F, warning=F, echo=F}
+
+ # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      day_pat_per_envlist<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id, env_id,)%>%
+        summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+      mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+      
+    # Add to list 
+      day_pat_per_envlist[[i]]<-cur_mean_out
+  }
+  
+  day_pat_per_env_df<-bind_rows(day_pat_per_envlist)
+  
+  
+  
+# unfiltered 
+   # loop through each of the models 
+  for (i in 1:length(models)){
+    if (i==1){
+      day_pat_per_envlist_unfilt<-list()
+    }
+    # Set the current model from the env_func_out_list (input to this function)
+      cur_out<-agg_list_unfilt[[i]]
+      
+    # Do the transformations so we get means across all environments 
+      cur_mean_out<-cur_out%>%
+        group_by(id, timestep_within_day, mod_id, env_id,)%>%
+        summarise(mean_new=mean(mean_value_day, na.rm=T))%>%
+        mutate(line_id=lim_col_df[lim_col_df$all_models==models[i], 5])%>%
+      mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+      
+    # Add to list 
+      day_pat_per_envlist_unfilt[[i]]<-cur_mean_out
+  }
+  
+  day_pat_per_env_df_unfilt<-bind_rows(day_pat_per_envlist_unfilt)
+  
+```
+
+
+```{r visualise the outcome sc graph  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+
+plot<-ggplot(day_pat_per_env_df[day_pat_per_env_df$id=="fat_res",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~env_id,  nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        #coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")
+
+      plot<-ggplotly(plot)
+      plot%>% layout(legend = list(title=list(text='Model ID')))
+      #plot_12
+```
+
+```{r energy proxies per specific environment  , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+# Specify which environments are dead 
+dead_environments<-c("1", "3", "4", "7")
+
+list_plots<-list()
+# loop 
+for (i in 1:length(dead_environments)){
+  env<-dead_environments[i]
+
+plot_specificEnv<-ggplot(day_pat_per_env_df_unfilt[day_pat_per_env_df_unfilt$id=="stom_con" & day_pat_per_env_df_unfilt$env_id==env|day_pat_per_env_df_unfilt$id=="fat_res"& day_pat_per_env_df_unfilt$env_id==env|day_pat_per_env_df_unfilt$id=="fat_loss_r"& day_pat_per_env_df_unfilt$env_id==env,], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id, scales='free_y', nrow=6)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Energy proxy in gram or gram/2 hour")+
+        xlab(label="Timestep in day")
+
+      plot_specificEnv<-ggplotly(plot_specificEnv)
+      plot_specificEnv%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      list_plots[[i]]<-plot_specificEnv
+}
+
+list_plots[[1]]
+list_plots[[2]]
+list_plots[[3]]
+list_plots[[4]]
+```
+```{r again but facet wrap at once , include=T, message=F, warning=F, echo=F, fig.width=10, fig.height=13}
+# Specify which environments are dead 
+dead_environments<-c("1", "3", "4", "7")
+
+dead_env_subset<-day_pat_per_env_df_unfilt%>%
+  filter(id=="stom_con"|id=="fat_res"|id=="fat_loss_r")%>%
+  filter(env_id=="1"|env_id=="3"|env_id=="4"|env_id=="7")
+
+alive_env_subset<-day_pat_per_env_df_unfilt%>%
+  filter(id=="stom_con"|id=="fat_res"|id=="fat_loss_r")%>%
+  filter(env_id=="2"|env_id=="5"|env_id=="6"|env_id=="8"|env_id=="9"|env_id=="10"|env_id=="11"|env_id=="12")
+
+# Now aggregate the alive environments 
+alive_env_subset_agg<-alive_env_subset%>%
+    group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="surv")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+dead_env_subset_agg<-dead_env_subset%>%
+  group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="dead")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+dead_env_subset$env_id<-as.character(dead_env_subset$env_id)
+dead_env_subset_agg$env_id<-as.character(dead_env_subset_agg$env_id)
+
+
+#Together
+dead_alive_subset<-rbind(dead_env_subset, alive_env_subset_agg, dead_env_subset_agg)
+
+plot_specificEnv<-ggplot(dead_alive_subset[dead_alive_subset$env_id=="3"|dead_alive_subset$env_id=="surv"|dead_alive_subset$env_id=="dead",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_grid(id ~ env_id, scales='free_y')+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Energy proxy in gram or gram/2 hour")+
+        xlab(label="Timestep in day")
+
+      plot_specificEnv<-ggplotly(plot_specificEnv)
+      plot_specificEnv%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+
+```
+
+
+
+
+### BEHAVIOURS 
+
+#### Behaviours across all environments 
+```{r plot all variables across enviornments in daily patterns BHES , include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+# subset the data 
+
+subset<-all_vars_day_pat_tot[all_vars_day_pat_tot$id_beh_label=="rest"|all_vars_day_pat_tot$id_beh_label=="hoard"|all_vars_day_pat_tot$id_beh_label=="eat"|all_vars_day_pat_tot$id_beh_label=="retrieve", ]
+# take out the dir_hoarding for leftover hoarders and teh leftover hoarding for direct hoarders (otherwise the graphs go double because dir-hoarders will have 0 for leftover hoarding in each timestep, etc.)
+subset<-subset%>%
+  filter(!(line_id=="2" & id=="dir_hoard"))%>%
+  filter(!(line_id=="3" & id=="eat_hoard"))%>%
+  filter(!(line_id=="4" & id=="eat_hoard"))
+
+
+plot<-ggplot(subset, aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id_beh_label,nrow=2)+
+        coord_cartesian(xlim=c(0, 25), ylim=c(0,1))+
+        #ggtitle(label="Energy proxies- Daily patterns - Across all environments")+
+        labs(y="Proportion of alive birds", x="Timestep within the Day", col="Model ID")+
+        theme(plot.title=element_text( face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text( face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title = element_text(face='bold'))+
+  scale_color_manual(values=colours)+
+  labs(fill=" ")
+
+
+p<-ggplotly(plot)
+p%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+
+```
+
+#### behaviours for specific environments 
+
+```{r plot all variables across enviornments in daily patterns BHES spec enviroment , include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+# specify env 
+env<-"3"
+# subset 
+subset<-day_pat_per_env_df[day_pat_per_env_df$id_beh_label=="rest"|day_pat_per_env_df$id_beh_label=="hoard"|day_pat_per_env_df$id_beh_label=="eat"|day_pat_per_env_df$id_beh_label=="retrieve", ]
+# take out the dir_hoarding for leftover hoarders and teh leftover hoarding for direct hoarders (otherwise the graphs go double because dir-hoarders will have 0 for leftover hoarding in each timestep, etc.)
+subset<-subset%>%
+  filter(!(line_id=="2" & id=="dir_hoard"))%>%
+  filter(!(line_id=="3" & id=="eat_hoard"))%>%
+  filter(!(line_id=="4" & id=="eat_hoard"))%>%  
+  filter(env_id==env)
+
+# plot 
+plot_specificEnv<-ggplot(subset, aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~id_beh_label, nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25), ylim = c(0,1))+
+        labs(fill=" ")+
+        ylab(label="Proportion of alive birds")+
+        xlab(label="Timestep in day")
+
+      plot_specificEnv<-ggplotly(plot_specificEnv)
+      plot_specificEnv%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+      
+```
+
+
+So do a similar graph as for the dead-alive split with energy proxies, but now for the behaviours. 
+
+```{r graphs for dead vs alive enviroments spit by behavoiur, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+# Specify which environments are dead 
+dead_environments<-c("1", "3", "4", "7")
+
+dead_env_subset_b<-day_pat_per_env_df_unfilt%>%
+  filter(id=="eat"|id=="retrieve"|id=="dir_hoard"|id=="rest"|id=="eat_hoard")%>%
+  filter(env_id=="1"|env_id=="3"|env_id=="4"|env_id=="7")
+
+alive_env_subset_b<-day_pat_per_env_df_unfilt%>%
+  filter(id=="eat"|id=="retrieve"|id=="dir_hoard"|id=="rest"|id=="eat_hoard")%>%
+  filter(env_id=="2"|env_id=="5"|env_id=="6"|env_id=="8"|env_id=="9"|env_id=="10"|env_id=="11"|env_id=="12")
+
+# Now aggregate the alive environments 
+alive_env_subset_agg_b<-alive_env_subset_b%>%
+    group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="surv")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+dead_env_subset_agg_b<-dead_env_subset_b%>%
+  group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="dead")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+dead_env_subset_b$env_id<-as.character(dead_env_subset_b$env_id)
+dead_env_subset_agg_b$env_id<-as.character(dead_env_subset_agg_b$env_id)
+
+
+#Together
+dead_alive_subset_b<-rbind(dead_env_subset_b, alive_env_subset_agg_b, dead_env_subset_agg_b)
+# dead_alive_subset_b<-dead_alive_subset_b%>%
+#   mutate(across(id, str_replace, "dir_hoard", "hoard"))%>%
+#   mutate(across(id, str_replace, "eat_hoard", "hoard"))
+
+
+plot_specificEnv_b<-ggplot(dead_alive_subset_b[dead_alive_subset_b$env_id=="3"|dead_alive_subset_b$env_id=="surv"|dead_alive_subset_b$env_id=="dead",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_grid(id ~ env_id, scales="fixed")+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Behaviour in proportion of alive birds")+
+        xlab(label="Timestep in day")
+
+      plot_specificEnv_b<-ggplotly(plot_specificEnv_b)
+      plot_specificEnv_b%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+```
+
+
+## Bonanza - Poisson split 
+Now, I need to split the surviving environments up by bonanza or poisson distribution. 
+
+```{r graphs for  alive enviroments spit by poisson and bonanza, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+# Specify which environments are dead 
+dead_environments<-c("1", "3", "4", "7")
+
+p_env_subset_e<-day_pat_per_env_df_unfilt%>%
+  filter(id=="stom_con"|id=="fat_res"|id=="fat_loss_r")%>%
+  filter(env_id=="2"|env_id=="5"|env_id=="6"|env_id=="9"|env_id=="10") # Select the 'survival' enviornments with a Poisson distribution 
+
+b_env_subset_e<-day_pat_per_env_df_unfilt%>%
+  filter(id=="stom_con"|id=="fat_res"|id=="fat_loss_r")%>%
+  filter(env_id=="8"|env_id=="11"|env_id=="12")                       # Select the 'survival' enviornments with a Bonanza distribution 
+
+
+###### fix subset names and aggegates to shwo B and P distributions 
+
+# Now aggregate the alive environments 
+p_env_subset_agg_e<-p_env_subset_e%>%
+    group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="Poisson")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+b_env_subset_agg_e<-b_env_subset_e%>%
+  group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="Bonanza")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+b_env_subset_e$env_id<-as.character(b_env_subset_e$env_id)
+b_env_subset_agg_e$env_id<-as.character(b_env_subset_agg_e$env_id)
+
+
+#Together
+p_b_subset_e<-rbind(b_env_subset_e, p_env_subset_agg_e, b_env_subset_agg_e)
+# dead_alive_subset_b<-dead_alive_subset_b%>%
+#   mutate(across(id, str_replace, "dir_hoard", "hoard"))%>%
+#   mutate(across(id, str_replace, "eat_hoard", "hoard"))
+
+
+plot_p_vs_b_e<-ggplot(p_b_subset_e[p_b_subset_e$env_id=="3"|p_b_subset_e$env_id=="Poisson"|p_b_subset_e$env_id=="Bonanza",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_grid(id ~ env_id, scales="free_y")+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Energy Proxy")+
+        xlab(label="Timestep in day")
+
+      plot_p_vs_b_e<-ggplotly(plot_p_vs_b_e)
+      plot_p_vs_b_e%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+```
+
+I also want a graph that splits survival between bonanza and poisson 
+
+
+```{r graphs for  alive enviroments spit by poisson and bonanza surviva, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+
+# add the temp info and regroup 
+surviving_env<-total_all_models_surv%>%
+  filter(env_id=="2"|env_id=="5"|env_id=="6"|env_id=="8"|env_id=="9"|env_id=="10"|env_id=="11"|env_id=="12")%>%
+  group_by(timestep,leg_name, food_pred, line_id)%>%
+  summarise(mean_val = mean(value, na.rm=T))
+
+
+facet_order<-c("poisson", "bonanza")
+surviving_env$food_pred <- factor(surviving_env$food_pred, levels = facet_order)
+
+plot<-ggplot(surviving_env, aes(x=timestep, y=mean_val))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_wrap(.~food_pred,nrow=2)+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        ylab(label="Proportion of birds alive")
+
+      plot<-ggplotly(plot)
+plot %>% layout(legend=list(title=list(text='<b> Model ID</b>')))
+
+
+```
+
+Now split the good environments up by bonanza an dpoisson, but look into the behavioural outputs 
+
+```{r graphs for  beh enviroments spit by poisson and bonanza, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+# Specify which environments are dead 
+dead_environments<-c("1", "3", "4", "7")
+
+
+p_env_subset_b<-day_pat_per_env_df_unfilt%>%
+  filter(id=="eat"|id=="retrieve"|id=="dir_hoard"|id=="rest"|id=="eat_hoard")%>%
+  filter(env_id=="2"|env_id=="5"|env_id=="6"|env_id=="9"|env_id=="10") # Select the 'survival' enviornments with a Poisson distribution 
+
+b_env_subset_b<-day_pat_per_env_df_unfilt%>%
+  filter(id=="eat"|id=="retrieve"|id=="dir_hoard"|id=="rest"|id=="eat_hoard")%>%
+  filter(env_id=="8"|env_id=="11"|env_id=="12")                       # Select the 'survival' enviornments with a Bonanza distribution 
+
+
+###### fix subset names and aggegates to shwo B and P distributions 
+
+# Now aggregate the alive environments 
+p_env_subset_agg_b<-p_env_subset_b%>%
+    group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="Poisson")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+b_env_subset_agg_b<-b_env_subset_b%>%
+  group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="Bonanza")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+b_env_subset_b$env_id<-as.character(b_env_subset_b$env_id)
+b_env_subset_agg_b$env_id<-as.character(b_env_subset_agg_b$env_id)
+
+
+#Together
+p_b_subset_b<-rbind(b_env_subset_b, p_env_subset_agg_b, b_env_subset_agg_b)
+# dead_alive_subset_b<-dead_alive_subset_b%>%
+#   mutate(across(id, str_replace, "dir_hoard", "hoard"))%>%
+#   mutate(across(id, str_replace, "eat_hoard", "hoard"))
+
+
+plot_p_vs_b_b<-ggplot(p_b_subset_b[p_b_subset_b$env_id=="3"|p_b_subset_b$env_id=="Poisson"|p_b_subset_b$env_id=="Bonanza",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_grid(id ~ env_id, scales="fixed")+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Behaviour")+
+        xlab(label="Timestep in day")
+
+      plot_p_vs_b_b<-ggplotly(plot_p_vs_b_b)
+      plot_p_vs_b_b%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+```
+
+Now create a large figure that combines the towo so I can easily refernce 
+
+```{r graphs for  beh enviroments spit by poisson and bonanza combination, include=T, echo=F, warning=F, message=F, fig.width=11, fig.height=7}
+
+
+p_env_subset_c<-day_pat_per_env_df_unfilt%>%
+  filter(id=="eat"|id=="retrieve"|id=="rest"|id=="eat_hoard"|id=="stom_con"|id=="fat_res"|id=="fat_loss_r")%>%
+  filter(env_id=="2"|env_id=="5"|env_id=="6"|env_id=="9"|env_id=="10") # Select the 'survival' enviornments with a Poisson distribution 
+
+b_env_subset_c<-day_pat_per_env_df_unfilt%>%
+  filter(id=="eat"|id=="retrieve"|id=="rest"|id=="eat_hoard"|id=="stom_con"|id=="fat_res"|id=="fat_loss_r")%>%
+  filter(env_id=="8"|env_id=="11"|env_id=="12")                       # Select the 'survival' enviornments with a Bonanza distribution 
+
+
+###### fix subset names and aggegates to shwo B and P distributions 
+
+# Now aggregate the alive environments 
+p_env_subset_agg_c<-p_env_subset_c%>%
+    group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="Poisson")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+b_env_subset_agg_c<-b_env_subset_c%>%
+  group_by(id, timestep_within_day, mod_id, line_id)%>%
+    summarise(mean_new=mean(mean_new, na.rm=T))%>%
+    mutate(env_id="Bonanza")%>%
+    mutate(leg_name=case_when(
+          endsWith(mod_id, "11") ~ "1.1: SC-non H", 
+          endsWith(mod_id, "12") ~ "1.2: SC-left H", 
+          endsWith(mod_id, "131") ~ "1.3.1: SC-dir Htop", 
+          endsWith(mod_id, "132") ~ "1.3.2: SC-dir Rtop", 
+          endsWith(mod_id, "21") ~ "2.1: FR-non H", 
+          endsWith(mod_id, "22") ~ "2.2: FR-left H", 
+          endsWith(mod_id, "231") ~ "2.3.1: FR-dir Htop", 
+          endsWith(mod_id, "232") ~ "2.3.2: FR-dir Rtop",
+          startsWith(mod_id, "31") ~ "3.1: FCR-non H", 
+          startsWith(mod_id, "32") ~ "3.2: FCR-left H", 
+          startsWith(mod_id, "331") ~ "3.3.1: FCR-dir Htop", 
+          startsWith(mod_id, "332") ~ "3.3.2: FCR-dir Rtop",
+        ))%>%
+        mutate(id_beh_label=id)%>%
+        mutate(across(id_beh_label, str_replace, "dir_hoard", "hoard"))%>%
+        mutate(across(id_beh_label, str_replace, "eat_hoard", "hoard"))
+
+b_env_subset_c$env_id<-as.character(b_env_subset_c$env_id)
+b_env_subset_agg_c$env_id<-as.character(b_env_subset_agg_c$env_id)
+
+
+#Together
+p_b_subset_c<-rbind(b_env_subset_c, p_env_subset_agg_c, b_env_subset_agg_c)
+# dead_alive_subset_b<-dead_alive_subset_b%>%
+#   mutate(across(id, str_replace, "dir_hoard", "hoard"))%>%
+#   mutate(across(id, str_replace, "eat_hoard", "hoard"))
+
+facet_order<-c("stom_con", "fat_res", "fat_loss_r", "eat", "eat_hoard", "rest", "retrieve")
+p_b_subset_c$id <- factor(p_b_subset_c$id, levels = facet_order)
+
+# Specify scales for each facet
+scale_types <- c("free_y", "free_y", "free_y", "fixed", "fixed", "fixed", "fixed")
+
+
+plot_p_vs_b_c<-ggplot(p_b_subset_c[p_b_subset_c$env_id=="Poisson"|p_b_subset_c$env_id=="Bonanza",], aes(x=timestep_within_day, y=mean_new))+
+        geom_line(aes( col=leg_name, linetype=line_id))+
+        facet_grid(id ~ env_id, scales="fixed")+
+        #ggtitle(label=paste(int_var, "- Variable per environment type" ))+
+        theme(plot.title=element_text(face='bold'), 
+              axis.title.x = element_text( face='bold' ), 
+              axis.title.y=element_text(face='bold'), 
+              strip.text=element_text(), 
+              legend.text=element_text(), 
+              legend.title=element_blank())+
+        scale_color_manual(values=colours)+
+        coord_cartesian(xlim=c(0, 25))+
+        labs(fill=" ")+
+        ylab(label="Value")+
+        xlab(label="Timestep in day")
+
+      plot_p_vs_b_c<-ggplotly(plot_p_vs_b_c)
+      plot_p_vs_b_c%>% layout(legend = list(title=list(text='<b>Model ID<b>')))
+```
