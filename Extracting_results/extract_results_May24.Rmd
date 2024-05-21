@@ -523,8 +523,9 @@ df_out<-env_func_out_df%>%
           endsWith(model, "62") ~ "SC-FLR",
           endsWith(model, "631") ~ "SC-FLR",
           endsWith(model, "632" )~ "SC-FLR"
-  ))
-
+  ))%>%
+    mutate(timestep_within_day=timestep%%72)%>%
+  #mutate(timestep_within_day = ifelse(timestep_within_day ==0, 72, timestep_within_day))
 
 # Summarise acros the 12 environments 
 
@@ -533,9 +534,16 @@ df_out_Esum<-df_out%>%
   summarise(mean_val_env = mean(value, na.rm=T), nObs = n())%>%
   ungroup()
 
+# Summarise across the days 
+df_out_Dsum<-df_out%>%
+  group_by(id, model, env, timestep_within_day)%>%
+  summarise(mean_val_day = mean(value, na.rm=T, nObs = n()))%>%
+  ungroup()
+
 # make sure that the lists inside the list have the right name 
 setwd(sourcefile_wd)
 save(df_out, file="results.Rda")
 save(df_out_Esum, file="Esum_results.Rda")
+save(df_out_Dsum, file = "Dsum_results.Rda")
 
 ```
