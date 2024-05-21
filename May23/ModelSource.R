@@ -417,8 +417,8 @@ env_func_1_1_par<-function(days, N, th_forage_sc, daylight_h, modelType){
   output_env_func<<-list(performance, outcome_env_1_1_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_sc', th_forage_sc, 'dayh', daylight_h,   '.Rda'))
   
   
   return(output_env_func)
@@ -896,8 +896,8 @@ env_func_1_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, daylight_h, mo
   output_env_func<<-list(performance, outcome_env_1_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'dayh', daylight_h,  '.Rda'))
   
   return(output_env_func)
   
@@ -1769,8 +1769,8 @@ env_func_1_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   output_env_func<<-list(performance, outcome_env_1_3_1_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_131', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'th3', th_forage_sc3, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_131', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'th3', th_forage_sc3, 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -1873,8 +1873,8 @@ env_func_1_3_2_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   output_env_func<<-list(performance, outcome_env_1_3_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_132', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'th3', th_forage_sc3, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_1_3_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_132', 'd', days, 'N', N, 'th1', th_forage_sc1, 'th2', th_forage_sc2, 'th3', th_forage_sc3, 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -2313,8 +2313,8 @@ env_func_2_1_par<-function(days, N, th_forage_fr, daylight_h, modelType){
   output_env_func<<-list(performance, outcome_env_2_1_par)
   
   # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
 
   return(output_env_func)
 
@@ -2770,8 +2770,8 @@ env_func_2_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, daylight_h, mo
   output_env_func<<-list(performance, outcome_env_2_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'dayh', daylight_h,  '.Rda'))
   
   return(output_env_func)
 
@@ -3641,8 +3641,8 @@ env_func_2_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   output_env_func<<-list(performance, outcome_env_2_3_1_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_231', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'th3', th_forage_fr3, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_231', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'th3', th_forage_fr3, 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -3740,8 +3740,8 @@ env_func_2_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   output_env_func<<-list(performance, outcome_env_2_3_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_232', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'th3', th_forage_fr3, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_2_3_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_232', 'd', days, 'N', N, 'th1', th_forage_fr1, 'th2', th_forage_fr2, 'th3', th_forage_fr3, 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -4176,8 +4176,8 @@ env_func_3_1_par<-function(days, N, th_forage_flr, daylight_h, modelType){
   output_env_func<<-list(performance, outcome_env_3_1_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
 
   return(output_env_func)
 } # end environment function loop 3.1 
@@ -4632,8 +4632,8 @@ env_func_3_2_par<-function(days, N, th_forage_flr1, th_forage_flr2, daylight_h, 
   output_env_func<<-list(performance, outcome_env_3_2_par)
   
   # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_flr1, 'th2', th_forage_flr2, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th1', th_forage_flr1, 'th2', th_forage_flr2, 'dayh', daylight_h,  '.Rda'))
   
   return(output_env_func)
 } # end environment function loop 3.2 - local 
@@ -5500,8 +5500,8 @@ env_func_3_3_1_par<-function(days, N, th_forage_flr1, th_forage_flr2, th_forage_
   output_env_func<<-list(performance, outcome_env_3_3_1_par)
   
   #  save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_331', 'd', days, 'N', N, 'th1', th_forage_flr1, 'th2', th_forage_flr2, 'th3', th_forage_flr3, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_331', 'd', days, 'N', N, 'th1', th_forage_flr1, 'th2', th_forage_flr2, 'th3', th_forage_flr3, 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -5599,8 +5599,8 @@ env_func_3_3_2_par<-function(days, N, th_forage_flr1, th_forage_flr2, th_forage_
   output_env_func<<-list(performance, outcome_env_3_3_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_332', 'd', days, 'N', N, 'th1', th_forage_flr1, 'th2', th_forage_flr2, 'th3', th_forage_flr3, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_3_3_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_332', 'd', days, 'N', N, 'th1', th_forage_flr1, 'th2', th_forage_flr2, 'th3', th_forage_flr3, 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -6032,8 +6032,8 @@ env_func_4_1_par<-function(days, N, th_forage_fr, th_forage_flr, daylight_h, mod
   output_env_func<<-list(performance, outcome_env_4_1_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_fr', th_forage_fr, 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', modelType, 'd', days, 'N', N,'th_fr', th_forage_fr, 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
 
   return(output_env_func)
 
@@ -6488,8 +6488,8 @@ env_func_4_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_flr1
   output_env_func<<-list(performance, outcome_env_4_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_', 'd', days, 'N', N, 'th_fr1', th_forage_fr1, 'th_fr2', th_forage_fr2, 'th_flr1', th_forage_flr1, 'th_flr2', th_forage_flr2, 'dayh', daylight_h,  '.Rda'))
   
   # Return the output
   return(output_env_func)
@@ -7330,8 +7330,8 @@ env_func_4_3_1_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   output_env_func<<-list(performance, outcome_env_4_3_1_par)
   
   #  save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_431', 'd', days, 'N', N, 'th_fr1', round(th_forage_fr1, digits = 3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits=3),'th_flr1', round(th_forage_flr1, digits=3), 'th_flr2', round(th_forage_flr2, digits=3), 'th_flr3', round(th_forage_flr3, digits=3), 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_1/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_431', 'd', days, 'N', N, 'th_fr1', round(th_forage_fr1, digits = 3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits=3),'th_flr1', round(th_forage_flr1, digits=3), 'th_flr2', round(th_forage_flr2, digits=3), 'th_flr3', round(th_forage_flr3, digits=3), 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -7431,8 +7431,8 @@ env_func_4_3_2_par<-function(days, N, th_forage_fr1, th_forage_fr2, th_forage_fr
   output_env_func<<-list(performance, outcome_env_4_3_2_par)
   
   # # save the data 
-  setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/12_environments/env_par")
-  save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_432', 'd', days, 'N', N, 'th_fr1', round(th_forage_fr1, digits = 3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits=3),'th_flr1', round(th_forage_flr1, digits=3), 'th_flr2', round(th_forage_flr2, digits=3), 'th_flr3', round(th_forage_flr3, digits=3), 'dayh', daylight_h,  '.Rda'))
+  #setwd("C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/R/Model_output/MOD_4_3_2/12_environments/env_par")
+  #save(output_env_func, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_env_func_out_432', 'd', days, 'N', N, 'th_fr1', round(th_forage_fr1, digits = 3), 'th_fr2', round(th_forage_fr2, digits=3), 'th_fr3', round(th_forage_fr3, digits=3),'th_flr1', round(th_forage_flr1, digits=3), 'th_flr2', round(th_forage_flr2, digits=3), 'th_flr3', round(th_forage_flr3, digits=3), 'dayh', daylight_h,  '.Rda'))
   
   # RETURN IF NEEDED FOR OPTIIZATION/ MAKING GRAPHS 
   return(output_env_func)
@@ -7653,7 +7653,7 @@ mod_5_1<-function(days, N, env_type, th_forage_sc, th_forage_fr, daylight_h){
 ########################
 
 # environment loop paralelel HPC 
-env_func_5_1_par_hpc<-function(days, N, th_forage_sc, th_forage_fr, daylight_h, modelType){
+env_func_5_1_par<-function(days, N, th_forage_sc, th_forage_fr, daylight_h, modelType){
   # For parallel computing 
   require(doParallel)
   require(foreach)
@@ -9247,6 +9247,11 @@ env_func_6_3_1_par<-function(days, N, th_forage_sc1, th_forage_sc2, th_forage_sc
   num_env<-12 
   # paralel loop 
   outcome_env_6_3_1_par<- foreach(i=1:num_env, .packages = c( "truncnorm", "purrr")) %dopar% {
+    
+    # load any functions 
+    setwd("C:/Local_R/BiPhD-ABM/May23")
+    source('MOD_1_FuncSource.R')
+    source('ModelSource.R')
     
     # single model run 
     mod_6_3_1(days = days, N = N, env_type = i,th_forage_sc1 = th_forage_sc1, th_forage_sc2 = th_forage_sc2, th_forage_sc3= th_forage_sc3, 
