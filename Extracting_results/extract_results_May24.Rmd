@@ -525,7 +525,7 @@ df_out<-env_func_out_df%>%
           endsWith(model, "632" )~ "SC-FLR"
   ))%>%
     mutate(timestep_within_day=timestep%%72)%>%
-  #mutate(timestep_within_day = ifelse(timestep_within_day ==0, 72, timestep_within_day))
+  mutate(model = as.factor(model))
 
 # Summarise acros the 12 environments 
 

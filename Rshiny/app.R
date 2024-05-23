@@ -1,3 +1,19 @@
+# Tit simulation app
+# Vera Vinken 
+# 20 May 2014 
+
+
+#### TO DO LIST #### 
+
+# make the check boxes for variable and environment drop downs 
+# fix that graphics box that turns up 
+# figure sizes
+# Model selection should go by "all hoarders", "all direct hoarders", "all stomach content" 
+# Split up subset 1 and subset 2? 
+# Fix colours so that each model has its own color that it will always get
+
+
+# Packages 
 library(shiny)
 library(ggplot2)
 library(dplyr)
@@ -54,7 +70,7 @@ ui <- fluidPage(
       textOutput("models_chosen_text"), 
       textOutput("env_chosen_text"), 
       plotlyOutput("survplot", height = "1000px", width = "100%"),
-      plotlyOutput("physplot", height = "1000px", width = "100%")
+      plotlyOutput("physplot", height = "1100px", width = "100%")
     )
   )
 )
@@ -71,6 +87,13 @@ server <- function(input, output) {
   
   # Load the colors and themes
   source("R/colours_themes.R")
+  
+  
+  # Create the colour scale 
+  #Create a custom color scale
+  myColors <- stepped()
+  names(myColors) <- levels(dat$grp)
+  colScale <- scale_colour_manual(name = "grp",values = myColors)
   
   # Render the survival plot
   output$survplot <- renderPlotly({
@@ -100,7 +123,7 @@ server <- function(input, output) {
         xlab(label = "Timestep (20 min)")+
         ylab(label = "Proportion  of birds alive")+
         vera_theme()+
-        scale_color_manual(values=as.vector(stepped(24))) +
+        scale_color_manual(values=as.vector(kelly(24))) +
         labs(fill = " ")
     } else {
       ggplot(surv_dat, aes(x = timestep, y = value)) +
@@ -116,7 +139,7 @@ server <- function(input, output) {
         xlab(label = "Timestep (20 min)")+
         ylab(label = "Proportion  of birds alive")+
         vera_theme()+
-        scale_color_manual(values=as.vector(stepped(24))) +
+        scale_color_manual(values=as.vector(kelly(24))) +
         labs(fill = " ")
     }
     
@@ -146,7 +169,7 @@ server <- function(input, output) {
       xlab(label = "Timestep (20 min)")+
       ylab(label = paste(input$phys_var_to_show)) +
       vera_theme()+
-      scale_color_manual(values=as.vector(stepped(24))) +
+      scale_color_manual(values=as.vector(kelly(24))) +
       labs(fill = " ")
     
     ggplotly(p)
