@@ -79,6 +79,13 @@ ui <- fluidPage(
 # SERVER 
 ##################################################
 
+# input<-list(
+#   environments_to_show = 1, 
+#   models_to_show = c(11, 21), 
+#   phys_var_to_how = "fat_res"
+# )
+
+
 server <- function(input, output) {
   # Load the default data from the .rda file
   load("data/results.rda") 
@@ -92,8 +99,9 @@ server <- function(input, output) {
   # Create the colour scale 
   #Create a custom color scale
   myColors <- stepped()
-  names(myColors) <- levels(dat$grp)
-  colScale <- scale_colour_manual(name = "grp",values = myColors)
+  names(myColors) <- levels(df_out$model)
+  colScale <- scale_colour_manual(name = "model",values = myColors)
+  
   
   # Render the survival plot
   output$survplot <- renderPlotly({
@@ -123,7 +131,8 @@ server <- function(input, output) {
         xlab(label = "Timestep (20 min)")+
         ylab(label = "Proportion  of birds alive")+
         vera_theme()+
-        scale_color_manual(values=as.vector(kelly(24))) +
+        #scale_color_manual(values=as.vector(kelly(24))) +
+        colScale+
         labs(fill = " ")
     } else {
       ggplot(surv_dat, aes(x = timestep, y = value)) +

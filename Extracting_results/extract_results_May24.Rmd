@@ -100,7 +100,10 @@ If this is running from the shared Rproject, this should all be automated.
 
 
 ```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
-models<-c("11", "21", "31", "41", "51", "61",
+models<-c("11", 
+          "21", 
+          "31", 
+          "41", "51", "61",
           "12", "22", "32","42", "52", "62" ,
           "131", "231", "331", "431", "531", "631",
           "132", "232", "332", "432", "532", "632") 
@@ -525,7 +528,43 @@ df_out<-env_func_out_df%>%
           endsWith(model, "632" )~ "SC-FLR"
   ))%>%
     mutate(timestep_within_day=timestep%%72)%>%
-  mutate(model = as.factor(model))
+  mutate(model = factor(model, 
+                        levels = c("11", "12","131","132",
+                                   "21", "22","231", "232",
+                                   "31", "32","331", "332", 
+                                   "41", "42", "431","432",
+                                   "51", "52", "531","532", 
+                                   "61","62" ,"631","632")                       
+                        # ,
+                        # labels = c("Non-hoarder - SC", 
+                        #            "Non-hoarder - FR", 
+                        #            "Non-hoarder - FCR",
+                        #            "Non-hoarder - FR & FCR", 
+                        #            "Non-hoarder - SC & FR",
+                        #            "Non-hoarder - SC & FCR",
+                        #            "Leftover-hoarder - SC", 
+                        #            "Leftover-hoarder - FR", 
+                        #            "Leftover-hoarder - FCR", 
+                        #            "Leftover-hoarder - FR & FCR", 
+                        #            "Leftover-hoarder - SC & FR", 
+                        #            "Leftover-hoarder - SC & FCR", 
+                        #            "Direct-hoarder Htop - SC", 
+                        #            "Direct-hoarder Htop - FR", 
+                        #            "Direct-hoarder Htop - FCR", 
+                        #            "Direct-hoarder Htop - FR & FCR", 
+                        #            "Direct-hoarder Htop - SC & FR", 
+                        #            "Direct-hoarder Htop - SC & FCR", 
+                        #            "Direct-hoarder Rtop - SC", 
+                        #            "Direct-hoarder Rtop - FR", 
+                        #            "Direct-hoarder Rtop - FCR", 
+                        #            "Direct-hoarder Rtop - FR & FCR", 
+                        #            "Direct-hoarder Rtop - SC & FR", 
+                        #            "Direct-hoarder Rtop - SC & FCR"
+                        #            )
+          ))
+
+
+
 
 # Summarise acros the 12 environments 
 
