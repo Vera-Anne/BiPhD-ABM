@@ -1,0 +1,13 @@
+name: Rshiny_Titsimulator_v1
+title: Rshiny_Titsimulator_v1
+username: veravinken
+account: veravinken
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12082819
+bundleId: 8670129
+url: https://veravinken.shinyapps.io/Rshiny_Titsimulator_v1/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: file42183c9952d1.prof|file42c8141037f.Rprof|file42c815c2459.Rprof|file42c81a025432.Rprof|file42c82c9c7b39.Rprof|file42c84bbc6c22.Rprof|file42c8783c2af9.Rprof|file42c87c8b29a.Rprof|file42c87e9330f4.Rprof|file42c893c15dc.Rprof|file470c21b67cc0.Rprof|file470c300372fc.Rprof|file470c37213e7.Rprof|file470c3d5813cb.Rprof|file470c45fa2444.Rprof|file470c64c2614.Rprof|file470c65f56ed.Rprof|file470cc96a64.Rprof|file4bc454b487f.prof|file4c3420455261.prof|file4fc0145a3e2c.Rprof|file4fc01ccd5244.Rprof|file4fc0290a7f7.Rprof|file4fc030bb4fbd.Rprof|file4fc0378b4669.Rprof|file4fc047926d9a.Rprof|file4fc04fcc4bf5.Rprof|file4fc066872996.Rprof|file4fc06e4271ba.Rprof|file4fc06ea232d9.Rprof|file4fc06f1b3b29.Rprof|file4fc0712c6d56.Rprof|file4fc0748146fd.Rprof|file4fc07f334bc6.Rprof|file4fc07f442aef.Rprof|file4fc0cbe7bdf.Rprof|file4fc0e3e3a45.Rprof|file5bb463985a5d.prof|file62984fb71dc2.prof|file65ec3f6f5407.prof

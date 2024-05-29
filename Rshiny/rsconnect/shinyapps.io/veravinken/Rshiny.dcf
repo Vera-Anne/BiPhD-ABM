@@ -1,0 +1,12 @@
+name: Rshiny
+title: Rshiny
+username: veravinken
+account: veravinken
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12082693
+bundleId: 8669188
+url: https://veravinken.shinyapps.io/Rshiny/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

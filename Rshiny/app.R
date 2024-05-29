@@ -10,14 +10,18 @@ library(dplyr)
 library(plotly)
 library(pals)
 library(bslib)
+library(profvis)
 
 #### HOUSEKEEPING ###
 # Clear workspace
 rm(list = ls())
 
+
+
 ###############################################
 # UI - USER INTERFACE
 ###############################################
+
 
 
 ui <- fluidPage(
@@ -68,7 +72,7 @@ ui <- fluidPage(
                            "6.2 - Leftover hoarding - SC & FCR" = 62,
                            "6.3.1 - Direct hoarding (H top) - SC & FCR (DOESNT WORK YET)" = 631, 
                            "6.3.2 - Direct hoarding (R top) - SC & FCR " = 632),
-                         selected = c(11)
+                         #selected = c(11)
       ),
       selectInput("environments_to_show",
                   label = "Pick which environment selection to show",
@@ -132,8 +136,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # Load the default data from the .rda file
-  load("data/results.rda") 
-  load("data/Dsum_results.rda")
+  load("Data/results.Rda") 
+  load("Data/Dsum_results.Rda")
   
   # Load the colors and themes
   source("R/colours_themes.R")
@@ -194,8 +198,8 @@ server <- function(input, output, session) {
   
   # Render the survival plot
   output$survplot <- renderPlotly({
-    p <- if(input$environments_to_show == "mean") {
-      ggplot(data(), aes(x = timestep, y = mean_val_env)) +
+    if(input$environments_to_show == "mean") {
+      survplot <-ggplot(data(), aes(x = timestep, y = mean_val_env)) +
         geom_line(aes(col = model)) +
         theme(plot.title = element_text(face = 'bold', size = 25), 
               axis.title.x = element_text(face = 'bold', size = 15), 
@@ -210,14 +214,14 @@ server <- function(input, output, session) {
         colScale +
         labs(fill = " ")
     } else {
-      ggplot(data(), aes(x = timestep, y = value)) +
+      survplot <-ggplot(data(), aes(x = timestep, y = value)) +
         geom_line(aes(col = model)) +
         facet_wrap(. ~ env, nrow = 6) +
-        theme(plot.title = element_text(face = 'bold', size = 25), 
-              axis.title.x = element_text(face = 'bold', size = 15), 
-              axis.title.y = element_text(face = 'bold', size = 15), 
-              strip.text = element_text(), 
-              legend.text = element_text(size = 10), 
+        theme(plot.title = element_text(face = 'bold', size = 25),
+              axis.title.x = element_text(face = 'bold', size = 15),
+              axis.title.y = element_text(face = 'bold', size = 15),
+              strip.text = element_text(),
+              legend.text = element_text(size = 10),
               legend.title = element_blank()) +
         ggtitle("Survival") +
         xlab("Timestep (20 min)") +
@@ -226,14 +230,16 @@ server <- function(input, output, session) {
         colScale +
         labs(fill = " ")
     }
-    plotlyOutput <- ggplotly(p)#, width = input$width, height = input$height)#, height = input$height, width = input$width)
-    plotlyOutput
+    ggplotly(survplot)
+    #survplot
+    #ggplotly(survplot)#, width = input$width, height = input$height)#, height = input$height, width = input$width)
+    #plotlyOutput
   })
   
   # Render the physiological variable plot 
   output$physplot <- renderPlotly({
-    p <- if(input$environments_to_show == "mean") {
-      ggplot(data_phys(), aes(x = timestep_within_day, y = mean_val_env)) +
+    if(input$environments_to_show == "mean") {
+      physplot <- ggplot(data_phys(), aes(x = timestep_within_day, y = mean_val_env)) +
         geom_line(aes(col = model)) +
         theme(plot.title = element_text(face = 'bold', size = 20), 
               axis.title.x = element_text(face = 'bold', size = 15), 
@@ -248,7 +254,7 @@ server <- function(input, output, session) {
         colScale +
         labs(fill = " ")
     } else {
-      ggplot(data_phys(), aes(x = timestep_within_day, y = mean_val_day)) +
+      physplot <- ggplot(data_phys(), aes(x = timestep_within_day, y = mean_val_day)) +
         geom_line(aes(col = model)) +
         facet_wrap(. ~ env, nrow = 6) +
         theme(plot.title = element_text(face = 'bold', size = 20), 
@@ -264,13 +270,15 @@ server <- function(input, output, session) {
         colScale +
         labs(fill = " ")
     }
-    ggplotly(p)#, width = input$width, height = input$height)
+    #
+    ggplotly(physplot)#, width = input$width, height = input$height)
+    #plotlyOutput
   })
   
   # Render the behaviour variable plot 
   output$behplot <- renderPlotly({
-    p <- if(input$environments_to_show == "mean") {
-      ggplot(data_beh(), aes(x = timestep_within_day, y = mean_val_env)) +
+     if(input$environments_to_show == "mean") {
+       behplot  <-ggplot(data_beh(), aes(x = timestep_within_day, y = mean_val_env)) +
         geom_line(aes(col = model)) +
         theme(plot.title = element_text(face = 'bold', size = 20), 
               axis.title.x = element_text(face = 'bold', size = 15), 
@@ -285,7 +293,7 @@ server <- function(input, output, session) {
         colScale +
         labs(fill = " ")
     } else {
-      ggplot(data_beh(), aes(x = timestep_within_day, y = mean_val_day)) +
+      behplot  <-ggplot(data_beh(), aes(x = timestep_within_day, y = mean_val_day)) +
         geom_line(aes(col = model)) +
         facet_wrap(. ~ env, nrow = 6) +
         theme(plot.title = element_text(face = 'bold', size = 20), 
@@ -301,7 +309,8 @@ server <- function(input, output, session) {
         colScale +
         labs(fill = " ")
     }
-    ggplotly(p)#, width = input$width, height = input$height)
+    ggplotly(behplot)#, width = input$width, height = input$height)
+    #plotlyOutput
   })
   
   # Output the selected models
@@ -315,5 +324,7 @@ server <- function(input, output, session) {
   })
 }
 
+
+#profvis::profvis(runApp(shinyApp(ui, server)), prof_output = "C:/Local_R/BiPhD-ABM/Rshiny/")
 
 shinyApp(ui, server)
