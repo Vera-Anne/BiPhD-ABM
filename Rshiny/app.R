@@ -19,7 +19,7 @@ rm(list = ls())
 
 
 ###############################################
-# UI - USER INTERFACE
+# UI - USER INTERFACE                         #
 ###############################################
 
 
@@ -28,7 +28,7 @@ ui <- fluidPage(
   # set background
   setBackgroundColor("#e3e2db"),
   # Header with logo 
-  titlePanel(title=div(img(src="logo.png", height = "3%", width= "3%"), "Tit Simulator", 
+  titlePanel(title=div(img(src="logo.png", height = "3%", width= "3%"), "Tit Simulator (Test version May '24)", 
                        style = "background-color: #484537; padding: 12px; color:#e3e2db; font-size:35px; font-style:bold;")),
   
   
