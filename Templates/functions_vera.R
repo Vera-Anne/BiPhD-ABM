@@ -28,8 +28,14 @@
       # Put the loaded .Rda object into the output
       grab_recent_out<-temp_env[[paste(loaded_object)]]
     }else {
-      print("Error, cannot find data type")
-      grab_recent_out<-"Error cannot find data type"
+      temp_env<-new.env()
+      # this just allows any "end of filename" to be grabbed
+      load(paste0(most_recent_file), envir=temp_env)
+      loaded_object<-ls(temp_env)
+      # Put the loaded .Rda object into the output
+      grab_recent_out<-temp_env[[paste(loaded_object)]]
+      #print("Error, cannot find data type")
+      #grab_recent_out<-"Error cannot find data type"
     }
     return(grab_recent_out)
   }
