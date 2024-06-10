@@ -21,10 +21,10 @@ This code will take the output from the HPC from a specific level. It then conca
 
 ## Basic settings 
 ```{r settings}
-model_type<-632
-level<-3  # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
+model_type<-432
+level<-2  # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
 subset<-2
-branch_type<-4
+branch_type<-6
 ```
 
 ## Set working directories 
