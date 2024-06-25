@@ -1,9 +1,14 @@
-vera_theme <- function() {
+vera_theme <- function(bg) {
+  if(bg == "white"){
+    bg<-"white"
+  } else if (bg == "yellow"){
+    bg<-"ivory"
+  }
   theme(
     # add border 1)
     panel.border = element_rect(colour = "darkgrey", fill = NA, linetype = 1),
     # color background 2)
-    panel.background = element_rect(fill = "ivory"),
+    panel.background = element_rect(fill = paste(bg)),
     # modify grid 3)
     panel.grid.major.x = element_line(colour = "darkgrey", linetype = 3, size = 0.5),
     panel.grid.minor.x = element_blank(),

@@ -105,10 +105,27 @@ If this is running from the shared Rproject, this should all be automated.
 models<-c("11", 
           "21", 
           "31", 
-          "41", "51", "61",
-          "12", "22", "32","42", "52", "62" ,
-          "131", "231", "331", "431", "531", "631",
-          "132", "232", "332", "432", "532", "632") 
+          "41", 
+          "51",
+          "61",
+          "12", 
+          "22", 
+          "32",
+          "42", 
+          "52", 
+          "62" ,
+          "131", 
+          "231", 
+          "331", 
+          "431", 
+          "531", 
+          "631",
+          "132", 
+          "232", 
+          "332", 
+          "432", 
+          "532", 
+          "632") 
 
 # If you are using the previously generated data, do not change these the code will use teh default settings 
 num_birds<-1000
@@ -119,7 +136,7 @@ days<-30
 ### Repeat current settings 
 The current run includes the following settings: 
 
-* **Models to be evaluated** = `r models`
+* **Models to be evaluated** = `models`
 * **Variable of interest** (if we are looking at split environments) = `r int_var`
 * **Number of birds** = `r num_birds`
 * **Daylight hours** = `r daylight_h`
@@ -276,12 +293,12 @@ for (i in 1:length(models)){
     # Code that runs 431 
     env_func_4_3_1_par(days = days, 
                        N= num_birds, 
-                       th_forage_fr1 = 0,
-                       th_forage_flr1 = 0, 
-                       th_forage_fr2 = 0,
-                       th_forage_flr2 = 0, 
-                       th_forage_fr3 = 0,
-                       th_forage_flr3 = 0, 
+                       th_forage_fr1 = 0.53125,
+                       th_forage_flr1 = -0.028125, 
+                       th_forage_fr2 = 1.46875,
+                       th_forage_flr2 = 0.215625, 
+                       th_forage_fr3 = 3.09375,
+                       th_forage_flr3 = 0.496875, 
                        daylight_h = daylight_h,
                        modelType = 431)
     
