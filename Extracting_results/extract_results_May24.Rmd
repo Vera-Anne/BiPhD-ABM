@@ -102,30 +102,42 @@ If this is running from the shared Rproject, this should all be automated.
 
 
 ```{r set which model to run, include=TRUE, warning=FALSE,echo=F, message=FALSE}
+# models<-c("11", 
+#           "21", 
+#           "31", 
+#           "41", 
+#           "51",
+#           "61",
+#           "12", 
+#           "22", 
+#           "32",
+#           "42", 
+#           "52", 
+#           "62" ,
+#           "131", 
+#           "231", 
+#           "331", 
+#           "431", 
+#           "531", 
+#           "631",
+#           "132", 
+#           "232", 
+#           "332", 
+#           "432", 
+#           "532", 
+#           "632") 
 models<-c("11", 
-          "21", 
-          "31", 
           "41", 
           "51",
           "61",
           "12", 
-          "22", 
-          "32",
           "42", 
           "52", 
           "62" ,
           "131", 
-          "231", 
-          "331", 
           "431", 
           "531", 
-          "631",
-          "132", 
-          "232", 
-          "332", 
-          "432", 
-          "532", 
-          "632") 
+          "631")
 
 # If you are using the previously generated data, do not change these the code will use teh default settings 
 num_birds<-1000
@@ -156,7 +168,7 @@ for (i in 1:length(models)){
     # Code that runs 11
     env_func_1_1_par(days = days, 
                      N= num_birds, 
-                     th_forage_sc = 0.002083333, 
+                     th_forage_sc = 0.028125, 
                      daylight_h = daylight_h, 
                      modelType = 11) 
   }else if (models[i]==12){
@@ -164,8 +176,8 @@ for (i in 1:length(models)){
     # Code that runs 12 
     env_func_1_2_par(days = days, 
                      N= num_birds, 
-                     th_forage_sc1 = 0.02708333, 
-                     th_forage_sc2 = 0.08125, 
+                     th_forage_sc1 = 0.053125, 
+                     th_forage_sc2 = 0.103125, 
                      daylight_h = daylight_h, 
                      modelType = 12)
     
@@ -173,9 +185,9 @@ for (i in 1:length(models)){
     # Code that runs 131 
       env_func_1_3_1_par(days = days, 
                          N= num_birds, 
-                         th_forage_sc1 = 0.03125 , 
-                         th_forage_sc2 = 0.08958333, 
-                         th_forage_sc3 = 0.29375 , 
+                         th_forage_sc1 = 0.078125, 
+                         th_forage_sc2 = 0.103125, 
+                         th_forage_sc3 = 0.3125, 
                          daylight_h = daylight_h, 
                          modelType = 131)
     
@@ -183,9 +195,9 @@ for (i in 1:length(models)){
     # Code that runs 132
         env_func_1_3_2_par(days = days, 
                            N= num_birds, 
-                           th_forage_sc1 =0.02708333, 
-                           th_forage_sc2 =0.13125, 
-                           th_forage_sc3 =0.1354167, 
+                           th_forage_sc1 =0.096875, 
+                           th_forage_sc2 =0.115625, 
+                           th_forage_sc3 =0.203125, 
                            daylight_h = daylight_h, 
                            modelType = 132)
     
@@ -193,7 +205,7 @@ for (i in 1:length(models)){
     # Code that runs 21 
     env_func_2_1_par(days = days, 
                      N= num_birds, 
-                     th_forage_fr = 1.604167, 
+                     th_forage_fr = 1.65625, 
                      daylight_h = daylight_h, 
                      modelType = 21)
     
@@ -201,8 +213,8 @@ for (i in 1:length(models)){
     # Code that runs 22 
     env_func_2_2_par(days = days, 
                      N= num_birds, 
-                     th_forage_fr1 = 1.020833, 
-                     th_forage_fr2 = 1.4375 , 
+                     th_forage_fr1 = 0.71875 , 
+                     th_forage_fr2 = 1.15625 , 
                      daylight_h = daylight_h, 
                      modelType = 22)
   } else if (models[i]==231){
@@ -210,9 +222,9 @@ for (i in 1:length(models)){
     
     # Code that runs 231 
       env_func_2_3_1_par(days = days, N= num_birds, 
-                         th_forage_fr1 = 0.3958333, 
-                         th_forage_fr2 =1.395833, 
-                         th_forage_fr3 = 2.9375, 
+                         th_forage_fr1 = 0.46875, 
+                         th_forage_fr2 =1.34375, 
+                         th_forage_fr3 = 2.78125 ,
                          daylight_h = daylight_h, 
                          modelType = 231)
   } else if (models[i]==232){
@@ -221,9 +233,9 @@ for (i in 1:length(models)){
     # Code that runs 232 
     env_func_2_3_2_par(days = days, 
                        N= num_birds, 
-                       th_forage_fr1 = 0.3958333, 
-                       th_forage_fr2 = 2.229167, 
-                       th_forage_fr3 = 3.8125, 
+                       th_forage_fr1 = 0.46875, 
+                       th_forage_fr2 = 2.15625, 
+                       th_forage_fr3 = 3.03125, 
                        daylight_h = daylight_h, 
                        modelType = 232)
   } else if (models[i]==31){
@@ -232,7 +244,7 @@ for (i in 1:length(models)){
     # Code that runs 31 
     env_func_3_1_par(days = days, 
                      N= num_birds, 
-                     th_forage_flr = 0.23125, 
+                     th_forage_flr = 0.421875, 
                      daylight_h = daylight_h, 
                      modelType = 31)
     
@@ -241,8 +253,8 @@ for (i in 1:length(models)){
     # Code that runs 32 
     env_func_3_2_par(days = days, 
                      N= num_birds, 
-                     th_forage_flr1 = -0.06875, 
-                     th_forage_flr2 = 0.11875, 
+                     th_forage_flr1 = 0.065625, 
+                     th_forage_flr2 = 0.459375, 
                      daylight_h = daylight_h, 
                      modelType = 32)
     
@@ -251,9 +263,9 @@ for (i in 1:length(models)){
     # Code that runs 331 
     env_func_3_3_1_par(days = days, 
                        N= num_birds, 
-                       th_forage_flr1 = -0.13125, 
-                       th_forage_flr2 = 0.21875, 
-                       th_forage_flr3 = 0.41875, 
+                       th_forage_flr1 = -0.140625, 
+                       th_forage_flr2 = 0.196875, 
+                       th_forage_flr3 = 0.365625, 
                        daylight_h = daylight_h, modelType = 331)
     
   } else if (models[i]==332){
@@ -261,9 +273,9 @@ for (i in 1:length(models)){
     # Code that runs 332
     env_func_3_3_2_par(days = days, 
                        N= num_birds, 
-                       th_forage_flr1 = -0.11875, 
-                       th_forage_flr2 = 0.25625, 
-                       th_forage_flr3 = 0.49375, 
+                       th_forage_flr1 = -0.140625, 
+                       th_forage_flr2 = 0.271875, 
+                       th_forage_flr3 = 0.440625, 
                        daylight_h = 8, modelType = 332)
   }else if (models[i]==41){
     
@@ -271,8 +283,8 @@ for (i in 1:length(models)){
     # Code that runs 41 
     env_func_4_1_par(days = days, 
                      N= num_birds, 
-                     th_forage_fr = 1.520833, 
-                     th_forage_flr = -0.00625, 
+                     th_forage_fr = 1.59375 , 
+                     th_forage_flr = -0.515625, 
                      daylight_h = daylight_h, 
                      modelType = 41)
     
@@ -281,10 +293,10 @@ for (i in 1:length(models)){
     # Code that runs 42 
     env_func_4_2_par(days = days, 
                      N= num_birds, 
-                     th_forage_fr1 = 1.3125,
-                     th_forage_flr1 = -0.03125, 
-                     th_forage_fr2 = 1.354167,
-                     th_forage_flr2 = 0.00625, 
+                     th_forage_fr1 = 1.96875,
+                     th_forage_flr1 = -.028125, 
+                     th_forage_fr2 = 2.03125,
+                     th_forage_flr2 = 0.009375, 
                      daylight_h = daylight_h, 
                      modelType = 42)
     
@@ -307,12 +319,12 @@ for (i in 1:length(models)){
     # Code that runs 432
     env_func_4_3_2_par(days = days, 
                        N= num_birds, 
-                       th_forage_fr1 = 0,
-                       th_forage_flr1 = 0, 
-                       th_forage_fr2 = 0,
-                       th_forage_flr2 = 0, 
-                       th_forage_fr3 = 0,
-                       th_forage_flr3 = 0, 
+                       th_forage_fr1 = 1.09375,
+                       th_forage_flr1 = -0.065625, 
+                       th_forage_fr2 = 2.34375,
+                       th_forage_flr2 = 0.253125, 
+                       th_forage_fr3 = 3.21875,
+                       th_forage_flr3 = 0.459375, 
                        daylight_h = 8, 
                        modelType = 432)
     
@@ -322,8 +334,8 @@ for (i in 1:length(models)){
     # Code that runs 51 
     env_func_5_1_par(days = days, 
                      N= num_birds, 
-                     th_forage_sc = 0.03125,
-                     th_forage_fr = 0.3125, 
+                     th_forage_sc = 0.034375,
+                     th_forage_fr = 0.09375, 
                      daylight_h = daylight_h, 
                      modelType = 51)
     
@@ -332,10 +344,10 @@ for (i in 1:length(models)){
     # Code that runs 52 
     env_func_5_2_par(days = days, 
                      N= num_birds, 
-                     th_forage_sc1 = 0.0645833,
-                     th_forage_fr1 = 1.3125,
-                     th_forage_sc2 = 0.1145833,
-                     th_forage_fr2 = 1.395833,
+                     th_forage_sc1 = 0.096875,
+                     th_forage_fr1 = 1.21875,
+                     th_forage_sc2 = 0.103125,
+                     th_forage_fr2 = 2.03125,
                      daylight_h = daylight_h, 
                      modelType = 52)
     
@@ -344,12 +356,12 @@ for (i in 1:length(models)){
     # Code that runs 531 
     env_func_5_3_1_par(days = days, 
                        N= num_birds, 
-                       th_forage_sc1 = 0,
-                       th_forage_fr1 = 0, 
-                       th_forage_sc2 = 0,
-                       th_forage_fr2 = 0, 
-                       th_forage_sc3 = 0,
-                       th_forage_fr3 = 0, 
+                       th_forage_sc1 = 0.028125,
+                       th_forage_fr1 = 0.53125, 
+                       th_forage_sc2 = 0.103125,
+                       th_forage_fr2 = 1.46875, 
+                       th_forage_sc3 = 0.340625,
+                       th_forage_fr3 = 3.09375, 
                        daylight_h = daylight_h,
                        modelType = 531)
     
@@ -358,12 +370,12 @@ for (i in 1:length(models)){
     # Code that runs 532
     env_func_5_3_2_par(days = days, 
                        N= num_birds, 
-                       th_forage_sc1 = 0,
-                       th_forage_fr1 = 0, 
-                       th_forage_sc2 = 0,
-                       th_forage_fr2 = 0, 
-                       th_forage_sc3 = 0,
-                       th_forage_fr3 = 0, 
+                       th_forage_sc1 = 0.096875,
+                       th_forage_fr1 = 1.09375, 
+                       th_forage_sc2 = 0.209375,
+                       th_forage_fr2 = 2.15625, 
+                       th_forage_sc3 = 0.384375,
+                       th_forage_fr3 = 3.28125, 
                        daylight_h = 8, 
                        modelType = 532)
     
@@ -373,8 +385,8 @@ for (i in 1:length(models)){
     # Code that runs 61 
     env_func_6_1_par(days = days, 
                      N= num_birds, 
-                     th_forage_sc = 0.01458333,
-                     th_forage_flr = -0.58125, 
+                     th_forage_sc = 0.003125,
+                     th_forage_flr = -0.478125, 
                      daylight_h = daylight_h, 
                      modelType = 61)
     
@@ -383,10 +395,10 @@ for (i in 1:length(models)){
     # Code that runs 62 
     env_func_6_2_par(days = days, 
                      N= num_birds, 
-                     th_forage_sc1 = 0.05208333,
-                     th_forage_flr1 = -0.20625,
-                     th_forage_sc2 = 0.09791667,
-                     th_forage_flr2 = -0.18125,
+                     th_forage_sc1 = 0.015625,
+                     th_forage_flr1 = -0.309375,
+                     th_forage_sc2 = 0.103125 ,
+                     th_forage_flr2 = -0.290625,
                      daylight_h = daylight_h, 
                      modelType = 62)
     
@@ -395,12 +407,12 @@ for (i in 1:length(models)){
     # Code that runs 631 
     env_func_6_3_1_par(days = days, 
                        N= num_birds, 
-                       th_forage_sc1 = 0,
-                       th_forage_flr1 = 0, 
-                       th_forage_sc2 = 0,
-                       th_forage_flr2 = 0, 
-                       th_forage_sc3 = 0,
-                       th_forage_flr3 = 0, 
+                       th_forage_sc1 = 0.003125,
+                       th_forage_flr1 = -0.065625, 
+                       th_forage_sc2 = 0.115625,
+                       th_forage_flr2 = 0.234375, 
+                       th_forage_sc3 = 0.303125,
+                       th_forage_flr3 = 0.553125, 
                        daylight_h = daylight_h,
                        modelType = 631)
     
@@ -409,12 +421,12 @@ for (i in 1:length(models)){
     # Code that runs 632
     env_func_6_3_2_par(days = days, 
                        N= num_birds, 
-                       th_forage_sc1 = 0,
-                       th_forage_flr1 = 0, 
-                       th_forage_sc2 = 0,
-                       th_forage_flr2 = 0, 
-                       th_forage_sc3 = 0,
-                       th_forage_flr3 = 0, 
+                       th_forage_sc1 = 0.103125,
+                       th_forage_flr1 = -0.009375, 
+                       th_forage_sc2 = 0.246875,
+                       th_forage_flr2 = 0.234375, 
+                       th_forage_sc3 = 0.359375,
+                       th_forage_flr3 = 0.328125, 
                        daylight_h = 8, 
                        modelType = 632)
   }
@@ -447,6 +459,8 @@ for (i in 1:length(models)){
 env_func_out_df<-as.data.frame(do.call("rbind", env_func_out_list))
 #rm(env_func_out_list)
 
+# Add branch type to the data 
+env_func_out_df$branch<-rep(4)
 
 
 
@@ -600,8 +614,8 @@ df_out_Dsum<-df_out%>%
 
 # make sure that the lists inside the list have the right name 
 setwd(sourcefile_wd)
-save(df_out, file="results.Rda")
-save(df_out_Esum, file="Esum_results.Rda")
-save(df_out_Dsum, file = "Dsum_results.Rda")
+save(df_out, file="results_4b.Rda")
+save(df_out_Esum, file="Esum_results_4b.Rda")
+save(df_out_Dsum, file = "Dsum_results_4b.Rda")
 
 ```
