@@ -1,0 +1,163 @@
+---
+title: "setCombinationBranch_Branch6_level3"
+author: "Vera Vinken"
+date: "10/06/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+  
+## Packages 
+
+```{r packages, include=TRUE, message=FALSE, warning=FALSE}
+library(dplyr)
+
+library(stringr) # to select the 2nd digit of a number with the str_sub() function 
+
+library(beepr) # beep when done 
+
+
+library(stringi) # first element from string
+
+
+# wd sourcefile 
+  sourcefile_wd<- "C:/Local_R/BiPhD-ABM/Templates"    
+
+# Load the sourcefiles 
+  setwd(sourcefile_wd)
+  source('functions_vera.R')
+
+
+```
+
+## Background
+
+## Basic settings 
+```{r settings}
+model_type<-432
+```
+
+## Set working directories 
+```{r set working directories}
+l2_result_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/HPC/predesigned_branches/output_subset2_6/level_2/concat_results/"
+
+general_folder<-"C:/Users/c0070955/OneDrive - Newcastle University/1-PHD-project/Modelling/HPC/predesigned_branches"
+
+
+```
+
+## Pull the data 
+
+```{r pull the conatanated data from level 2}
+# Pull data of most recent concatenation of this model in level 2
+HL_df<-grab_recent(wd = l2_result_folder, data_type = paste0("MOD_", model_type, "_lev2.Rda"))
+
+
+```
+## Extract the first row 
+
+Extract the first row of the dataframe so I can get to the "best" thresholds 
+
+```{r extract best ths}
+best_th_l2<-HL_df[1,5:10]
+
+```
+
+## Calculate the new minimum and maxima 
+
+For this, I first need to find the stepsize. For the 6 branch in level 3, there will be 6x4x4 = 96 options which need to be spread across the original range of each variable. Which variable this is, will be model specific. I will first create a list with these calculated so this can be referenced. 
+
+```{r create a list with the references for stepsize}
+SC_stepsize<-(round(((0.4-0)/96), digits=10))
+FR_stepsize<-(round(((4-0)/96), digits=10))
+FLR_stepsize<-(round(((0.6-(-0.6))/96), digits=10))
+
+
+if (model_type==431 |model_type==432 ){
+  # proxies are FR and FLR 
+  proxy_1<-FR_stepsize
+  proxy_2<-FLR_stepsize
+}else if(model_type==531 |model_type==532){
+  # proxies are SC and FR
+  proxy_1<-SC_stepsize
+  proxy_2<-FR_stepsize
+}else if(model_type==631 |model_type==632){
+    # proxies are SC and FLR
+  proxy_1<-SC_stepsize
+  proxy_2<-FLR_stepsize
+  
+}else{
+  print("Error in model type")
+}
+
+
+```
+
+Now decide on the new 4 branches for each of the variable thresholds 
+
+```{r caluclate new branches for ths}
+
+best_th_l2<-as.data.frame(best_th_l2)
+
+# Calculate the new minimum for th1 
+                      new_v1_th1<-c((best_th_l2[1,1]-(1.5*proxy_1)), 
+                                    (best_th_l2[1,1]-(0.5*proxy_1)), 
+                                    (best_th_l2[1,1]+(0.5*proxy_1)), 
+                                    (best_th_l2[1,1]+(1.5*proxy_1)))
+                      new_v2_th1<-c((best_th_l2[1,2]-(1.5*proxy_2)), 
+                                    (best_th_l2[1,2]-(0.5*proxy_2)), 
+                                    (best_th_l2[1,2]+(0.5*proxy_2)), 
+                                    (best_th_l2[1,2]+(1.5*proxy_2)))
+                      new_v1_th2<-c((best_th_l2[1,3]-(1.5*proxy_1)), 
+                                    (best_th_l2[1,3]-(0.5*proxy_1)), 
+                                    (best_th_l2[1,3]+(0.5*proxy_1)), 
+                                    (best_th_l2[1,3]+(1.5*proxy_1)))
+                      new_v2_th2<-c((best_th_l2[1,4]-(1.5*proxy_2)), 
+                                    (best_th_l2[1,4]-(0.5*proxy_2)), 
+                                    (best_th_l2[1,4]+(0.5*proxy_2)), 
+                                    (best_th_l2[1,4]+(1.5*proxy_2)))
+                      new_v1_th3<-c((best_th_l2[1,5]-(1.5*proxy_1)), 
+                                    (best_th_l2[1,5]-(0.5*proxy_1)), 
+                                    (best_th_l2[1,5]+(0.5*proxy_1)), 
+                                    (best_th_l2[1,5]+(1.5*proxy_1)))
+                      new_v2_th3<-c((best_th_l2[1,6]-(1.5*proxy_2)), 
+                                    (best_th_l2[1,6]-(0.5*proxy_2)), 
+                                    (best_th_l2[1,6]+(0.5*proxy_2)), 
+                                    (best_th_l2[1,6]+(1.5*proxy_2)))
+            
+                                    
+                      
+
+
+```
+
+## Now create the grid for the new dataframe 
+
+
+```{r create grid for L3}
+ # Create a grid with all the possible combinations of th1 and th 2 
+                      grid<-expand.grid(new_v1_th1, 
+                                        new_v2_th1, 
+                                        new_v1_th2,
+                                        new_v2_th2, 
+                                        new_v1_th3, 
+                                        new_v2_th3)
+                      colnames(grid)<-c("v1_th1", "v2_th1", "v1_th2", "v2_th2", "v1_th3", "v2_th3")
+                      # Subset this for cases where th2 > th 1 - not really necessary anymore 
+                      grid<-grid%>%
+                    filter(case_when( ((model_type=="431")|(model_type=="432"))~v1_th1>0 & v1_th2>0 & v1_th3>0, 
+                                      ((model_type=="531")|(model_type=="532"))~v1_th1>0 & v2_th1>0 & v1_th2>0 & v2_th2>0 & v1_th3>0 & v2_th3>0,
+                                      ((model_type=="631")|(model_type=="632"))~v1_th1>0 & v1_th2>0 & v1_th3>0))%>%
+                    filter(v1_th1<v1_th2)%>%
+                    filter(v2_th1<v2_th2)%>%
+                    filter(v1_th2<v1_th3)%>%
+                    filter(v2_th2<v2_th3)
+                      
+                      
+  # And save the dataframe 
+    setwd(general_folder)
+    write.table(grid, file=paste0('th_HPC_sub2', "_branch6","_x3", "_mod", 
+                                            model_type, '_level3', '.csv'), row.names = F, col.names = F)
+```
