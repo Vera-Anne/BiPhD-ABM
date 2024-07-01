@@ -31,7 +31,7 @@ source("functions_vera.R")
 ```{r load data}
 # Get data 
 setwd("C:/Local_R/BiPhD-ABM/Extracting_results/Zurich_prep/data")
-load("simulation_results_Zurich_4b.Rda")
+load("simulation_results_Zurich_6b.Rda")
 
 df_out<-df_out%>%
   mutate(distribution = case_when(
