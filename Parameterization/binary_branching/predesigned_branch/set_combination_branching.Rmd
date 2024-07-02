@@ -249,7 +249,7 @@ tree_func_x1<-function(model_type, branch_num){
 First run  x.1 models 
 
 ```{r run branching, include=TRUE, message=F, warning=F}
-out_sub1_x1<-tree_func_x1(model_type = 21, branch_num = 8)
+out_sub1_x1<-tree_func_x1(model_type = 31, branch_num = 8)
 ```
 x.2 
 ```{r write sub1 x.2 models}
@@ -438,7 +438,7 @@ tree_func_x2<-function(model_type, branch_num){
 Run subset 1 x.2 models 
 
 ```{r run branching subset 1 x.2, include=TRUE, message=F, warning=F}
-out_sub1_x2<-tree_func_x2(model_type = 12, branch_num = 8)
+out_sub1_x2<-tree_func_x2(model_type = 32, branch_num = 8)
 ```
 
 x.3
@@ -823,7 +823,7 @@ The v's in the code stand for 'variable' (e.g. stmac content), the 'th' in the c
 
 Run the non-hoarding, 2 variables, 1 th model: 
 ```{r run subset 2 x1}
-out_sub2_x1<-tree_func_sub2_x1(model_type=41, branch_num = 8)
+out_sub2_x1<-tree_func_sub2_x1(model_type=61, branch_num = 8)
 ```
 
 Now, write teh code for the second subset, the leftover hoarders. This has 2 energy proxy variables and each of these has 2 thresholds. 
@@ -1066,10 +1066,10 @@ Now, write teh code for the second subset, the leftover hoarders. This has 2 ene
 ```
 
 Subset 2 - x.2
-Run the leftove rhoarding, 2 variables, 2 th model: 
-```{r run subset 2 x2}
+Run the leftover hoarding, 2 variables, 2 th model: 
 
-out_sub2_x2<-tree_func_sub2_x2(model_type=42, branch_num = 8)
+```{r run subset 2 x2}
+out_sub2_x2<-tree_func_sub2_x2(model_type=62, branch_num = 8)
 
 ```
 
