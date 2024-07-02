@@ -86,6 +86,24 @@ setwd(file_folder)
           
         # concatenate output 
         output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, th_b7, th_b8, th_b9, th_b10, step_size)
+      }else if (branch_num == 12){
+          print("branch num = 12")
+          th_b1<-round(x=range_min + (step_size/2), digits = 5)
+          th_b2<-round(x=th_b1+step_size, digits=5)
+          th_b3<-round(x=th_b2+step_size, digits = 5)
+          th_b4<-round(x=th_b3+step_size, digits = 5)
+          th_b5<-round(x=th_b4+step_size, digits = 5)
+          th_b6<-round(x=th_b5+step_size, digits = 5)
+          th_b7<-round(x=th_b6+step_size, digits = 5)
+          th_b8<-round(x=th_b7+step_size, digits = 5)
+          th_b9<-round(x=th_b8+step_size, digits = 5)
+          th_b10<-round(x=th_b9+step_size, digits = 5)
+          th_b11<-round(x=th_b10+step_size, digits = 5)
+          th_b12<-round(x=th_b11+step_size, digits = 5)
+          
+        # concatenate output 
+        output_branches<<-c(th_b1, th_b2, th_b3, th_b4, th_b5, th_b6, th_b7, th_b8, th_b9, th_b10, th_b11, th_b12, step_size)
+        
       }
       
       # return branching output 
