@@ -60,20 +60,26 @@ surv_df<-df_out%>%
   names(myColors) <-c("11",  "12",  "131", "132" ,"41" , "42"  ,"431" ,"432", "51",  "52",  "531", "532" ,"61" , "62",  "631", "632")
   colScale <- scale_colour_manual(name = "model", values = myColors)
   
+# colours presentaion 
+darkbrown<-"#A2590E"
+lightbrown<-"#E0C687"
+lightblue<-"#75CABD"
+darkblue<-"#168E7C"
+lightgreen<-"#7ad112"
   
 # general performance 
-SC_1<-c(3248,	3722,	3123,	2653)
-FR_2<-c(2558,	3431,	2850,	2099)
-FCR_3<-c(1851,	2264,	2088,	1989)
-FR_FCR_4<-c(2550,	3675,	3029,	2132)
-SC_FR_5<-c(3253,	2467,	5266,	2441)
-SC_FCR_6<-c(3302,	3109,	3654,	2073)
-df_HL<-as.data.frame(rbind(SC_1, FR_2, FCR_3, FR_FCR_4, SC_FR_5, SC_FCR_6))
+SC_1<-c(3257,	3752)#,	3123,	2653)
+#FR_2<-c(2558,	3431,	2850,	2099)
+#FCR_3<-c(1851,	2264,	2088,	1989)
+FR_FCR_4<-c(3078,	4005)#,	3029,	2132)
+SC_FR_5<-c(3258,	3694)#,	5266,	2441)
+SC_FCR_6<-c(3285,	3298)#,	3654,	2073)
+df_HL<-as.data.frame(rbind(SC_1, FR_FCR_4, SC_FR_5, SC_FCR_6))
 df_HL$proxy<-row.names(df_HL)
-colnames(df_HL)<-c("NH", "LH", "DH_H", "DH_R", "proxy")
+colnames(df_HL)<-c("NH", "LH", "proxy")
 
-HL_long<-tidyr::gather(df_HL, type, measurement, NH, LH, DH_H, DH_R, factor_key = T)
-HL_long$proxy<-ordered(HL_long$proxy, levels = c("SC_1", "FR_2", "FCR_3", "FR_FCR_4", "SC_FR_5", "SC_FCR_6"))
+HL_long<-tidyr::gather(df_HL, type, measurement, NH, LH,  factor_key = T)
+HL_long$proxy<-ordered(HL_long$proxy, levels = c("SC_1", "FR_FCR_4", "SC_FR_5", "SC_FCR_6"))
 surv_df$proxy<-ordered(surv_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FLR"))
 
 
@@ -82,12 +88,13 @@ surv_df$proxy<-ordered(surv_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FL
 behaviours<-c("eat", "eat_hoard", "rest", "retrieve")
 beh_df<-df_out%>%
   filter(id %in% behaviours)
+beh_df$proxy<-ordered(beh_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FLR"))
 
 # physiology 
 phys<-c("fat_loss_r", "fat_res", "stom_con")
 phys_df<-df_out%>%
   filter(id %in% phys)
-
+phys_df$proxy<-ordered(phys_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FLR"))
 
 ```
 
@@ -106,7 +113,8 @@ p<-ggplot(surv_df, aes(x = timestep, y = value, lty = as.factor(hoarding_type)))
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
         #colScale
-        scale_colour_manual(values = as.vector(tol(n = 4)))
+        #scale_colour_manual(values = c(lightbrown, darkbrown, lightgreen, darkblue))
+        scale_colour_manual(values = c("#D8B70A", "#02401B", "#81A88D", "#972D15"))
 p
 
 
@@ -119,7 +127,8 @@ p
 p<-ggplot(HL_long, aes(x =as.factor(type), y = measurement,  fill = type))+
   geom_boxplot()+
   vera_theme(bg = "white")+
-  scale_fill_manual(values = as.vector(tol(n = 4)))+
+  #scale_fill_manual(values = as.vector(tol(n = 4)))+
+  scale_fill_manual(values = c("#D8B70A", "#02401B", "#81A88D", "#972D15"))+
   ylab(label = "Predicted halflife")+
   xlab(label = "Hoarding type")
 
@@ -130,7 +139,7 @@ p
 p<-ggplot(HL_long, aes(x =as.factor(proxy), y = measurement,  fill = proxy))+
   geom_boxplot()+
   vera_theme(bg = "white")+
-  scale_fill_manual(values = as.vector(tol(n = 6)))+
+  scale_fill_manual(values = c("#D8B70A", "#02401B", "#81A88D", "#972D15"))+
   ylab(label = "Predicted halflife")+
   xlab(label = "Energy proxy")
 
@@ -149,7 +158,7 @@ sum_bp<-surv_df%>%
   summarise(mean_alive = mean(value), nObs= n())%>%
   ungroup()
 
-p<-ggplot(sum_bp, aes(x = timestep, y = mean_alive,lty = as.factor(hoarding_type)))+
+p1<-ggplot(sum_bp, aes(x = timestep, y = mean_alive,lty = as.factor(hoarding_type)))+
         geom_line(aes(col = proxy), lwd = 1) +
         facet_wrap(~distribution, nrow = 2)+
         ggtitle("Survival") +
@@ -160,7 +169,31 @@ p<-ggplot(sum_bp, aes(x = timestep, y = mean_alive,lty = as.factor(hoarding_type
         #colScale
         scale_colour_manual(values = c("#D8B70A", "#02401B", "#81A88D", "#972D15"))
         #scale_colour_manual(values=wes_palette("Darjeeling2_5", n = 4, type = "discrete"))
-p
+p1
+
+
+
+sum_bp_x<-surv_df%>%
+  filter(env == 6 | env == 8)%>%
+  group_by(model, distribution, timestep, proxy, hoarding_type)%>%
+  summarise(mean_alive = mean(value), nObs= n())%>%
+  ungroup()
+
+
+p2<-ggplot(sum_bp_x, aes(x = timestep, y = mean_alive,lty = as.factor(hoarding_type)))+
+        geom_line(aes(col = proxy), lwd = 1) +
+        facet_wrap(~distribution, nrow = 2)+
+        ggtitle("Survival") +
+        xlab("Timestep (20 min)") +
+        ylab("Proportion of birds alive") +
+        vera_theme(bg = "white") +
+        labs(col = "Model", lty = "Hoarding type")+
+        #colScale
+        scale_colour_manual(values = c("#D8B70A", "#02401B", "#81A88D", "#972D15"))
+        #scale_colour_manual(values=wes_palette("Darjeeling2_5", n = 4, type = "discrete"))
+p2
+
+
 ```
 
 ### Behaviours in bonanza and Poisson: env 6 and env 8
