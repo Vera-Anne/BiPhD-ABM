@@ -110,8 +110,6 @@ if (modelType==0){
   
   #add this to the output list
   env_results[[3]]<-args
-  env_results[[2]]<-"Removed indiv results to save space  "
-  
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
@@ -150,8 +148,6 @@ if (modelType==0){
   
   #add this to the output list
   env_results[[3]]<-args
-  env_results[[2]]<-"Removed indiv results to save space  "
-  
   
   # save the data 
   setwd(out_dir)
@@ -205,8 +201,6 @@ if (modelType==0){
   stopImplicitCluster()
   #add this to the output list
   env_results[[3]]<-args
-  env_results[[2]]<-"Removed indiv results to save space  "
-  
   # save the data 
   setwd(out_dir)
   # make sure to attach the threshold to the dataframe 
@@ -249,8 +243,6 @@ if (modelType==0){
   env_results
   #add this to the output list
   env_results[[3]]<-args
-  env_results[[2]]<-"Removed indiv results to save space  "
-  
   # save the data 
   setwd(out_dir)
   save(env_results, file=paste0('out_', modelType, '_HPC_',"_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
@@ -294,8 +286,6 @@ if (modelType==0){
   env_results
   #add this to the output list
   env_results[[3]]<-args
-  env_results[[2]]<-"Removed indiv results to save space  "
-  
   # save the data 
   setwd(out_dir)
   save(env_results, file=paste0('out_', modelType, '_HPC_', "_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
@@ -350,9 +340,7 @@ if (modelType==0){
   env_results
   #add this to the output list
   env_results[[3]]<-args
-  
-  env_results[[2]]<-"Removed indiv results to save space  "
-  
+  env_results[[2]]<-"Removed indiv results to save space"
   # save the data 
   setwd(out_dir)
   save(env_results, file=paste0('out_', modelType, '_HPC_', "_lev", level, '_THrow', th_row,"_rep", rep_num,'.Rda'))
