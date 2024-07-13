@@ -79,7 +79,7 @@ surv_df$proxy<-ordered(surv_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FL
 
 
 # behaviour data 
-behaviours<-c("eat", "eat_hoard", "rest", "retrieve")
+behaviours<-c("eat", "eat_hoard", "rest", "retrieve", "forage")
 beh_df<-df_out%>%
   filter(id %in% behaviours)
 
@@ -95,18 +95,27 @@ phys_df<-df_out%>%
 ## Survival across all seasons 
 
 ```{r grah survival across all seasons}
+surv_df<-surv_df%>%
+  filter(env == 6 | env ==8)%>%
+  filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  mutate(env_type = case_when(
+    env == 6 ~ "Poisson", 
+    env == 8 ~ "Bonanza"
+  ))
+
+surv_df$env_type<-factor(surv_df$env_type, levels = c("Poisson", "Bonanza"))
 
 
-p<-ggplot(surv_df, aes(x = timestep, y = value, lty = as.factor(hoarding_type))) +
-        geom_line(aes(col = proxy), lwd = 1) +
-        facet_wrap(~env, nrow = 6)+
+p <- ggplot(surv_df, aes(x = timestep, y = value, lty = as.factor(hoarding_type))) +
+        geom_line(aes(col = proxy), lwd = 1.25) +
+        facet_wrap(~env_type, nrow = 6) +
         ggtitle("Survival") +
         xlab("Timestep (20 min)") +
         ylab("Proportion of birds alive") +
         vera_theme(bg = "white") +
-        labs(col = "Model", lty = "Hoarding type")+
-        #colScale
-        scale_colour_manual(values = as.vector(tol(n = 4)))
+        labs(col = "Model", lty = "Hoarding type") +
+        scale_colour_manual(values = c("#F05039", "#7CA1CC"))
+
 p
 
 
@@ -167,25 +176,81 @@ p
 
 ```{r beahviour b and P}
 
+#beh_df$proxy<-factor(proxy, ordered = TRUE, levels=c("SC", "FR", "FCR", ))
+beh_df$proxy<-ordered(beh_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FLR"))
+
 beh_df_x<-beh_df%>%
   filter(env == 6 | env == 8)%>%
+  filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(id == "forage")%>%
+  mutate(env_type = case_when(
+    env == 6 ~ "Poisson", 
+    env == 8 ~ "Bonanza"
+  ))%>%
+  group_by(id, model, env_type, timestep_within_day, hoarding_type, proxy, distribution)%>%
+  summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
+  ungroup()
+
+beh_df_x$env_type<-factor(beh_df_x$env_type, levels = c("Poisson", "Bonanza"))
+
+p1<-ggplot(beh_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
+        geom_line(aes(col = proxy), lwd = 1) +
+        facet_wrap(~env_type, nrow=2)+
+        ggtitle("") +
+        xlab("Timestep (20 min) within Day") +
+        ylab("Proportion of birds foraging") +
+        xlim(c(0, 24))+
+        vera_theme(bg = "white") +
+        labs(col = "Model", lty = "Hoarding type")+
+        #colScale
+        scale_colour_manual(values = c("#F05039", "#7CA1CC"))
+p1
+
+
+
+beh_df_y<-beh_df%>%
+  filter(env == 6 | env == 8)%>%
+  filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(id == "eat_hoard")%>%
   group_by(id, model, env, timestep_within_day, hoarding_type, proxy, distribution)%>%
   summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
   ungroup()
 
-p1<-ggplot(beh_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
+p2<-ggplot(beh_df_y, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
         geom_line(aes(col = proxy), lwd = 1) +
-        facet_grid(id ~distribution)+
+        facet_wrap(~env, nrow=2)+
         ggtitle("") +
         xlab("Timestep (20 min)") +
-        ylab("Proportion of birds alive") +
-        xlim(c(0, 30))+
+        ylab("Proportion of birds hoarding") +
+        xlim(c(0, 24))+
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
         #colScale
-        scale_colour_manual(values = c("#D8B70A", "#02401B","#81A88D", "#972D15"))
-p1
+        scale_colour_manual(values = c("#81A88D", "#972D15"))
+p2
 
+
+beh_df_z<-beh_df%>%
+  filter(env == 6 | env == 8)%>%
+  filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(id == "retrieve")%>%
+  group_by(id, model, env, timestep_within_day, hoarding_type, proxy, distribution)%>%
+  summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
+  ungroup()
+
+p3<-ggplot(beh_df_z, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
+        geom_line(aes(col = proxy), lwd = 1) +
+        facet_wrap(~env, nrow=2)+
+        ggtitle("") +
+        xlab("Timestep (20 min)") +
+        ylab("Proportion of birds retrieving") +
+        xlim(c(0, 24))+
+        vera_theme(bg = "white") +
+        labs(col = "Model", lty = "Hoarding type")+
+        #colScale
+        scale_colour_manual(values = c("#81A88D", "#972D15"))
+p3
+######################################## NOT USED: 
 beh_df_y<-beh_df%>%
   group_by(id, model, timestep_within_day, hoarding_type, proxy, distribution)%>%
   summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
@@ -248,6 +313,8 @@ p4
 
 phys_df_x<-phys_df%>%
   filter(env == 6 | env == 8)%>%
+  filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(id == "stom_con")%>%
   filter(hoarding_type == 1 | hoarding_type == 2)%>%
   group_by(id, model, env, timestep_within_day, hoarding_type, proxy, distribution)%>%
   summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
@@ -255,17 +322,43 @@ phys_df_x<-phys_df%>%
 
 p1<-ggplot(phys_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
         geom_line(aes(col = proxy), lwd = 1) +
-        facet_grid(id ~distribution, scales = "free_y")+
+        facet_wrap(~env, nrow = 2)+
         ggtitle("") +
-        xlab("Timestep (20 min)") +
-        ylab("Proportion of birds alive") +
-        xlim(c(0, 30))+
+        xlab("Timestep (20 min) within Day") +
+        ylab("Stomach content (gram)") +
+        xlim(c(0, 24))+
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
         #colScale
-        scale_colour_manual(values = c("#D8B70A", "#02401B","#81A88D", "#972D15"))
+        scale_colour_manual(values = c("#81A88D", "#972D15"))
 p1
 
+
+phys_df_y<-phys_df%>%
+  filter(env == 6 | env == 8)%>%
+  filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(id == "fat_res")%>%
+  filter(hoarding_type == 1 | hoarding_type == 2)%>%
+  group_by(id, model, env, timestep_within_day, hoarding_type, proxy, distribution)%>%
+  summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
+  ungroup()
+
+p2<-ggplot(phys_df_y, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
+        geom_line(aes(col = proxy), lwd = 1) +
+        facet_wrap(~env, nrow = 2)+
+        ggtitle("") +
+        xlab("Timestep (20 min) within Day") +
+        ylab("Fat reserves (gram)") +
+        xlim(c(0, 24))+
+        vera_theme(bg = "white") +
+        labs(col = "Model", lty = "Hoarding type")+
+        #colScale
+        scale_colour_manual(values = c("#81A88D", "#972D15"))
+p2
+
+
+
+######################### NOT USED 
 phys_df_y<-phys_df%>%
   filter(hoarding_type == 1 | hoarding_type == 2)%>%
   group_by(id, model, timestep_within_day, hoarding_type, proxy, distribution)%>%
