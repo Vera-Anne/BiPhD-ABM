@@ -31,7 +31,7 @@ source("functions_vera.R")
 ```{r load data}
 # Get data 
 setwd("C:/Local_R/BiPhD-ABM/Extracting_results/Zurich_prep/data")
-load("simulation_results_Zurich_6b.Rda")
+load("Results_Zurich.Rda")
 
 df_out<-df_out%>%
   mutate(distribution = case_when(
@@ -74,7 +74,6 @@ colnames(df_HL)<-c("NH", "LH", "DH_H", "DH_R", "proxy")
 
 HL_long<-tidyr::gather(df_HL, type, measurement, NH, LH, DH_H, DH_R, factor_key = T)
 HL_long$proxy<-ordered(HL_long$proxy, levels = c("SC_1", "FR_2", "FCR_3", "FR_FCR_4", "SC_FR_5", "SC_FCR_6"))
-surv_df$proxy<-ordered(surv_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FLR"))
 
 
 
@@ -98,12 +97,14 @@ phys_df<-df_out%>%
 surv_df<-surv_df%>%
   filter(env == 6 | env ==8)%>%
   filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(hoarding_type == 1 | hoarding_type == 2)%>%
   mutate(env_type = case_when(
     env == 6 ~ "Poisson", 
     env == 8 ~ "Bonanza"
   ))
 
 surv_df$env_type<-factor(surv_df$env_type, levels = c("Poisson", "Bonanza"))
+surv_df$proxy<-ordered(surv_df$proxy, levels = c("SC", "FR-FLR"))
 
 
 p <- ggplot(surv_df, aes(x = timestep, y = value, lty = as.factor(hoarding_type))) +
@@ -179,10 +180,12 @@ p
 #beh_df$proxy<-factor(proxy, ordered = TRUE, levels=c("SC", "FR", "FCR", ))
 beh_df$proxy<-ordered(beh_df$proxy, levels = c("SC", "FR-FLR", "SC-FR", "SC-FLR"))
 
+# filters the standard environments out 
 beh_df_x<-beh_df%>%
   filter(env == 6 | env == 8)%>%
   filter(proxy == "SC"|proxy == "FR-FLR")%>%
-  filter(id == "forage")%>%
+  filter(id == "retrieve")%>% # change here 
+  filter(hoarding_type ==1 | hoarding_type == 2)%>%
   mutate(env_type = case_when(
     env == 6 ~ "Poisson", 
     env == 8 ~ "Bonanza"
@@ -198,7 +201,7 @@ p1<-ggplot(beh_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.facto
         facet_wrap(~env_type, nrow=2)+
         ggtitle("") +
         xlab("Timestep (20 min) within Day") +
-        ylab("Proportion of birds foraging") +
+        ylab("Proportion of birds retrieving") +
         xlim(c(0, 24))+
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
@@ -211,6 +214,7 @@ p1
 beh_df_y<-beh_df%>%
   filter(env == 6 | env == 8)%>%
   filter(proxy == "SC"|proxy == "FR-FLR")%>%
+  filter(hoarding_type == 1 | hoarding_type ==2) %>%
   filter(id == "eat_hoard")%>%
   group_by(id, model, env, timestep_within_day, hoarding_type, proxy, distribution)%>%
   summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
@@ -226,7 +230,7 @@ p2<-ggplot(beh_df_y, aes(x = timestep_within_day, y = mean_val_ts,lty = as.facto
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
         #colScale
-        scale_colour_manual(values = c("#81A88D", "#972D15"))
+        scale_colour_manual(values = c("#F05039", "#7CA1CC"))
 p2
 
 
@@ -314,23 +318,31 @@ p4
 phys_df_x<-phys_df%>%
   filter(env == 6 | env == 8)%>%
   filter(proxy == "SC"|proxy == "FR-FLR")%>%
-  filter(id == "stom_con")%>%
+  filter(id == "fat_res")%>%
+  mutate(env_type = case_when(
+    env == 6 ~ "Poisson", 
+    env == 8 ~ "Bonanza"
+  ))%>%
   filter(hoarding_type == 1 | hoarding_type == 2)%>%
-  group_by(id, model, env, timestep_within_day, hoarding_type, proxy, distribution)%>%
+  group_by(id, model, env_type, timestep_within_day, hoarding_type, proxy, distribution)%>%
   summarise(mean_val_ts = mean(value, na.rm=T, nObs = n()))%>%
   ungroup()
 
+
+beh_df_x$env_type<-factor(beh_df_x$env_type, levels = c("Poisson", "Bonanza"))
+
+
 p1<-ggplot(phys_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
         geom_line(aes(col = proxy), lwd = 1) +
-        facet_wrap(~env, nrow = 2)+
+        facet_wrap(~env_type, nrow = 2)+
         ggtitle("") +
         xlab("Timestep (20 min) within Day") +
-        ylab("Stomach content (gram)") +
+        ylab("Fat reserve (gram)") +
         xlim(c(0, 24))+
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
         #colScale
-        scale_colour_manual(values = c("#81A88D", "#972D15"))
+        scale_colour_manual(values = c("#F05039", "#7CA1CC"))
 p1
 
 
