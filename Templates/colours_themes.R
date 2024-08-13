@@ -46,7 +46,8 @@ vera_theme <- function(bg) {
           colours_all_bto<-c("azure3", "bisque4", "black", '#ffcc00', 'burlywood3', "darkolivegreen3" )
           # exlcuding the crested tit, which has often not got enough data 
           colours_exCrest_bto<-c("azure3", "bisque4", '#ffcc00', 'burlywood3', "darkolivegreen3" )
-          
+          # only coal, blue and great 
+          colours_final_bto<-c("azure3", "bisque4", '#ffcc00' )
           
           
     #### MOnths for plottin g
