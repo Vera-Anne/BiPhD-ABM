@@ -108,9 +108,9 @@ surv_df$proxy<-ordered(surv_df$proxy, levels = c("SC", "FR-FLR"))
 
 
 p <- ggplot(surv_df, aes(x = timestep, y = value, lty = as.factor(hoarding_type))) +
-        geom_line(aes(col = proxy), lwd = 1.25) +
+        geom_line(aes(col = proxy), lwd = 1) +
         facet_wrap(~env_type, nrow = 6) +
-        ggtitle("Survival") +
+        #ggtitle("Survival") +
         xlab("Timestep (20 min)") +
         ylab("Proportion of birds alive") +
         vera_theme(bg = "white") +
@@ -329,7 +329,7 @@ phys_df_x<-phys_df%>%
   ungroup()
 
 
-beh_df_x$env_type<-factor(beh_df_x$env_type, levels = c("Poisson", "Bonanza"))
+phys_df_x$env_type<-factor(phys_df_x$env_type, levels = c("Poisson", "Bonanza"))
 
 
 p1<-ggplot(phys_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.factor(hoarding_type), col = proxy))+
@@ -337,12 +337,12 @@ p1<-ggplot(phys_df_x, aes(x = timestep_within_day, y = mean_val_ts,lty = as.fact
         facet_wrap(~env_type, nrow = 2)+
         ggtitle("") +
         xlab("Timestep (20 min) within Day") +
-        ylab("Fat reserve (gram)") +
+        ylab("Fat reserves (gram)")+
         xlim(c(0, 24))+
         vera_theme(bg = "white") +
         labs(col = "Model", lty = "Hoarding type")+
         #colScale
-        scale_colour_manual(values = c("#F05039", "#7CA1CC"))
+        scale_colour_manual(values = c( "#7CA1CC", "#F05039"))
 p1
 
 

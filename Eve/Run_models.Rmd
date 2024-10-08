@@ -1,0 +1,532 @@
+---
+title: "Eve: running models"
+author: "Vera Vinken"
+date: "`r Sys.Date()`"
+output: html_document
+---
+  
+## Load packages 
+
+If you get any issues here, try and install the packages manually in the "packages" tab in the right bottom corner. 
+
+```{r packages, include=FALSE, message=T, warning=T}
+
+# Install packages that are not installed but need to be installed 
+    # List of needed packages
+    packages_to_install <- c("ggplot2", "gridExtra", "parallel", "dplyr", "purrr", "truncnorm", "data.table", "foreach", "doParallel", "ggpubr", "gridExtra", "pracma", "stringr", "plotly", "hrbrthemes", "tibble", "here")
+    # find which packages are needed 
+    new_packages <- packages_to_install[!(packages_to_install %in% installed.packages()[ ,"Package"])]
+    # install ones that were missing 
+    if(length(new_packages)>0){
+      install.packages(new_packages)
+      }
+
+# Load packages 
+  library(ggplot2)
+  library(gridExtra)       # grids of ggplots 
+  library('parallel')       # for parallel computing
+  library('doParallel')     # As above 
+  library(dplyr)            # merging dataframes, using mutate etc. 
+  library(purrr)            # To use the dataframe mapping functions 
+  library(truncnorm)        # creating normal distributions 
+  library(data.table)
+  library(foreach)
+  library(doParallel)
+  library(ggpubr)             # To arrange plots 
+  library(gridExtra)          # for grid.arrange 
+  library(pracma)
+  library(stringr)
+  library(plotly)
+  library(hrbrthemes)
+  library(tibble)
+  library(here)
+    
+```
+
+## Background 
+
+TBC 
+
+## Set working directories & Load sourcefiles 
+
+```{r set wd and load sourcefiles, include=TRUE, message=FALSE,  warning=FALSE}
+
+# Tell R where you are running this from 
+# Check the output to make sure this is wehre you keep the "Eve" folder 
+here::i_am("Run_models.Rmd")
+print(here())
+
+# Set directories
+  # # Where are the sourcefiles located? (make sure these are global)
+  sourcefile_wd<<- paste0(here(), "/Source_files")
+  # Specify the parent folder where you want to save results
+  saving_wd<<-paste0(here(), "/save_results")
+
+# Load the sourcefiles
+  setwd(sourcefile_wd)
+  source('MOD_1_FuncSource.R')
+  source('ModelSource.R')
+
+```
+
+## Set input variables 
+
+```{r set input variables, include=TRUE, warning=FALSE, message=FALSE}
+
+num_birds<-100     # default = 1000 
+daylight_h<-8       # default = 8 hours 
+days<-10            # default = 30 days 
+env<-6              # default = environment 6 
+
+```
+
+## Run model 1.1: non-hoarding, SC, 1 threshold, 1 variable 
+
+```{r model 1}
+
+#################################################################
+##   Model 1.1: Non-hoarding bird, Access to Stomach Content   ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_1_1(days=days, N=num_birds, env_type = env, th_forage_sc = 0.008 , daylight_h = daylight_h)
+  
+  # A bunch of things will pop up in your  environment 
+
+  # First put together some relevant dataframes (we want both individual data and mean data)
+      # total_vars_df11 will have the mean value of each of the 17 variables for each timestep (averaged across alive birds)
+      # output_df_list_raw11 is a list with 17 matrices (one for each variable). Matrices are of size Num_birds x timesteps 
+  
+# list these two 
+  save_11_list<-list(total_vars_df11, output_df_list_raw11)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_11_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run11', 
+                                 'd', days, 'N', num_birds,'env_t', env, 'th_sc', th_forage_sc, 
+                                 'dayh', daylight_h,'.Rda'
+                                 )
+       )
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 1.1: non-hoarding SC, 1 threshold, 1 variable 
+
+```{r plots for model 1.1}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_11_list[[1]], modelType='11')
+# if needed 
+plot_12_11
+
+```
+
+
+## Run model 1.2: hoarding, SC, 2 thresholds, 1 variable 
+
+```{r model 12}
+
+#################################################################
+##   Model 1.2: Non-hoarding bird, Access to Stomach Content   ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_1_2(days=days, N=num_birds, env_type = env, th_forage_sc1=0.0244898, th_forage_sc2=0.03265306 , daylight_h = daylight_h)
+
+  
+
+# list these two 
+  save_12_list<-list(total_vars_df12, output_df_list_raw12)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_12_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run12', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 
+                                 'th_sc2', th_forage_sc2, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 1.2: hoarding SC, 2 thresholds, 1 variable 
+
+```{r plots for model 1.2}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_12_list[[1]], modelType='12')
+# if needed 
+plot_12_12
+
+```
+
+
+## Run model 2.1: non-hoarding, FR, 1 threshold, 1 variable 
+
+```{r model 21}
+
+#################################################################
+##   Model 2.1: Non-hoarding bird, Access to Fat reserve  ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_2_1(days=days, N=num_birds, env_type = env, th_forage_fr = 1.714286 , daylight_h = daylight_h)
+  
+# list these two 
+    save_21_list<-list(total_vars_df21, output_df_list_raw21)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_21_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run21', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr, 
+                                 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 2.1: non-hoarding FR, 1 threshold, 1 variable 
+
+```{r plots for model 21}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_21_list[[1]], modelType='21')
+# if needed 
+plot_12_21
+
+```
+
+## Run model 2.2: hoarding, FR, 2 thresholds, 1 variable 
+
+```{r model 22}
+
+#################################################################
+##   Model 1.2: Non-hoarding bird, Access to Stomach Content   ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_2_2(days=days, N=num_birds, env_type = env, th_forage_fr1=0.6530612, th_forage_fr2= 1.142857, daylight_h = daylight_h)
+
+# list these two 
+  save_22_list<-list(total_vars_df22, output_df_list_raw22)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_22_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run22', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 
+                                 'th_fr2', th_forage_fr2, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 2.2: hoarding FR, 2 thresholds, 1 variable 
+
+```{r plots for model 2.2}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_22_list[[1]], modelType='22')
+# if needed 
+plot_12_22
+
+```
+
+
+
+## Run model 3.1: non-hoarding, FLR, 1 threshold, 1 variable 
+
+```{r model 31}
+
+#################################################################
+##   Model 3.1: Non-hoarding bird, Access to FLR               ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_3_1(days=days, N=num_birds, env_type = env, th_forage_flr = 0.008 , daylight_h = daylight_h)
+  
+
+# list these two 
+  save_31_list<-list(total_vars_df31, output_df_list_raw31)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_31_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run31', 
+                                 'd', days, 'N', num_birds,'env_t', env, 'th_flr', th_forage_flr, 
+                                 'dayh', daylight_h,'.Rda'
+                                 )
+       )
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 3.1: non-hoarding FLR, 1 threshold, 1 variable 
+
+```{r plots for model 31}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_31_list[[1]], modelType='31')
+# if needed 
+plot_12_31
+
+```
+
+
+## Run model 3.2: hoarding, FLR, 2 thresholds, 1 variable 
+
+```{r model 32}
+
+#################################################################
+##   Model 3.2: Non-hoarding bird, Access to Fat loss rate     ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_3_2(days=days, N=num_birds, env_type = env, th_forage_flr1=0.0244898, th_forage_flr2=0.03265306 , daylight_h = daylight_h)
+
+  
+
+# list these two 
+  save_32_list<-list(total_vars_df32, output_df_list_raw32)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_32_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run32', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_flr1', th_forage_flr1, 
+                                 'th_flr2', th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 3.2: hoarding FLR, 2 thresholds, 1 variable 
+
+```{r plots for model 32}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_32_list[[1]], modelType='32')
+# if needed 
+plot_12_32
+
+```
+
+## Run model 4.1: non-hoarding, FR and FLR , 1 threshold for each 2 variables
+
+```{r model 41}
+
+#################################################################
+##   Model 4.1: Non-hoarding bird, Access to FR and FLR        ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_4_1(days=days, N=num_birds, env_type = env, th_forage_fr = 2, th_forage_flr = 0  , daylight_h = daylight_h)
+
+# list these two 
+  save_41_list<-list(total_vars_df41, output_df_list_raw41)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_41_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run41', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_fr', th_forage_fr , 
+                                 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 4.1: non-hoarding FR and FLR, 1 threshold for each of 2 variables 
+
+```{r plots for model 4.1}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_41_list[[1]], modelType='41')
+# if needed 
+plot_12_41
+
+```
+
+
+
+
+## Run model 4.2: hoarding, FR and FLR , 2 thresholds for each of 2 variables 
+
+```{r model 42}
+
+#################################################################
+##   Model 4.2: Non-hoarding bird, Access to FR and FLR        ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_4_2(days=days, N=num_birds, env_type = env, th_forage_fr1=1, th_forage_fr2=2 , th_forage_flr1=-0.3, th_forage_flr2=0.3, daylight_h = daylight_h)
+
+# list these two 
+  save_42_list<-list(total_vars_df42, output_df_list_raw42)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_42_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run42', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_fr1', th_forage_fr1, 
+                                 'th_fr2', th_forage_fr2, 'th_flr1', th_forage_flr1, 'th_flr2', 
+                                 th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+
+```
+
+## Plots for model 4.2: hoarding FR and FLR , 2 thresholds for each of 2 variables 
+
+```{r plots for model 4.2}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_42_list[[1]], modelType='42')
+# if needed 
+plot_12_42
+
+```
+
+
+
+## Run model 5.1: non-hoarding, SC and FR, 1 threshold for each 2 variables
+
+```{r model 51}
+
+#################################################################
+##   Model 5.1: Non-hoarding bird, Access to SC and F R        ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_5_1(days=days, N=num_birds, env_type = env, th_forage_sc = 0.2, th_forage_fr = 2 , daylight_h = daylight_h)
+
+# list these two 
+  save_51_list<-list(total_vars_df51, output_df_list_raw51)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_51_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run51', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_sc', th_forage_sc , 
+                                 'th_fr', th_forage_fr, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 5.1: non-hoarding SC and FR, 1 threshold for each of 2 variables 
+
+```{r plots for model 51}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_51_list[[1]], modelType='51')
+# if needed 
+plot_12_51
+
+```
+
+
+
+## Run model 5.2: hoarding, SC and FR , 2 thresholds for each of 2 variables 
+
+```{r model 52}
+
+#################################################################
+##   Model 5.2: hoarding bird, Access to SC and FR        ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_5_2(days=days, N=num_birds, env_type = env, th_forage_sc1=0.1, th_forage_sc2=0.2 , 
+          th_forage_fr1=1, th_forage_fr2=3, daylight_h = daylight_h)
+
+# list these two 
+  save_52_list<-list(total_vars_df52, output_df_list_raw52)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_52_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run52', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 
+                                 'th_sc2', th_forage_sc2, 'th_fr1', th_forage_fr1, 'th_fr2', 
+                                 th_forage_fr2, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 5.2: hoarding SC and FR , 2 thresholds for each of 2 variables 
+
+```{r plots for model 52}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_52_list[[1]], modelType='52')
+# if needed 
+plot_12_52
+
+```
+
+
+
+## Run model 6.1: non-hoarding, SC and FLR, 1 threshold for each 2 variables
+
+```{r model 61}
+
+#################################################################
+##   Model 6.1: Non-hoarding bird, Access to SC and FLR        ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_6_1(days=days, N=num_birds, env_type = env, th_forage_sc = 0.2, th_forage_flr = 0 , daylight_h = daylight_h)
+
+# list these two 
+  save_61_list<-list(total_vars_df61, output_df_list_raw61)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_61_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run61', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_sc', th_forage_sc , 
+                                 'th_flr', th_forage_flr, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 6.1: non-hoarding SC and FLR, 1 threshold for each of 2 variables 
+
+```{r plots for model 61}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_61_list[[1]], modelType='61')
+# if needed 
+plot_12_61
+
+```
+
+
+
+
+
+## Run model 6.2: hoarding, SC and FLR , 2 thresholds for each of 2 variables 
+
+```{r model 62}
+
+#################################################################
+##   Model 6.2: hoarding bird, Access to SC and FLR           ##
+#################################################################
+
+  # Run the model (This can take a while)
+  mod_6_2(days=days, N=num_birds, env_type = env, th_forage_sc1=0.1, th_forage_sc2=0.2 , 
+          th_forage_flr1=1, th_forage_flr2=3, daylight_h = daylight_h)
+
+# list these two 
+  save_62_list<-list(total_vars_df62, output_df_list_raw62)
+  # save the data 
+  setwd(paste(saving_wd))
+  save(save_62_list, file=paste0(format(Sys.time(), "%Y-%m-%d_%H_%M_%S"),'_mod_run62', 
+                                 'd', days, 'N', N,'env_t', env_type, 'th_sc1', th_forage_sc1, 
+                                 'th_sc2', th_forage_sc2, 'th_flr1', th_forage_flr1, 'th_flr2', 
+                                 th_forage_flr2, 'dayh', daylight_h,   '.Rda'))
+# Now you have an Rda object with all the relevant data from your model run. 
+# It will be marked with the input parameters as well as a time stamp so you can find it and use later :) 
+  
+```
+
+## Plots for model 6.2: hoarding SC and FLR , 2 thresholds for each of 2 variables 
+
+```{r plots for model 62}
+
+# create plots (standard plots)
+plots_12_func(inputdata=save_62_list[[1]], modelType='62')
+# if needed 
+plot_12_62
+
+```
+
+
+
+
+

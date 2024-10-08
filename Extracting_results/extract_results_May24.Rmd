@@ -46,7 +46,7 @@ output: html_document
 
 This script should do the following: 
 
-- run each of the models with the optimal values 
+- Run each of the models with the optimal values 
 - concatenate this all into a big dataframe
 - That dataframe should be ready for the shiny. 
 

@@ -24,7 +24,7 @@ This code will take the output from the HPC from a specific level. It then conca
 model_type<-52
 level<-3 # The level that you are concatenating (the level that just ran on the HPC) - put 0 if you want to generate for level 1 
 subset<-2
-branch_type<-10
+branch_type<-12
 ```
 
 ## Set working directories 
@@ -117,6 +117,17 @@ missing<-missing_sum%>%
 print(paste("Number of thresholds that have missing reps = ", nrow(missing)))
 print(paste("Number of thresholds out of total that should be there = ", nrow(missing_sum)))
 
+# now what if ther are entire ones missing 
+# I need to check whichones 
+# x<-as.data.frame(1:4096)
+# colnames(x)<-"x"
+# y<-as.data.frame(missing_sum$th_row)
+# colnames(y)<-"y"
+# x2<-x%>%filter(!x %in% y$y)
+# print(x2$x)
+# x2$n<-rep(0, nrow(x2))
+# colnames(x2)<-c("th_row", "n")
+# missing<-rbind(missing, x2)
 ```
 
 ## If missing, make a csv file to redo these
@@ -257,7 +268,7 @@ if(subset==2 && str_sub(model_type, 2, 2)==3 && branch_type==6){
       write.table(selected_df, file=paste0('th_HPC_sub', subset,"_branch", branch_type, "_x",  (str_sub(model_type, 2,2)), "_mod", 
                                             model_type, '_level', next_level, '.csv'), row.names = F, col.names = F)
     }else if(next_level_chr=="level3"){
-      print("STOP have not sorted branching for level 3 yet. ")
+      print("STOP have not sorted branching for level 3 yet. --> you did write a seperate code file for this though, so use that ")
         # 
         # #Select the right part of the tree
         # selected_df<-tree_output_list[[next_level]][[paste(best_comb_chr_l1)]][[paste(best_comb_chr_l2)]]

@@ -36,7 +36,7 @@ library(stringi) # first element from string
 
 ## Basic settings 
 ```{r settings}
-model_type<-432
+model_type<-632
 ```
 
 ## Set working directories 
