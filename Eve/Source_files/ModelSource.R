@@ -221,8 +221,12 @@ mod_1_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, daylight_h){
   require(doParallel)
   # Start the model 
   # link to the function file 
-  setwd("C:/Local_R/BiPhD-ABM/May23")
-  source('MOD_1_FuncSource.R')
+  
+  #################################################################
+  # copied out for standalone version VV: 07/10/2024
+  # setwd("C:/Local_R/BiPhD-ABM/May23")
+  # source('MOD_1_FuncSource.R')
+  ###################################################################
 
   # Set up the general environment 
   # This part is the same for each bird 
@@ -410,9 +414,12 @@ mod_1_3_1<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
   require(foreach)
   # Start the model 
   
-  # link to the function file 
-  setwd("C:/Local_R/BiPhD-ABM/May23")
-  source('MOD_1_FuncSource.R')
+  #################################################################
+  # copied out for standalone version VV: 07/10/2024
+  # setwd("C:/Local_R/BiPhD-ABM/May23")
+  # source('MOD_1_FuncSource.R')
+  ###################################################################
+  
   
   # Set up the general environment 
   # This part is the same for each bird 
@@ -605,9 +612,12 @@ mod_1_3_2<-function(days, N, env_type, th_forage_sc1, th_forage_sc2, th_forage_s
   require(foreach)
   # Start the model 
   
-  # link to the function file 
-  setwd("C:/Local_R/BiPhD-ABM/May23")
-  source('MOD_1_FuncSource.R')
+  #################################################################
+  # copied out for standalone version VV: 07/10/2024
+  # setwd("C:/Local_R/BiPhD-ABM/May23")
+  # source('MOD_1_FuncSource.R')
+  ###################################################################
+  
 
   # Set up the general environment 
   # This part is the same for each bird 
