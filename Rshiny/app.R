@@ -28,7 +28,7 @@ ui <- fluidPage(
   # set background
   setBackgroundColor("#e3e2db"),
   # Header with logo 
-  titlePanel(title=div(img(src="logo.png", height = "3%", width= "3%"), "Tit Simulator (Test version May '24)", 
+  titlePanel(title=div(img(src="logo.png", height = "3%", width= "3%"), "Tit Simulator (Test version October'24)", 
                        style = "background-color: #484537; padding: 12px; color:#e3e2db; font-size:35px; font-style:bold;")),
   
   
@@ -136,8 +136,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # Load the default data from the .rda file
-  load("Data/results.Rda") 
-  load("Data/Dsum_results.Rda")
+  load("Data/results_6b.Rda") 
+  load("Data/Dsum_results_6b.Rda")
   
   # Load the colors and themes
   source("R/colours_themes.R")
