@@ -294,7 +294,7 @@ food_distr_func<-function(num_food_mean, prob_b_forage, b_size){
   # probw is a vector of the probability weights for obtaining the elements being sampled (forage b and forage-n)
   cur_forage_type<<-sample(c('forage-b', 'forage-p'), size=1, replace=TRUE, prob=c(prob_b_forage, (1-prob_b_forage)))
   
-  # Code to draw a piechart for testing the 'pick foraging type' code 
+  # # Code to draw a piechart for testing the 'pick foraging type' code 
   # prob_b_forage<-0.5
   # temp_list<-list()
   # for (i in 1:1000){
@@ -313,7 +313,7 @@ food_distr_func<-function(num_food_mean, prob_b_forage, b_size){
   #   scale_fill_brewer(palette='Set3')+
   #   ggtitle(label=paste('Prob B-forage =',prob_b_forage, ', #b-for = ', table_for[1,2], ', #n-for = ', table_for[2,2]))
   # pie
-  
+
   
   if (cur_forage_type=='forage-b'){ 
     # Write code for bonanza here

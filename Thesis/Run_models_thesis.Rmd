@@ -29,6 +29,7 @@ output: html_document
   library(tibble)
   library(here)
   library(Hmisc)
+  library(tidyr)
 
 ```
 
@@ -70,10 +71,43 @@ opt_res$Model.type<-factor(opt_res$Model.type, levels = c("SC - H", "FR - H ", "
                                                           "SC-DH1", "FR-DH1", "FCR-DH1", "FR-FCR-DH1", "SC-FR-DH1", "SC-FCR-DH1", 
                                                           "SC-DH2", "FR-DH2", "FCR-DH2", "FR-FCR-DH2", "SC-FR-DH2", "SC-FCR-DH2"))
 opt_res$days<-(opt_res$value/72)
-ggplot(opt_res, aes(x = Model.num, y = days, fill = name)) +
+ggplot(opt_res%>%filter(Model.num == "11"), aes(x = Model.num, y = days, fill = name)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Model Type", y = "Mean halflife survival (days)", fill = "Branch") +
   vera_theme(bg = "white")
+
+ggplot(opt_res %>% filter(Model.num %in% c("11", "12", "21", "22", "31", "32", "41", "42", "51", "52", "61", "62")), 
+       aes(x = Model.num, y = days, fill = name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Decision rule", y = "Mean halflife survival (days)", fill = "Branch") +
+  vera_theme(bg = "white")
+
+
+p<-ggplot(opt_res %>% filter(Model.num %in% c("11", "12", "21", "22", "31", "32", "41", "42", "51", "52", "61", "62")), 
+       aes(x = Model.num, y = days, fill = name)) +
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(x = "Decision rule", y = "Mean halflife survival (days)", fill = "Branch") +
+  scale_fill_manual(values = c("#666963", "#969c8f", "#ac705d", "#e2ac76", "#f8e09d")) +  # specify your hex colors here
+  vera_theme(bg = "white")
+
+ggplot(opt_res %>% filter(Model.num %in% c("11", "12", "21", "22", "31", "32", "41", "42", "51", "52", "61", "62")), 
+       aes(x = Model.num, y = days, fill = name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Model Type", y = "Mean halflife survival (days)", fill = "Branch") +
+  scale_fill_manual(values = c("#666963", "#969c8f", "#a5644e", "#be6f1f", "#f3cc5e")) +  # specify your hex colors here
+  vera_theme(bg = "white")
+
+p <- ggplot(opt_res %>% filter(Model.num %in% c("11", "12", "21", "22", "31", "32", "41", "42", "51", "52", "61", "62")), 
+            aes(x = Model.num, y = days, fill = name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Decision rule", y = "Mean halflife survival (days)", fill = "Branch") +
+  scale_fill_manual(values = c("#666963", "#969c8f", "#ac705d", "#e2ac76", "#f8e09d")) +  # specify your hex colors here
+  scale_y_continuous(breaks = seq(0, max(opt_res$days, na.rm = TRUE), by = 5)) +  # set y-axis breaks every 5
+  vera_theme(bg = "white")
+
+
+## save 
+ggsave("standardized_plot_graph_general.png", plot = p, width = 8, height = 4, dpi = 500)  # Specify the size in inches and resolution
 
 
 ```
@@ -517,13 +551,14 @@ p<-ggplot(df %>% filter(id == "alive", chapter == 5, (env == 8 | env == 6)),
   scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
                      labels = seq(0, 30, by = 5)) +     # Label every 5 days
   vera_theme(bg = "white") +
-  scale_color_manual(values = ch4_col, 
+  theme(legend.position = "bottom")+  # Move legend to the bottom
+  scale_color_manual(values = ch5_col, 
                      name = "Hoarding type", 
                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop"))
-
+p
 
 # Save the plot with specified size and resolution
-ggsave("standardized_plot_surv.png", plot = p, width = 7, height = 3, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_surv.png", plot = p, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
 
 ```
 
@@ -569,7 +604,7 @@ p <- ggplot(df %>% filter((id == "fat_res" | id == "stom_con" | id == "fat_loss_
   scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
                      labels = seq(0, 30, by = 5)) +     # Label every 5 days
   vera_theme(bg = "white") +
-  scale_color_manual(values = ch4_col, 
+  scale_color_manual(values = ch5_col, 
                      name = "", 
                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +
   theme(legend.position = "bottom") +  # Move legend to the bottom
@@ -580,7 +615,7 @@ p
 
 
 # Save the plot with specified size and resolution
-ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 5, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 6, dpi = 500)  # Specify the size in inches and resolution
 
 
 
@@ -602,16 +637,16 @@ df_psych_sum<-df%>%
     id == "fat_loss_r" ~ 0.3
   ))
 
-p<-ggplot(df_psych_sum %>% filter((id == "fat_res" | id == "stom_con" | id == "fat_loss_r"), (model_type == "11" | model_type == "12" | model_type =="131" |model_type == "132"), (env == 8 | env == 6), timestep_within_day<=23), 
+p<-ggplot(df_psych_sum %>% filter((id == "fat_res" | id == "stom_con" | id == "fat_loss_r"), (model_type == "11" | model_type == "12" | model_type =="131" |model_type == "132"), (env == 8 | env == 6), timestep_within_day<=72), 
        aes(y = mean_value, x = timestep_within_day, col = model_type)) +
   geom_line(size = 0.75) +
   facet_grid(vars(id), vars(food_pred), scales = "free_y", labeller = labeller(id = id_labels)) +  # Rename facet labels
-  xlab("Timestep in day") +  # Change x-axis label to "Days"
+  xlab("Hour in day") +  # Change x-axis label to "Days"
   ylab("Value")+
-  scale_x_continuous(breaks = seq(0, 23, by = 3),   # Set breaks every 360 timesteps (5 days)
-                     labels = seq(1, 8, by = 1)) +     # Label every 5 days
-  vera_theme(bg = "white") +
-  scale_color_manual(values = ch4_col, 
+  # scale_x_continuous(breaks = seq(0, 23, by = 3),   # Set breaks every 360 timesteps (5 days)
+  #                    labels = seq(1, 8, by = 1)) +     # Label every 5 days
+  # vera_theme(bg = "white") +
+  scale_color_manual(values = ch5_col, 
                      name = "", 
                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +
   theme(legend.position = "bottom")+  # Move legend to the bottom
@@ -619,7 +654,7 @@ p<-ggplot(df_psych_sum %>% filter((id == "fat_res" | id == "stom_con" | id == "f
   geom_blank(aes(y = y_max))    # Add invisible points to set y_max limits
 
 p# Save the plot with specified size and resolution
-ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 5, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 6, dpi = 500)  # Specify the size in inches and resolution
 
 
 ```
@@ -630,30 +665,35 @@ ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 5, dpi = 500
 
 ```{r chapter 5 behaviour }
 # Define a named vector for the new labels
-id_labels <- c("rest" = "Rest", "eat" = "Eat", "eat_hoard" = "Eat & hoard", "dir_hoard"="Hoard", "retrieve"="Retrieve" )
+id_labels <- c("rest" = "Rest", "eat" = "Eat", "hoard" = "Hoard", "dir_hoard"="Hoard", "retrieve"="Retrieve" )
 
+ch5_beh <- df %>%
+  mutate(id = case_when(
+    id == "eat_hoard" ~ "hoard", 
+    id == "dir_hoard" ~ "hoard", 
+    TRUE ~ id
+  )) %>%
+  filter(id %in% c("rest", "eat", "hoard", "retrieve")) %>%
+  filter(model_type %in% c("11", "12", "131", "132")) %>%
+  filter(env %in% c(8, 6)) %>%
+  mutate(id = factor(id, levels = c("eat", "rest", "hoard", "retrieve")))  # Set the order of facets
 
-ch5_beh<-df%>%
-  filter((id == "rest" | id == "eat" | id == "eat_hoard" |id == "dir_hoard" |id =="retrieve"))%>%
-  filter(model_type == "11" | model_type == "12" | model_type =="131" |model_type == "132")%>%
-  filter((env == 8 | env == 6))
-  
-p<-ggplot(ch5_beh, 
-       aes(y = value, x = timestep, col = model_type)) +
+p <- ggplot(ch5_beh, 
+            aes(y = value, x = timestep, col = model_type)) +
   geom_line(size = 0.75) +
   facet_grid(vars(id), vars(food_pred), labeller = labeller(id = id_labels)) +  # Rename facet labels
   xlab("Days") +  # Change x-axis label to "Days"
-  ylab("Value")+
+  ylab("Value") +
   scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
                      labels = seq(0, 30, by = 5)) +     # Label every 5 days
   vera_theme(bg = "white") +
-  scale_color_manual(values = ch4_col, 
+  scale_color_manual(values = ch5_col, 
                      name = "", 
                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +
   theme(legend.position = "bottom")  # Move legend to the bottom
 
 # Save the plot with specified size and resolution
-ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 7, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 8, dpi = 500)  # Specify the size in inches and resolution
 
 
 
@@ -661,17 +701,17 @@ ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 7, dpi = 500) 
 # Now I want to average that across the days 
 
 df_beh_sum<-ch5_beh%>%
-  group_by(id, env, timestep_within_day, model_type, food_pred)%>%
+  group_by(id, env, timestep_within_day, model_type)%>%
   summarise(mean_value = mean(value))%>%
   ungroup()
 
 
 
-p<-ggplot(df_beh_sum %>% filter((id == "rest" | id == "eat" | id == "eat_hoard" |id == "dir_hoard" |id =="retrieve"), (model_type == "11" | model_type == "12" | model_type =="131" |model_type == "132"), (env == 8 | env == 6), timestep_within_day<=23), 
+p<-ggplot(df_beh_sum %>% filter(timestep_within_day<=23), 
        aes(y = mean_value, x = timestep_within_day, col = model_type)) +
   geom_line(size = 0.75) +
-  facet_grid(vars(id), vars(food_pred),  labeller = labeller(id = id_labels)) +  # Rename facet labels
-  xlab("Timestep in day") +  # Change x-axis label to "Days"
+  facet_grid(vars(id), vars(env),  labeller = labeller(id = id_labels)) +  # Rename facet labels
+  xlab("Hour in day") +  # Change x-axis label to "Days"
   ylab("Value")+
   scale_x_continuous(breaks = seq(0, 23, by = 3),   # Set breaks every 360 timesteps (5 days)
                      labels = seq(1, 8, by = 1)) +     # Label every 5 days
@@ -683,7 +723,7 @@ p<-ggplot(df_beh_sum %>% filter((id == "rest" | id == "eat" | id == "eat_hoard" 
   #xlim(0, 24)
 
 p# Save the plot with specified size and resolution
-ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 7, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 8, dpi = 500)  # Specify the size in inches and resolution
 
 
 ```
@@ -726,7 +766,36 @@ ggsave("standardized_plot_surv_temp_food.png", plot = p, width = 7, height = 8, 
 
 ```
 
+### Chapter 5: chaches 
 
+```{r look into caches number}
+
+caches<-df%>%
+  filter(id == "caches")%>%
+  filter(model_type == "11" |model_type == "12" | model_type == "131" | model_type=="132")%>%
+  filter(env == 6 | env == 8)%>%
+  group_by(model_type, env)%>%
+  ungroup()
+
+p_c <- ggplot(caches, aes(x = timestep, y = value, col = model_type)) +
+  geom_line(size = 1) +
+  facet_wrap(~ env3, ncol = 2) +
+  ylab("Number of caches per bird") +
+  xlab("Days") +
+  scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
+                     labels = seq(0, 30, by = 5)) +     # Label every 5 days
+  scale_y_continuous(breaks = seq(0, max(caches$value, na.rm = TRUE), by = 5)) +  # Set y-axis breaks every 5 units
+  vera_theme(bg = "white") +
+  scale_color_manual(values = ch5_col, 
+                     name = "", 
+                     labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +
+  theme(legend.position = "bottom")
+
+
+# Save the plot with specified size and resolution
+ggsave("standardized_plot_caches.png", plot = p_c, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
+
+```
 
 
 ## Chapter 6
@@ -766,29 +835,60 @@ df <- df %>%
 df$var_type <-as.factor(df$var_type)
 df$hoard_type<-as.factor(df$hoard_type)
 
-p <- ggplot(df %>% filter(id == "alive", (var_type == "2" | var_type == "3" | var_type == "4"), (env == 8 | env == 6)), 
-            aes(y = value, x = timestep, col = var_type, lty = var_type)) +
-  geom_line(size = 0.75) +
+# p <- ggplot(df %>% filter(id == "alive", (var_type == "2" | var_type == "3" | var_type == "4"), (env == 8 | env == 6), (model_type == "21"|model_type == "31"|model_type == "41"|model_type == "22"|model_type == "32"|model_type == "42"|model_type == "23"|model_type == "33"|model_type == "43"|model_type == "24"|model_type == "34"|model_type == "44")), 
+#             aes(y = value, x = timestep, col = var_type, lty = var_type)) +
+#   geom_line(size = 0.75) +
+#   facet_wrap(~food_pred, ncol = 2) +
+#   ylim(0, 1) +
+#   ylab("Proportion of birds alive") +
+#   xlab("Days") +
+#   scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
+#                      labels = seq(0, 30, by = 5)) +     # Label every 5 days
+#   vera_theme(bg = "white") +
+#   scale_color_manual(values = ch5_col, 
+#                      name = "Hoarding type", 
+#                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +
+#   scale_linetype_manual(name = "Variable type", values = c("solid", "dashed", "dotted"),  # Set line types for each var_type
+#                         labels = c("FR", "FCR", "FR and FCR"))+  # Custom labels for var_type
+#   theme(legend.position = "bottom",  # Move legend to the bottom
+#         legend.direction = "vertical",  # Stack legend items vertically
+#         legend.title = element_text(size = 10),  # Set the font size for the legend title
+#         legend.text = element_text(size = 8)) 
+# p
+# 
+# # Save the plot with specified size and resolution
+# ggsave("standardized_plot_surv.png", plot = p, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
+
+
+p <- ggplot(df %>% filter(id == "alive", chapter == 6, (env == 8 | env == 6)), 
+             aes(y = value, x = timestep, col = hoard_type, lty = var_type)) +
+  geom_line(size = 1) +
   facet_wrap(~food_pred, ncol = 2) +
   ylim(0, 1) +
   ylab("Proportion of birds alive") +
-  xlab("Days") +
+  xlab("Days") +  # Change x-axis label to "Days"
   scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
                      labels = seq(0, 30, by = 5)) +     # Label every 5 days
   vera_theme(bg = "white") +
-  scale_color_manual(values = ch6_col, 
+  theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+  scale_color_manual(values = ch5_col, 
                      name = "Hoarding type", 
                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +
-  scale_linetype_manual(name = "Variable type", values = c("solid", "dashed", "dotted"),  # Set line types for each var_type
-                        labels = c("FR", "FCR", "FR and FCR"))+  # Custom labels for var_type
-  theme(legend.position = "bottom",  # Move legend to the bottom
-        legend.direction = "vertical",  # Stack legend items vertically
-        legend.title = element_text(size = 10),  # Set the font size for the legend title
-        legend.text = element_text(size = 8)) 
+  scale_linetype_manual(name = "Energy proxy", 
+                        values = c("solid", "dashed", "dotted", "dotdash"),  # Adjust linetypes as needed
+                        labels = c("FR", "FCR", "FR & FCR")) +  # Update line type labels as needed
+  guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))  # Second row for line type
+
 p
 
+
 # Save the plot with specified size and resolution
-ggsave("standardized_plot_surv.png", plot = p, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
+ggsave("ch6_surv.png", plot = p, width = 7, height = 4.5, dpi = 500)  # Specify the size in inches and resolution
+
+
 
 ```
 
@@ -847,7 +947,8 @@ p
 
 
 # Save the plot with specified size and resolution
-ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 7, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 6, dpi = 500)  # Specify the size in inches and resolution
+
 
 
 
@@ -886,7 +987,7 @@ p<-ggplot(df_psych_sum %>% filter((id == "fat_res" | id == "stom_con" | id == "f
   geom_blank(aes(y = y_max))    # Add invisible points to set y_max limits
 
 p# Save the plot with specified size and resolution
-ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 5, dpi = 500)  # Specify the size in inches and resolution
+ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 6, dpi = 500)  # Specify the size in inches and resolution
 
 
 ```
