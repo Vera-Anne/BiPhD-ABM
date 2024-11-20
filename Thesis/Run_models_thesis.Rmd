@@ -2276,3 +2276,273 @@ ggsave("standardized_plot_surv_temp_food.png", plot = p, width = 7, height = 8, 
 
 ```
 
+
+## Chapter 8 Discussion 
+
+### Chapter 8: comparing the non-hoarders 
+
+```{r compare non hoarders }
+
+non_h_col<-c("#283F80", "#FFBD30", "#A06713","#8DA27F", "#238242", "#CA5D05")
+## survival across environment 5 and 6 
+p <- ggplot(df %>% filter(id == "alive", 
+                          (model_type == "11" | model_type =="21" | model_type =="31" | model_type =="41" | model_type =="51" | model_type =="61"), 
+                          (env == 8 | env == 6)), 
+            aes(y = value, x = timestep, col = var_type)) +
+  geom_line(size = 0.75) +
+  facet_wrap(~food_pred, ncol = 2) +
+  ylim(0, 1) +
+  ylab("Proportion of birds alive") +
+  xlab("Days") +
+  scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
+                     labels = seq(0, 30, by = 5)) +     # Label every 5 days
+  vera_theme(bg = "white") +
+  scale_color_manual(values = non_h_col,
+                     name = "Energy proxies",
+                     labels = c("SC", "FR", "FCR", "FR & FCR", "SC & FR", "SC & FCR")
+
+                     ) +
+  # scale_linetype_manual( name = "Hoarding type", 
+  #                       values = c("solid", "dashed", "dotdash", "dotted"),  # Adjust linetypes as needed
+  #                       labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +  # Update line type labels as needed
+ theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+    guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))  # Second row for line type
+p
+
+
+################################### LEFTOVER HOARDERS SURVIVAL ############################################
+
+p <- ggplot(df %>% filter(id == "alive", 
+                          (model_type == "12" | model_type =="22" | model_type =="32" | model_type =="42" | model_type =="52" | model_type =="62"), 
+                          (env == 8 | env == 6)), 
+            aes(y = value, x = timestep, col = var_type)) +
+  geom_line(size = 0.75) +
+  facet_wrap(~food_pred, ncol = 2) +
+  ylim(0, 1) +
+  ylab("Proportion of birds alive") +
+  xlab("Days") +
+  scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
+                     labels = seq(0, 30, by = 5)) +     # Label every 5 days
+  vera_theme(bg = "white") +
+  scale_color_manual(values = non_h_col,
+                     name = "Energy proxies",
+                     labels = c("SC", "FR", "FCR", "FR & FCR", "SC & FR", "SC & FCR")
+
+                     ) +
+  # scale_linetype_manual( name = "Hoarding type", 
+  #                       values = c("solid", "dashed", "dotdash", "dotted"),  # Adjust linetypes as needed
+  #                       labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Htop", "Direct hoarding Rtop")) +  # Update line type labels as needed
+ theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+    guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))  # Second row for line type
+p
+
+
+# Save the plot with specified size and resolution
+ggsave("ch8.png", plot = p, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
+
+
+################################### direct HOARDERS SURVIVAL ############################################
+non_h_col3<-c("#283F80",  "#238242", "#CA5D05")
+p <- ggplot(df %>% filter(id == "alive", 
+                          (model_type == "131" | model_type =="132" | model_type =="532" | model_type =="632"), 
+                          (env == 8 | env == 6)), 
+            aes(y = value, x = timestep, col = var_type, lty = hoard_type)) +
+  geom_line(size = 0.75) +
+  facet_wrap(~food_pred, ncol = 2) +
+  ylim(0, 1) +
+  ylab("Proportion of birds alive") +
+  xlab("Days") +
+  scale_x_continuous(breaks = seq(0, 2160, by = 360),   # Set breaks every 360 timesteps (5 days)
+                     labels = seq(0, 30, by = 5)) +     # Label every 5 days
+  vera_theme(bg = "white") +
+  scale_color_manual(values = non_h_col3,
+                     name = "Energy proxies",
+                     labels = c("SC","SC & FR", "SC & FCR")
+
+                     ) +
+  scale_linetype_manual( name = "Hoarding type",
+                        values = c( "dotdash", "dotted"),  # Adjust linetypes as needed
+                        labels = c( "Direct hoarding Htop", "Direct hoarding Rtop")) +  # Update line type labels as needed
+ theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+    guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))  # Second row for line type
+p
+
+
+# Save the plot with specified size and resolution
+ggsave("ch8.png", plot = p, width = 7, height = 4.5, dpi = 500)  # Specify the size in inches and resolution
+
+#############################################################################################################################
+
+non_h_col2<-c("#283F80", "#238242", "#CA5D05")
+
+ch8_phys<-df%>%
+ filter((id == "fat_res" | id == "stom_con" | id == "fat_loss_r"| id == "caches"))%>%
+  filter((env==6)|env==8)
+
+
+# Define a named vector for the new labels
+id_labels <- c("stom_con" = "SC", "fat_res" = "FR", "fat_loss_r" = "FCR", "caches" = "Caches")
+
+# Ensure 'id' is a factor with the desired order
+df$id <- factor(df$id, levels = c("stom_con", "fat_res", "fat_loss_r", "mass", "alive", "sleep", "rest", "forage","eat", "eat_hoard", "dir_hoard", "retrieve","find_food", "predation", "caches", "cache_decay", "temp"))
+
+df_psych_sum<-df%>%
+  group_by(id, env, timestep_within_day, model_type, food_pred, var_type, hoard_type)%>%
+  summarise(mean_value = mean(value)) %>%
+  ungroup()%>%
+  mutate(y_min = case_when(
+    id == "stom_con" ~ 0,
+    id == "fat_res" ~ 0,
+    id == "fat_loss_r" ~ -0.3, 
+    id == "caches" ~ 0
+  ),
+  y_max = case_when(
+    id == "stom_con" ~ 0.4,
+    id == "fat_res" ~ 4,
+    id == "fat_loss_r" ~ 0.3, 
+    id == "caches" ~ 75
+  ))
+
+p<-ggplot(df_psych_sum %>% filter((id == "fat_res" | id == "stom_con" | id == "fat_loss_r"), 
+                                  (model_type == "11" | model_type =="51" | model_type =="61"), 
+                                  (env == 8 | env == 6), timestep_within_day<=23), 
+       aes(y = mean_value, x = timestep_within_day, col = var_type)) +
+  geom_line(size = 0.75) +
+  facet_grid(vars(id), vars(food_pred), scales = "free_y", labeller = labeller(id = id_labels)) +  # Rename facet labels
+  xlab("Hour in day") +  # Change x-axis label to "Days"
+  ylab("Value")+
+  scale_x_continuous(breaks = seq(0, 23, by = 3),   # Set breaks every 360 timesteps (5 days)
+                     labels = seq(1, 8, by = 1)) +     # Label every 5 days
+  vera_theme(bg = "white") +
+   scale_color_manual(values = non_h_col2,
+                     name = "Energy proxy", 
+                                             labels = c("SC", "SC & FR", "SC & FCR")) +  # Update line type labels as needed
+# 
+#   scale_linetype_manual(name = "Hoarding type",
+#                      labels = c("Non hoarding", "Leftover hoarding", "Direct hoarding Rtop"),
+#                         values = c("solid", "dashed", "dotted", "dotdash" ))+  # Adjust linetypes as needed
+ theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+    guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))+  # Second row for line type
+    geom_blank(aes(y = y_min)) +  # Add invisible points to set y_min limits
+  geom_blank(aes(y = y_max))    # Add invisible points to set y_max limits
+
+p# Save the plot with specified size and resolution
+ggsave("standardized_plot_psych.png", plot = p, width = 7, height = 6, dpi = 500)  # Specify the size in inches and resolution
+
+#####################################################################################################################################
+
+# Now I want to average that across the days 
+ch8_beh<-df%>%
+  filter((id == "rest" | id == "eat" ))%>%
+  filter(model_type == "11" | model_type =="51" | model_type =="61")%>%
+  filter((env == 8 | env == 6))
+df_beh_sum<-ch8_beh%>%
+    mutate(id = case_when(
+    id == "eat_hoard" ~ "Hoard", 
+    id == "dir_hoard" ~ "Hoard", 
+    TRUE ~ id
+  )) %>%
+  mutate(id = factor(id, levels = c("eat", "rest", "Hoard", "retrieve"))) %>% # Set the order of facets
+  group_by(id, env, timestep_within_day, model_type, food_pred, var_type, hoard_type)%>%
+  summarise(mean_value = mean(value))%>%
+  ungroup()
+
+
+
+p<-ggplot(df_beh_sum %>% filter((id == "rest" | id == "eat" ), (model_type == "11" | model_type =="51" | model_type =="61"), (env == 8 | env == 6), timestep_within_day<=23), 
+       aes(y = mean_value, x = timestep_within_day, col = var_type)) +
+  geom_line(size = 0.75) +
+  facet_grid(vars(id), vars(food_pred),  labeller = labeller(id = id_labels)) +  # Rename facet labels
+  xlab("Hour in day") +  # Change x-axis label to "Days"
+  ylab("Value")+
+  scale_x_continuous(breaks = seq(0, 23, by = 3),   # Set breaks every 360 time steps (5 days)
+                     labels = seq(1, 8, by = 1)) +     # Label every 5 days
+  vera_theme(bg = "white") +
+   scale_color_manual(values = non_h_col2,
+                     name = "Energy proxy", 
+                                             labels = c("SC", "SC & FR", "SC & FCR" )) +  # Update line type labels as needed
+
+  # scale_linetype_manual(name = "Hoarding type",
+  #                    labels = c("Non hoarding", "Leftover hoarding",  "Direct hoarding Rtop"),
+  #                       values = c("solid", "dashed", "dotted", "dotdash" ))+  # Adjust linetypes as needed
+ theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+    guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))  # Second row for line type
+
+p# Save the plot with specified size and resolution
+ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 5, dpi = 500)  # Specify the size in inches and resolution
+
+
+```
+
+
+### Chapter 8: comparing the hoarders: hoard & retrieve 
+
+```{r compare teh hoarders hoard and retrieve}
+
+id_labels <- c("rest" = "Rest", "eat" = "Eat", "hoard" = "Hoard", "dir_hoard"="Hoard", "retrieve"="Retrieve" )
+
+# Now I want to average that across the days 
+ch8_beh<-df%>%
+  filter((id == "rest" | id == "eat" | id == "eat_hoard"  |id =="retrieve"|id == "dir_hoard"))%>%
+  filter(model_type == "12" |model_type == "22"| model_type =="32"|model_type =="42"|model_type == "52" |model_type == "62" |model_type =="532"|model_type =="632")%>%
+  filter((env == 8 | env == 6))
+df_beh_sum<-ch8_beh%>%
+    mutate(id = case_when(
+    id == "eat_hoard" ~ "Hoard", 
+    id == "dir_hoard" ~ "Hoard", 
+    TRUE ~ id
+  )) %>%
+  mutate(id = factor(id, levels = c("eat", "rest", "Hoard", "retrieve"))) %>% # Set the order of facets
+  group_by(id, env, timestep_within_day, model_type, food_pred, var_type, hoard_type)%>%
+  summarise(mean_value = mean(value))%>%
+  ungroup()
+
+
+
+p<-ggplot(df_beh_sum %>% filter((id == "rest" | id == "eat" | id == "Hoard"  |id =="retrieve" ), 
+                                (model_type == "12" |model_type == "22"| model_type =="32"|model_type =="42"|model_type == "52" |model_type == "62" |model_type =="532"|model_type =="632"), 
+                                (env == 8 | env == 6), timestep_within_day<=23), 
+       aes(y = mean_value, x = timestep_within_day, col = var_type, lty = hoard_type)) +
+  geom_line(size = 0.75) +
+  facet_grid(vars(id), vars(food_pred),  labeller = labeller(id = id_labels)) +  # Rename facet labels
+  xlab("Hour in day") +  # Change x-axis label to "Days"
+  ylab("Value")+
+  scale_x_continuous(breaks = seq(0, 23, by = 3),   # Set breaks every 360 time steps (5 days)
+                     labels = seq(1, 8, by = 1)) +     # Label every 5 days
+  vera_theme(bg = "white") +
+   scale_color_manual(values = non_h_col,
+                     name = "Energy proxy", 
+                                             labels = c("SC", "FR", "FCR", "FR & FCR", "SC & FR", "SC & FCR")) +  # Update line type labels as needed
+
+  scale_linetype_manual(name = "Hoarding type",
+                     labels = c( "Leftover hoarding",  "Direct hoarding Rtop"),
+                        values = c("dashed", "dotted"))+  # Adjust linetypes as needed
+ theme(legend.position = "bottom",  # Move legend to the bottom
+        legend.box = "vertical",   # Arrange legend items horizontally
+        legend.box.just = "left") +  # Center the legend box
+    guides(col = guide_legend(order = 1, nrow = 1),  # First row for color
+         lty = guide_legend(order = 2, nrow = 1))  # Second row for line type
+
+p# Save the plot with specified size and resolution
+ggsave("standardized_plot_beh.png", plot = p, width = 7, height = 8, dpi = 500)  # Specify the size in inches and resolution
+
+
+
+
+
+```
