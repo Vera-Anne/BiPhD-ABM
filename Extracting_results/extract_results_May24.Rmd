@@ -102,47 +102,47 @@ If this is running from the shared Rproject, this should all be automated.
 
 
 ```{r set which model to run 4 BRANCH, include=TRUE, warning=FALSE,echo=F, message=FALSE}
-# models<-c("11", 
-#           "21", 
-#           "31", 
-#           "41", 
-#           "51",
-#           "61",
-#           "12", 
-#           "22", 
-#           "32",
-#           "42", 
-#           "52", 
-#           "62" ,
-#           "131", 
-#           "231", 
-#           "331", 
-#           "431", 
-#           "531", 
-#           "631",
-#           "132", 
-#           "232", 
-#           "332", 
-#           "432", 
-#           "532", 
-#           "632") 
 models<-c("11",
-          "21", 
-          "31", 
-          "41", 
+          "21",
+          "31",
+          "41",
           "51",
           "61",
           "12",
           "22",
           "32",
-          "42", 
-          "52", 
-          "62" #,
-          #"131", 
-          #"431", 
-          #"531", 
-          #"631"
-          )
+          "42",
+          "52",
+          "62" ,
+          # "131",
+          # "231",
+          # "331",
+          # "431",
+          # "531",
+          # "631",
+          # "132",
+          # "232",
+          # "332",
+          # "432",
+          "532",
+          "632")
+# models<-c("11",
+#           "21", 
+#           "31", 
+#           "41", 
+#           "51",
+#           "61",
+#           "12",
+#           "22",
+#           "32",
+#           "42", 
+#           "52", 
+#           "62" ,
+#           "131",
+#           "431",
+#           "532", 
+#           "631"
+#           )
 
 # If you are using the previously generated data, do not change these the code will use teh default settings 
 num_birds<-1000
@@ -417,7 +417,7 @@ for (i in 1:length(models)){
                        th_forage_sc2 = 0.077,
                        th_forage_flr2 = 0.244, 
                        th_forage_sc3 = 0.315,
-                       th_forage_flr3 = 0.544 
+                       th_forage_flr3 = 0.544, 
                        daylight_h = daylight_h,
                        modelType = 631)
     
@@ -1065,6 +1065,7 @@ df_out<-env_func_out_df_6%>%
 
 
 # Summarise acros the 12 environments 
+
 
 df_out_Esum<-df_out%>%
   group_by(timestep, id, model)%>%

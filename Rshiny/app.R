@@ -2,7 +2,7 @@
 # Vera Vinken 
 # 20 May 2014 
 
-# Packages 
+  # Packages 
 library(shiny)
 library(shinyWidgets)
 library(ggplot2)
@@ -144,6 +144,12 @@ server <- function(input, output, session) {
   
   # Create the colour scale 
   myColors <- stepped()
+  # myColors<-c("#283F80", "#A8BCC6", "black", "black",  
+  #             "#FFBD30", "#A06713", "black", "black",   
+  #             "#8DA27F","#2E5F14",  "black", "black", 
+  #             "#2E5F14", "#6FA254","black", "black", 
+  #             "yellow", "green", "black","purple",
+  #             "#a24b04", "#DD975E", "black", "red")
   names(myColors) <- levels(df_out$model)
   colScale <- scale_colour_manual(name = "model", values = myColors)
   

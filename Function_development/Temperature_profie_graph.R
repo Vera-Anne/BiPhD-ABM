@@ -149,7 +149,7 @@ temp_func<-function(TS, Tmax_range_low, Tmax_range_high, Tmin_range_low, Tmin_ra
 
 temp_func(TS = 2160, Tmax_range_low = 7, Tmax_range_high = 13, Tmin_range_low = -3, Tmin_range_high = 3, days = 30, daylight_h = 8, n_daylight_timestep = 24)
 
-
+timesteps_day<-1:72
 n_daylight_timestep = 24
 df<-as.data.frame(cbind(timesteps_day, cur_day_temp_vector))
 ggplot(df, aes(x = timesteps_day, y = cur_day_temp_vector)) +
@@ -188,6 +188,6 @@ p<-ggplot(df, aes(x = timesteps_day, y = cur_day_temp_vector)) +
 ## save 
 ggsave("standardized_plot_graph_general.png", plot = p, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
 
-
+ggsave("temp_profile_fig4.3_svg.svg", plot = p, width = 7, height = 4, dpi = 500)  # Specify the size in inches and resolution
 
 
